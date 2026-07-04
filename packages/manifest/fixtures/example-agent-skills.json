@@ -1,0 +1,12 @@
+{
+  "name": "my-frontend-project",
+  "version": "1.2.0",
+  "agentSkills": {
+    "dependencies": {
+      "web-design-guidelines": "github:vercel-labs/agent-skills#web-design-guidelines",
+      "playwright": "skills.sh/playwright@^1.0",
+      "local-review": "file:./skills/my-review"
+    },
+    "devDependencies": {}
+  }
+}

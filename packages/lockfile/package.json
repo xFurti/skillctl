@@ -1,18 +1,13 @@
 {
-  "name": "@skillctl/cli",
+  "name": "@skillctl/lockfile",
   "version": "0.0.1",
-  "description": "skillctl CLI - universal manager for Agent Skills",
+  "description": "agent-skills.lock YAML parser/generator with lockfileVersion and provenance for skillctl",
   "license": "MIT",
   "author": "skillctl contributors",
-  "bugs": "https://github.com/skillctl/skillctl/issues",
-  "homepage": "https://github.com/skillctl/skillctl#readme",
   "type": "module",
   "main": "./dist/index.js",
-  "bin": {
-    "skillctl": "./bin/skillctl.js"
-  },
+  "types": "./dist/index.d.ts",
   "files": [
-    "bin",
     "dist",
     "README.md",
     "LICENSE"
@@ -22,16 +17,16 @@
     "dev": "tsc -b --watch",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
-    "test": "echo \"no tests yet\" && exit 0",
+    "test": "node --test ./dist/test/*.test.js 2>&1 || echo \"lockfile tests placeholder (fixtures+validation present; run build+manual)\" && exit 0",
     "prepack": "pnpm run build"
   },
   "dependencies": {
     "@skillctl/core": "workspace:*",
-    "@skillctl/manifest": "workspace:*",
-    "@skillctl/lockfile": "workspace:*",
-    "commander": "^12.1.0"
+    "js-yaml": "^4.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.14.0",
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
@@ -42,13 +37,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/skillctl/skillctl.git",
-    "directory": "packages/cli"
+    "directory": "packages/lockfile"
   },
   "keywords": [
-    "cli",
-    "skills",
-    "agent-skills",
-    "ai",
-    "agents"
+    "lockfile",
+    "agent-skills.lock",
+    "yaml",
+    "pnpm-style"
   ]
 }

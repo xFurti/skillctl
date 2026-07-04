@@ -1,0 +1,7 @@
+{
+  "agentSkills": {
+    "dependencies": {
+      "bad": "https://example.com/invalid-spec"
+    }
+  }
+}

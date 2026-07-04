@@ -1,0 +1,25 @@
+lockfileVersion: '1.0'
+agents:
+  - claude-code
+  - cursor
+skills:
+  web-design-guidelines:
+    specifier: vercel-labs/agent-skills#web-design-guidelines
+    resolved: github:vercel-labs/agent-skills@abc123def/skills/web-design-guidelines
+    integrity: sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+    name: web-design-guidelines
+    canonicalPath: ~/.skillctl/skills/web-design-guidelines
+    fetchedAt: '2026-07-04T12:00:00.000Z'
+    provenance:
+      type: github
+      commit: abc123def
+      subpath: skills/web-design-guidelines
+  playwright:
+    specifier: skills.sh/playwright@^1.0
+    resolved: skills.sh/playwright@1.2.3
+    integrity: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    name: playwright
+    canonicalPath: ~/.skillctl/skills/playwright
+    fetchedAt: '2026-07-04T12:01:00.000Z'
+    provenance:
+      type: skills.sh

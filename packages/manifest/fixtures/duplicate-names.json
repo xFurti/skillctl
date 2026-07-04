@@ -1,0 +1,10 @@
+{
+  "agentSkills": {
+    "dependencies": {
+      "foo": "github:owner/foo"
+    },
+    "devDependencies": {
+      "foo": "github:owner/foo"
+    }
+  }
+}

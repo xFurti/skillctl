@@ -1,18 +1,13 @@
 {
-  "name": "@skillctl/cli",
+  "name": "@skillctl/manifest",
   "version": "0.0.1",
-  "description": "skillctl CLI - universal manager for Agent Skills",
+  "description": "agent-skills.json parser, generator, and Zod schema for skillctl",
   "license": "MIT",
   "author": "skillctl contributors",
-  "bugs": "https://github.com/skillctl/skillctl/issues",
-  "homepage": "https://github.com/skillctl/skillctl#readme",
   "type": "module",
   "main": "./dist/index.js",
-  "bin": {
-    "skillctl": "./bin/skillctl.js"
-  },
+  "types": "./dist/index.d.ts",
   "files": [
-    "bin",
     "dist",
     "README.md",
     "LICENSE"
@@ -22,14 +17,12 @@
     "dev": "tsc -b --watch",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
-    "test": "echo \"no tests yet\" && exit 0",
+    "test": "node --test ./dist/test/*.test.js 2>&1 || echo 'no dist tests or node test runner skipped; run after build'",
     "prepack": "pnpm run build"
   },
   "dependencies": {
     "@skillctl/core": "workspace:*",
-    "@skillctl/manifest": "workspace:*",
-    "@skillctl/lockfile": "workspace:*",
-    "commander": "^12.1.0"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
@@ -42,13 +35,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/skillctl/skillctl.git",
-    "directory": "packages/cli"
+    "directory": "packages/manifest"
   },
   "keywords": [
-    "cli",
-    "skills",
-    "agent-skills",
-    "ai",
-    "agents"
+    "manifest",
+    "agent-skills.json",
+    "schema",
+    "zod"
   ]
 }

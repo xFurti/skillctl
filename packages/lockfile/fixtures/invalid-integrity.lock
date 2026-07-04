@@ -1,0 +1,11 @@
+lockfileVersion: '1.0'
+skills:
+  bad:
+    specifier: github:foo/bar
+    resolved: github:foo/bar@sha
+    integrity: sha256:short
+    name: bad
+    canonicalPath: /tmp/bad
+    fetchedAt: '2026-01-01T00:00:00Z'
+    provenance:
+      type: github
