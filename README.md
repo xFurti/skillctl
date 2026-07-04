@@ -83,7 +83,7 @@ pnpm install
 pnpm build
 
 # Run the CLI (via local package bin)
-pnpm --filter @skillctl/cli exec skillctl --help
+pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --help
 # or directly
 node packages/cli/bin/skillctl.js --version
 
