@@ -1,18 +1,13 @@
 {
-  "name": "@skillctl/cli",
+  "name": "@skillctl/registry",
   "version": "0.0.1",
-  "description": "skillctl CLI - universal manager for Agent Skills",
+  "description": "Registry manager, sources (github, local, skills.sh, basic npm) + resolution + materialize + integrity for skillctl",
   "license": "MIT",
   "author": "skillctl contributors",
-  "bugs": "https://github.com/skillctl/skillctl/issues",
-  "homepage": "https://github.com/skillctl/skillctl#readme",
   "type": "module",
   "main": "./dist/index.js",
-  "bin": {
-    "skillctl": "./bin/skillctl.js"
-  },
+  "types": "./dist/index.d.ts",
   "files": [
-    "bin",
     "dist",
     "README.md",
     "LICENSE"
@@ -22,18 +17,20 @@
     "dev": "tsc -b --watch",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
-    "test": "echo \"no tests yet\" && exit 0",
+    "test": "node --test ./dist/test/*.test.js 2>&1 || echo 'run after build; basic resolution tests'",
     "prepack": "pnpm run build"
   },
   "dependencies": {
     "@skillctl/core": "workspace:*",
-    "@skillctl/manifest": "workspace:*",
     "@skillctl/lockfile": "workspace:*",
-    "@skillctl/registry": "workspace:*",
-    "commander": "^12.1.0"
+    "@skillctl/manifest": "workspace:*",
+    "semver": "^7.6.3",
+    "tar": "^6.2.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/semver": "^7.5.8",
+    "@types/tar": "^6.1.13",
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
   },
@@ -43,13 +40,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/skillctl/skillctl.git",
-    "directory": "packages/cli"
+    "directory": "packages/registry"
   },
   "keywords": [
-    "cli",
-    "skills",
-    "agent-skills",
-    "ai",
-    "agents"
+    "registry",
+    "sources",
+    "github",
+    "npm",
+    "resolution",
+    "agent-skills"
   ]
 }

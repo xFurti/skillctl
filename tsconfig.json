@@ -18,6 +18,7 @@
     { "path": "./packages/core" },
     { "path": "./packages/manifest" },
     { "path": "./packages/lockfile" },
+    { "path": "./packages/registry" },
     { "path": "./packages/cli" }
   ],
   "include": [],

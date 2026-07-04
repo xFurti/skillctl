@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path';
 import { loadManifest, createDefaultManifest } from '@skillctl/manifest';
 import { loadLockfile, createEmptyLockfile } from '@skillctl/lockfile';
 import { loadConfig } from '@skillctl/core';
+import { RegistryManager } from '@skillctl/registry';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -101,6 +102,32 @@ program
     const sample = createDefaultManifest('demo-project');
     console.log('Would create agent-skills.json with:', JSON.stringify(sample, null, 2));
     console.log('(full save + lock in later PRs)');
+  });
+
+// Basic add (PR4): uses RegistryManager for multi-source resolve + materialize + lock update.
+// Supports github:, npm:, skills.sh/, file: etc. Stubs other flags.
+program
+  .command('add <spec>')
+  .description('Add a skill from github, npm, local, skills.sh (PR4 registry)')
+  .option('--global', 'add to global (future)')
+  .option('--no-manifest', 'do not update agent-skills.json')
+  .action(async (spec, options) => {
+    try {
+      const mgr = new RegistryManager();
+      console.log(`Resolving ${spec} via registry...`);
+      const entry = await mgr.add(spec, {
+        updateManifest: options.manifest !== false,
+      });
+      console.log(`Added ${entry.name}`);
+      console.log(`  resolved: ${entry.resolved}`);
+      console.log(`  integrity: ${entry.integrity}`);
+      console.log(`  canonical: ${entry.canonicalPath}`);
+      console.log(`  provenance: ${JSON.stringify(entry.provenance)}`);
+      console.log('(lock updated; full sync in later PRs)');
+    } catch (err: any) {
+      console.error('add failed:', err.message || err);
+      process.exitCode = 1;
+    }
   });
 
 // Export program for tests, future lib use, or bin shim.

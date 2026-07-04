@@ -8,8 +8,7 @@
   "references": [
     { "path": "../core" },
     { "path": "../manifest" },
-    { "path": "../lockfile" },
-    { "path": "../registry" }
+    { "path": "../lockfile" }
   ],
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]
