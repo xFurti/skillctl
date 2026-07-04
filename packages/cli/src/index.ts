@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -28,4 +27,7 @@ program
 // No commands registered yet (added in later PRs)
 // This establishes the basic skeleton and --help/--version behavior.
 
-program.parse(process.argv);
+// Export program for tests, future lib use, or bin shim.
+// parse() is intentionally called from the bin entry (packages/cli/bin/skillctl.js)
+// to avoid side effects on `import '@skillctl/cli'` or `require`.
+export { program };

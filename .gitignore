@@ -42,8 +42,6 @@ coverage/
 
 # skillctl specific (future)
 .skillctl/
-*.lock
-agent-skills.lock
 
 # Misc
 *.tgz

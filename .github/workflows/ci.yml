@@ -46,3 +46,7 @@ jobs:
         run: |
           node packages/cli/bin/skillctl.js --version
           node packages/cli/bin/skillctl.js --help
+          # Also test via pnpm filter + the exact bin entrypoint from package.json "bin" field
+          # (exercises the declared shim; direct 'skillctl' name resolution requires global link)
+          pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --version
+          pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --help

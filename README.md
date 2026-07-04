@@ -97,6 +97,6 @@ MIT
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) (to be added in later PR) and design doc.
+See CONTRIBUTING.md (to be added in a later PR) and design doc.
 
 Issues and PRs welcome. Start with adapters or registry sources once core is in place.
