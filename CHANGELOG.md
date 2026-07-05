@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-07-05
+
+### Added
+
+- **`skillctl import from-npx`** — Migrate skills from `npx skills` (`skills-lock.json` and `.agents/skills/`). Supports `--dry-run`, `--adopt`, `--write-manifest`.
+- **`skillctl import from-skillctl`** — Migrate from Python skillctl (`~/.skillctl/repos/`). Supports `--dry-run`, `--adopt`, `--write-manifest`.
+- **`skillctl audit`** — Security scanner on installed skills (integrity drift, script heuristics, name/dir match, path traversal, size limits). Supports `--json` and `--strict`.
+- **`skillctl update [names...]`** — Re-fetch skills from their specifiers and re-sync agent links.
+- **`skillctl plugin`** — Experimental plugin management (`list`, `enable`, `add`, `remove`). Opt-in via `experimental.plugins` in config.
+- **`install --frozen`** — Fail if lock integrity does not match canonical store (exit 2).
+- **`doctor --fix`** — Re-sync agent links from lock; integrates lightweight audit findings.
+- **New packages**:
+  - `@skillctl/import` — npx skills / Python skillctl migration parsers and orchestration.
+  - `@skillctl/security` — Audit rule engine and report types.
+  - `@skillctl/plugin-system` — Dynamic plugin loader (commands, adapters, registry sources).
+- **New adapters**: Codex (`~/.codex/skills`) and Gemini CLI (`~/.gemini/skills`).
+- **Core helpers**: `canonicalizeName`, `resolveAdapterTarget`, `needsInstall`, `verifyLockIntegrity`, `lockToSkillTargets`, `purgeCanonical`.
+- **Extended types**: `ResolvedSource.sourceId` / `originalSpec`, `Provenance.migratedFrom`, `SkillLockfile.metadata`, `config.experimental.plugins`.
+
+### Changed
+
+- **Registry refactored** — `registry.ts` monolith split into `sources/`, `fetch/`, `locate-skill.ts`, `manager.ts`.
+- **CLI restructured** — Commands moved to `packages/cli/src/commands/*` (one file per command).
+- **Adapter registration unified** — Single source of truth via `registerAdapter` / `getRegisteredAdapters` in `@skillctl/core` (removed duplicate hardcoded list).
+- **`install` fast-path** — Skips fetch when canonical path exists and integrity matches lock entry.
+- **`doctor` output** — Coexistence notes moved to `info` (no longer false-positive issues); actionable import recommendations.
+- **`skills.sh` name-only specs** — Now fail fast with clear error; require `owner/repo` form (e.g. `skills.sh/vercel-labs/agent-skills`).
+- **Version** bumped to 0.2.0 across root and `@skillctl/cli`.
+
+### Fixed
+
+- **`remove`** — Uses `resolveAdapterTarget` instead of rough path concatenation.
+- **`sync`** — Consistent project/global path resolution via shared helper.
+
+### Documentation
+
+- README and CHANGELOG updated for v0.2 scope.
+
+### Known / Notes
+
+- Plugin system is **experimental** — enable with `skillctl plugin enable` or `experimental.plugins: true` in config.
+- `import from-npx` parser is tolerant of `skills-lock.json` schema variations; edge cases may need manual `add`.
+- Global scope (`--global` on add/remove) not yet implemented; project scope only.
+- Long-tail agents (Continue, Windsurf, etc.) planned for v0.3+ via adapter table or plugins.
+
 ## [0.1.0] - 2026-07-04
 
 ### Added (v0.1 Release Candidate)
@@ -53,14 +98,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Canonical + cache dirs created on demand.
 - Recommend re-running `doctor` after upgrade.
 
-See [skillctl-design.md](./skillctl-design.md) for full v0.1 scope and future (plugins in 0.2+, more adapters, security scanner).
-
-### Known / Notes for RC
-
-- Some adapters limited to 3 (claude,cursor,opencode) + base; more via plugins later.
-- npm source / github use live network (first time); cache mitigates repeats.
-- Windows: copy fallback surfaced; test links.
-- No `import --from-npx` yet (detect only); manual migration via add.
-- For production use after RC: pin versions, review locks.
-
-[0.1.0]: https://github.com/skillctl/skillctl/compare/... (v0.1.0 tag)
+[0.2.0]: https://github.com/skillctl/skillctl/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/skillctl/skillctl/releases/tag/v0.1.0
