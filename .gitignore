@@ -43,8 +43,7 @@ coverage/
 # skillctl specific (future)
 .skillctl/
 
-# Local documentation site (not published to GitHub)
-local-docs/
+
 
 # Misc
 *.tgz

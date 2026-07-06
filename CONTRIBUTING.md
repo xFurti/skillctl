@@ -79,7 +79,8 @@ High-value areas:
 - Describe **what** changed and **why**.
 - Link related issues if any.
 - Ensure CI passes (GitHub Actions on ubuntu/macos/windows).
-- Do not commit `node_modules/`, `dist/`, `.env`, or `local-docs/` (gitignored).
+- Do not commit `node_modules/`, `dist/`, or `.env`.
+- User-facing docs live in `docs/` (published via GitHub Pages).
 
 ## Versioning
 

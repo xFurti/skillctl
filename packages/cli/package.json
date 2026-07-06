@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "skillctl contributors",
   "bugs": "https://github.com/skillctl/skillctl/issues",
-  "homepage": "https://github.com/skillctl/skillctl#readme",
+  "homepage": "https://skillctl.github.io/skillctl/",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
