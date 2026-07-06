@@ -7,13 +7,30 @@ window.TRANSLATIONS = {
       navConfig: 'Configurazione',
       navCommands: 'Comandi',
       navProblems: 'Problemi & soluzioni',
+      searchPlaceholder: 'Cerca nella docs…',
+      searchNoResults: 'Nessun comando corrisponde alla ricerca.',
+      copyLabel: 'Copia',
+      copiedLabel: 'Copiato!',
     },
     pages: {
       index: {
         title: 'skillctl — Documentazione',
         html: `
-<h1>skillctl</h1>
-<p class="lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI.</p>
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-badge">v0.2 · Agent Skills</p>
+    <h1 class="hero-title">skillctl</h1>
+    <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI.</p>
+    <div class="hero-terminal">
+      <div class="terminal-bar">
+        <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
+        <span class="terminal-label">~/my-project</span>
+      </div>
+      <pre class="terminal-body"><code id="hero-cmd">skillctl init</code><span class="terminal-cursor"></span></pre>
+    </div>
+  </div>
+</section>
 
 <div class="alert alert-info">
   <strong>Versione 0.2</strong>
@@ -38,20 +55,24 @@ npx @skillctl/cli --help</code></pre>
 
 <h2>Flusso tipico</h2>
 <div class="card-grid">
-  <div class="card">
-    <h3>1. init</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">1</span>
+    <h3>init</h3>
     <p>Crea <code>agent-skills.json</code> nel progetto corrente.</p>
   </div>
-  <div class="card">
-    <h3>2. add</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">2</span>
+    <h3>add</h3>
     <p>Aggiunge skill da GitHub, npm, skills.sh, path locali. Aggiorna manifest e lock.</p>
   </div>
-  <div class="card">
-    <h3>3. install</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">3</span>
+    <h3>install</h3>
     <p>Scarica/verifica tutte le dipendenze nello store canonico e sincronizza gli agenti.</p>
   </div>
-  <div class="card">
-    <h3>4. sync</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">4</span>
+    <h3>sync</h3>
     <p>Ricrea i link verso gli agenti rilevati senza rifetch (utile dopo cambio config).</p>
   </div>
 </div>
@@ -93,22 +114,25 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 
 <h2>Navigazione</h2>
 <div class="card-grid">
-  <div class="card">
-    <h3><a href="configurazione.html">Configurazione</a></h3>
+  <a href="#config" class="card card-interactive" data-nav="config">
+    <h3>Configurazione</h3>
     <p>Installazione, <code>config.json</code>, manifest, lockfile, variabili d'ambiente e specifier.</p>
-  </div>
-  <div class="card">
-    <h3><a href="comandi.html">Comandi</a></h3>
+    <span class="card-arrow">→</span>
+  </a>
+  <a href="#commands" class="card card-interactive" data-nav="commands">
+    <h3>Comandi</h3>
     <p>Riferimento completo CLI: init, add, install, sync, audit, doctor, import, plugin.</p>
-  </div>
-  <div class="card">
-    <h3><a href="problemi.html">Problemi &amp; soluzioni</a></h3>
+    <span class="card-arrow">→</span>
+  </a>
+  <a href="#problems" class="card card-interactive" data-nav="problems">
+    <h3>Problemi &amp; soluzioni</h3>
     <p>Troubleshooting, coesistenza con npx/Python, Windows, CI e tabella diagnosi rapida.</p>
-  </div>
+    <span class="card-arrow">→</span>
+  </a>
 </div>
 
-<footer>
-  skillctl v0.2 — <a href="configurazione.html">Configurazione</a> · <a href="comandi.html">Comandi</a> · <a href="problemi.html">Problemi</a>
+<footer class="page-footer">
+  skillctl v0.2 — <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
       },
@@ -256,7 +280,7 @@ skillctl plugin remove my-plugin</code></pre>
 </ol>
 
 <footer>
-  <a href="index.html">Panoramica</a> · <a href="comandi.html">Comandi</a> · <a href="problemi.html">Problemi</a>
+  <a href="#index">Panoramica</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
       },
@@ -404,7 +428,7 @@ skillctl --help
 skillctl &lt;comando&gt; --help</code></pre>
 
 <footer>
-  <a href="index.html">Panoramica</a> · <a href="configurazione.html">Configurazione</a> · <a href="problemi.html">Problemi</a>
+  <a href="#index">Panoramica</a> · <a href="#config">Configurazione</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
       },
@@ -555,7 +579,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </table>
 
 <footer>
-  <a href="index.html">Panoramica</a> · <a href="configurazione.html">Configurazione</a> · <a href="comandi.html">Comandi</a>
+  <a href="#index">Panoramica</a> · <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a>
 </footer>
 `,
       },
@@ -569,13 +593,30 @@ skills.sh/vercel-labs/agent-skills</code></pre>
       navConfig: 'Configuration',
       navCommands: 'Commands',
       navProblems: 'Problems & solutions',
+      searchPlaceholder: 'Search docs…',
+      searchNoResults: 'No commands match your search.',
+      copyLabel: 'Copy',
+      copiedLabel: 'Copied!',
     },
     pages: {
       index: {
         title: 'skillctl — Documentation',
         html: `
-<h1>skillctl</h1>
-<p class="lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents.</p>
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-badge">v0.2 · Agent Skills</p>
+    <h1 class="hero-title">skillctl</h1>
+    <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents.</p>
+    <div class="hero-terminal">
+      <div class="terminal-bar">
+        <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
+        <span class="terminal-label">~/my-project</span>
+      </div>
+      <pre class="terminal-body"><code id="hero-cmd">skillctl init</code><span class="terminal-cursor"></span></pre>
+    </div>
+  </div>
+</section>
 
 <div class="alert alert-info">
   <strong>Version 0.2</strong>
@@ -600,20 +641,24 @@ npx @skillctl/cli --help</code></pre>
 
 <h2>Typical flow</h2>
 <div class="card-grid">
-  <div class="card">
-    <h3>1. init</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">1</span>
+    <h3>init</h3>
     <p>Creates <code>agent-skills.json</code> in the current project.</p>
   </div>
-  <div class="card">
-    <h3>2. add</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">2</span>
+    <h3>add</h3>
     <p>Adds skills from GitHub, npm, skills.sh, or local paths. Updates manifest and lock.</p>
   </div>
-  <div class="card">
-    <h3>3. install</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">3</span>
+    <h3>install</h3>
     <p>Fetches/verifies all dependencies into the canonical store and syncs agents.</p>
   </div>
-  <div class="card">
-    <h3>4. sync</h3>
+  <div class="card workflow-card">
+    <span class="workflow-step">4</span>
+    <h3>sync</h3>
     <p>Recreates agent links without re-fetching (useful after config changes).</p>
   </div>
 </div>
@@ -655,22 +700,25 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 
 <h2>Navigation</h2>
 <div class="card-grid">
-  <div class="card">
-    <h3><a href="configurazione.html">Configuration</a></h3>
+  <a href="#config" class="card card-interactive" data-nav="config">
+    <h3>Configuration</h3>
     <p>Installation, <code>config.json</code>, manifest, lockfile, environment variables, and specifiers.</p>
-  </div>
-  <div class="card">
-    <h3><a href="comandi.html">Commands</a></h3>
+    <span class="card-arrow">→</span>
+  </a>
+  <a href="#commands" class="card card-interactive" data-nav="commands">
+    <h3>Commands</h3>
     <p>Full CLI reference: init, add, install, sync, audit, doctor, import, plugin.</p>
-  </div>
-  <div class="card">
-    <h3><a href="problemi.html">Problems &amp; solutions</a></h3>
+    <span class="card-arrow">→</span>
+  </a>
+  <a href="#problems" class="card card-interactive" data-nav="problems">
+    <h3>Problems &amp; solutions</h3>
     <p>Troubleshooting, coexistence with npx/Python, Windows, CI, and quick diagnosis table.</p>
-  </div>
+    <span class="card-arrow">→</span>
+  </a>
 </div>
 
-<footer>
-  skillctl v0.2 — <a href="configurazione.html">Configuration</a> · <a href="comandi.html">Commands</a> · <a href="problemi.html">Problems</a>
+<footer class="page-footer">
+  skillctl v0.2 — <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
       },
@@ -818,7 +866,7 @@ skillctl plugin remove my-plugin</code></pre>
 </ol>
 
 <footer>
-  <a href="index.html">Overview</a> · <a href="comandi.html">Commands</a> · <a href="problemi.html">Problems</a>
+  <a href="#index">Overview</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
       },
@@ -966,7 +1014,7 @@ skillctl --help
 skillctl &lt;command&gt; --help</code></pre>
 
 <footer>
-  <a href="index.html">Overview</a> · <a href="configurazione.html">Configuration</a> · <a href="problemi.html">Problems</a>
+  <a href="#index">Overview</a> · <a href="#config">Configuration</a> · <a href="#problems">Problems</a>
 </footer>
 `,
       },
@@ -1117,7 +1165,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </table>
 
 <footer>
-  <a href="index.html">Overview</a> · <a href="configurazione.html">Configuration</a> · <a href="comandi.html">Commands</a>
+  <a href="#index">Overview</a> · <a href="#config">Configuration</a> · <a href="#commands">Commands</a>
 </footer>
 `,
       },
