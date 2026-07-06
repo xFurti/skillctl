@@ -1,11 +1,13 @@
 {
   "name": "@skillctl/import",
   "version": "0.2.0",
-  "description": "Import/migrate skills from npx skills and Python skillctl",
+  "description": "Import and migrate skills from npx skills and Python skillctl",
   "license": "MIT",
+  "author": "skillctl contributors",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
@@ -25,5 +27,11 @@
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
   },
-  "engines": { "node": ">=20.12" }
+  "engines": { "node": ">=20.12" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skillctl/skillctl.git",
+    "directory": "packages/import"
+  },
+  "keywords": ["import", "migration", "npx-skills", "agent-skills"]
 }

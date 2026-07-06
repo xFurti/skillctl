@@ -1,16 +1,14 @@
 {
   "name": "@skillctl/adapters",
-  "version": "0.1.0",
-  "description": "Agent adapters for Claude Code, Cursor, OpenCode (first set) + base + coexistence scan for skillctl (PR6)",
+  "version": "0.2.0",
+  "description": "Agent adapters for Claude Code, Cursor, OpenCode, Codex, Gemini CLI + sync and coexistence detection",
   "license": "MIT",
   "author": "skillctl contributors",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
+    "dist"
   ],
   "scripts": {
     "build": "tsc -b",
@@ -42,6 +40,8 @@
     "claude-code",
     "cursor",
     "opencode",
+    "codex",
+    "gemini-cli",
     "agent-skills"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/manifest",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "agent-skills.json parser, generator, and Zod schema for skillctl",
   "license": "MIT",
   "author": "skillctl contributors",
@@ -8,9 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
+    "dist"
   ],
   "scripts": {
     "build": "tsc -b",

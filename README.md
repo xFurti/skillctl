@@ -244,10 +244,10 @@ packages/
 - Publish: `npm publish --access public` from `packages/cli` after tag.
 - Verify: `npx @skillctl/cli@latest --version`
 
-## License
-
-MIT
-
 ## Contributing
 
-Issues and PRs welcome — especially new adapters, registry sources, and audit rules. See [skillctl-design.md](./skillctl-design.md) for architecture and roadmap.
+Issues and PRs welcome — especially new adapters, registry sources, and audit rules. See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and PR guidelines, and [skillctl-design.md](./skillctl-design.md) for architecture.
+
+## License
+
+[MIT](./LICENSE) — Copyright (c) 2026 skillctl contributors
