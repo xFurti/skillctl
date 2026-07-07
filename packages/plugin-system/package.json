@@ -23,7 +23,7 @@
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
   },
-  "engines": { "node": ">=20.12" },
+  "engines": { "node": ">=22.13" },
   "repository": {
     "type": "git",
     "url": "https://github.com/skillctl/skillctl.git",
