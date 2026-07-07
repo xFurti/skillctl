@@ -8,7 +8,7 @@ Universal, package-manager-style CLI for managing **Agent Skills** across AI cod
 
 `skillctl` keeps a single canonical store at `~/.skillctl/skills/` and syncs skills (symlink, junction on Windows, or copy) into Claude Code, Cursor, OpenCode, Codex, Gemini CLI, and other [agentskills.io](https://agentskills.io)-compatible agents.
 
-> **Status**: v0.2.0 — see [CHANGELOG.md](./CHANGELOG.md).
+> **Status**: v0.3.0 — see [CHANGELOG.md](./CHANGELOG.md).
 
 **Documentation** (commands, configuration, migration, troubleshooting): **[xfurti.github.io/skillctl](https://xfurti.github.io/skillctl/)** · IT/EN
 
@@ -58,9 +58,13 @@ More agents via plugins (experimental) or future adapter releases.
 ## Common Tasks
 
 ```bash
+# Import skills already in agent directories (.codex/skills, .claude/skills, ...)
+skillctl import from-project --dry-run
+skillctl import from-project
+
 # Migrate from npx skills
 skillctl import from-npx --dry-run
-skillctl import from-npx --adopt --write-manifest
+skillctl import from-npx --sync --write-manifest
 
 # Security scan (CI-friendly)
 skillctl audit --json --strict

@@ -1,7 +1,7 @@
 window.TRANSLATIONS = {
   it: {
     nav: {
-      brandSub: 'Documentazione v0.2',
+      brandSub: 'Documentazione v0.3',
       navSection: 'Guida',
       navOverview: 'Panoramica',
       navConfig: 'Configurazione',
@@ -19,7 +19,7 @@ window.TRANSLATIONS = {
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.2 · Agent Skills</p>
+    <p class="hero-badge">v0.3 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI.</p>
     <div class="hero-terminal">
@@ -33,7 +33,7 @@ window.TRANSLATIONS = {
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 0.2</strong>
+  <strong>Versione 0.3</strong>
   Store canonico in <code>~/.skillctl/skills/</code>, manifest dichiarativo e sincronizzazione automatica verso Claude Code, Cursor, OpenCode, Codex, Gemini CLI e altri agenti conformi allo standard <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a>.
 </div>
 
@@ -58,7 +58,7 @@ npx @skillctl/cli --help</code></pre>
   <div class="card workflow-card">
     <span class="workflow-step">1</span>
     <h3>init</h3>
-    <p>Crea <code>agent-skills.json</code> nel progetto corrente.</p>
+    <p>Crea <code>agent-skills.json</code> e propone import da directory agente se presenti.</p>
   </div>
   <div class="card workflow-card">
     <span class="workflow-step">2</span>
@@ -132,7 +132,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.2 — <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
+  skillctl v0.3 — <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
       },
@@ -288,7 +288,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Comandi — skillctl',
         html: `
 <h1>Comandi CLI</h1>
-<p class="lead">Riferimento completo ai comandi skillctl v0.2. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
+<p class="lead">Riferimento completo ai comandi skillctl v0.3. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
 
 <h2>Workflow principali</h2>
 <div class="card-grid">
@@ -314,8 +314,10 @@ skillctl plugin remove my-plugin</code></pre>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl init</div>
-  <p class="cmd-desc">Crea <code>agent-skills.json</code> di partenza nella directory corrente. Non sovrascrive un file esistente.</p>
-  <pre><code>skillctl init</code></pre>
+  <p class="cmd-desc">Crea <code>agent-skills.json</code> di partenza nella directory corrente. Se rileva skill in directory agente (es. <code>.codex/skills</code>), propone un wizard di import. Non sovrascrive un file esistente.</p>
+  <pre><code>skillctl init
+skillctl init --no-prompt</code></pre>
+  <p>Flag: <code>--no-prompt</code> — salta il wizard di import post-init.</p>
 </div>
 
 <div class="cmd-block">
@@ -392,20 +394,31 @@ skillctl audit --json --strict</code></pre>
 <h2>Import e migrazione</h2>
 
 <div class="cmd-block">
+  <div class="cmd-name">skillctl import from-project</div>
+  <p class="cmd-desc">Scopre e importa skill nelle directory agente del progetto (<code>.codex/skills</code>, <code>.claude/skills</code>, <code>.agents/skills</code>, …). Aggiorna manifest e lock di default con specifier <code>local:imported/&lt;name&gt;</code>.</p>
+  <pre><code>skillctl import from-project --dry-run
+skillctl import from-project
+skillctl import from-project --sync
+skillctl import from-project --yes
+skillctl import from-project --no-manifest</code></pre>
+  <p>Flag: <code>--dry-run</code> — piano migrazione; <code>--sync</code> — sync agenti dopo import; <code>--no-manifest</code> / <code>--lock-only</code> — solo lock; <code>--sources codex,claude-code</code> — limita gli adapter; <code>--yes</code> — salta conferme.</p>
+</div>
+
+<div class="cmd-block">
   <div class="cmd-name">skillctl import from-npx</div>
   <p class="cmd-desc">Migra da <code>npx skills</code> (<code>skills-lock.json</code>, <code>.agents/skills/</code>). L'installazione npx originale resta invariata.</p>
   <pre><code>skillctl import from-npx --dry-run
 skillctl import from-npx --write-manifest
-skillctl import from-npx --adopt --write-manifest
+skillctl import from-npx --sync --write-manifest
 skillctl import from-npx --yes</code></pre>
-  <p>Flag: <code>--dry-run</code> — piano migrazione; <code>--write-manifest</code> — aggiorna <code>agent-skills.json</code>; <code>--adopt</code> — sync agenti dopo import; <code>--yes</code> — salta conferme.</p>
+  <p>Flag: <code>--dry-run</code> — piano migrazione; <code>--write-manifest</code> — aggiorna <code>agent-skills.json</code>; <code>--sync</code> — sync agenti dopo import (<code>--adopt</code> alias deprecato); <code>--yes</code> — salta conferme.</p>
 </div>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl import from-skillctl</div>
   <p class="cmd-desc">Migra dal skillctl Python (<code>~/.skillctl/repos/</code>, <code>manifest.json</code>).</p>
   <pre><code>skillctl import from-skillctl --dry-run
-skillctl import from-skillctl --adopt
+skillctl import from-skillctl --sync
 skillctl import from-skillctl --write-manifest</code></pre>
 </div>
 
@@ -537,7 +550,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Sintomo:</strong> skill duplicate, path condivisi, confusione su quale tool gestisce le skill.</p>
 <ul>
   <li><code>skillctl doctor</code> rileva <code>skills-lock.json</code> (npx) e <code>~/.skillctl/repos/</code> (Python)</li>
-  <li>Migra con <code>import from-npx --dry-run</code> prima di adottare</li>
+  <li>Skill già in directory agente? Prova <code>import from-project --dry-run</code></li>
+  <li>Migra da npx con <code>import from-npx --dry-run</code> prima di sincronizzare</li>
   <li>Lo store canonico Node è <code>~/.skillctl/skills/</code>; <code>.agents/skills</code> è solo target Cursor/npx, non lo store</li>
   <li>Installa via <code>@skillctl/cli</code> per distinguere dal CLI Python</li>
 </ul>
@@ -547,7 +561,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><strong>Piano vuoto:</strong> nessun marker npx/Python trovato — verifica <code>skills-lock.json</code> o repos Python</li>
   <li><strong>Skill già nel lock:</strong> vengono saltate (<code>skip-existing</code> nel piano dry-run)</li>
   <li><strong>Errori parziali:</strong> controlla stderr; exit 1 se errori fatali</li>
-  <li>Usa sempre <code>--dry-run</code> prima di <code>--adopt --write-manifest</code></li>
+  <li>Usa sempre <code>--dry-run</code> prima di import definitivi</li>
+  <li>Per <code>from-project</code>, manifest e lock si aggiornano di default; usa <code>--sync</code> per ricollegare subito gli agenti</li>
 </ul>
 
 <h2>Warning audit</h2>
@@ -587,7 +602,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   },
   en: {
     nav: {
-      brandSub: 'Documentation v0.2',
+      brandSub: 'Documentation v0.3',
       navSection: 'Guide',
       navOverview: 'Overview',
       navConfig: 'Configuration',
@@ -605,7 +620,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.2 · Agent Skills</p>
+    <p class="hero-badge">v0.3 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents.</p>
     <div class="hero-terminal">
@@ -619,7 +634,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 0.2</strong>
+  <strong>Version 0.3</strong>
   Canonical store at <code>~/.skillctl/skills/</code>, declarative manifest, and automatic sync to Claude Code, Cursor, OpenCode, Codex, Gemini CLI, and other agents following the <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a> standard.
 </div>
 
@@ -644,7 +659,7 @@ npx @skillctl/cli --help</code></pre>
   <div class="card workflow-card">
     <span class="workflow-step">1</span>
     <h3>init</h3>
-    <p>Creates <code>agent-skills.json</code> in the current project.</p>
+    <p>Creates <code>agent-skills.json</code> and offers import from agent dirs when detected.</p>
   </div>
   <div class="card workflow-card">
     <span class="workflow-step">2</span>
@@ -718,7 +733,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.2 — <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
+  skillctl v0.3 — <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
       },
@@ -874,7 +889,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Commands — skillctl',
         html: `
 <h1>CLI commands</h1>
-<p class="lead">Complete reference for skillctl v0.2 commands. Command blocks remain in English as in the CLI interface.</p>
+<p class="lead">Complete reference for skillctl v0.3 commands. Command blocks remain in English as in the CLI interface.</p>
 
 <h2>Main workflows</h2>
 <div class="card-grid">
@@ -900,8 +915,10 @@ skillctl plugin remove my-plugin</code></pre>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl init</div>
-  <p class="cmd-desc">Creates a starter <code>agent-skills.json</code> in the current directory. Does not overwrite an existing file.</p>
-  <pre><code>skillctl init</code></pre>
+  <p class="cmd-desc">Creates a starter <code>agent-skills.json</code> in the current directory. If agent skill directories are detected (e.g. <code>.codex/skills</code>), offers an import wizard. Does not overwrite an existing file.</p>
+  <pre><code>skillctl init
+skillctl init --no-prompt</code></pre>
+  <p>Flag: <code>--no-prompt</code> — skip the post-init import wizard.</p>
 </div>
 
 <div class="cmd-block">
@@ -978,20 +995,31 @@ skillctl audit --json --strict</code></pre>
 <h2>Import &amp; migration</h2>
 
 <div class="cmd-block">
+  <div class="cmd-name">skillctl import from-project</div>
+  <p class="cmd-desc">Discovers and imports skills from project agent directories (<code>.codex/skills</code>, <code>.claude/skills</code>, <code>.agents/skills</code>, …). Updates manifest and lock by default with <code>local:imported/&lt;name&gt;</code> specifiers.</p>
+  <pre><code>skillctl import from-project --dry-run
+skillctl import from-project
+skillctl import from-project --sync
+skillctl import from-project --yes
+skillctl import from-project --no-manifest</code></pre>
+  <p>Flags: <code>--dry-run</code> — migration plan; <code>--sync</code> — sync agents after import; <code>--no-manifest</code> / <code>--lock-only</code> — lock only; <code>--sources codex,claude-code</code> — limit adapters; <code>--yes</code> — skip prompts.</p>
+</div>
+
+<div class="cmd-block">
   <div class="cmd-name">skillctl import from-npx</div>
   <p class="cmd-desc">Migrates from <code>npx skills</code> (<code>skills-lock.json</code>, <code>.agents/skills/</code>). Original npx install is left in place.</p>
   <pre><code>skillctl import from-npx --dry-run
 skillctl import from-npx --write-manifest
-skillctl import from-npx --adopt --write-manifest
+skillctl import from-npx --sync --write-manifest
 skillctl import from-npx --yes</code></pre>
-  <p>Flags: <code>--dry-run</code> — migration plan; <code>--write-manifest</code> — update <code>agent-skills.json</code>; <code>--adopt</code> — sync agents after import; <code>--yes</code> — skip prompts.</p>
+  <p>Flags: <code>--dry-run</code> — migration plan; <code>--write-manifest</code> — update <code>agent-skills.json</code>; <code>--sync</code> — sync agents after import (<code>--adopt</code> deprecated alias); <code>--yes</code> — skip prompts.</p>
 </div>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl import from-skillctl</div>
   <p class="cmd-desc">Migrates from Python skillctl (<code>~/.skillctl/repos/</code>, <code>manifest.json</code>).</p>
   <pre><code>skillctl import from-skillctl --dry-run
-skillctl import from-skillctl --adopt
+skillctl import from-skillctl --sync
 skillctl import from-skillctl --write-manifest</code></pre>
 </div>
 
@@ -1123,7 +1151,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Symptom:</strong> duplicate skills, shared paths, unclear which tool manages skills.</p>
 <ul>
   <li><code>skillctl doctor</code> detects <code>skills-lock.json</code> (npx) and <code>~/.skillctl/repos/</code> (Python)</li>
-  <li>Migrate with <code>import from-npx --dry-run</code> before adopting</li>
+  <li>Skills already in agent dirs? Try <code>import from-project --dry-run</code></li>
+  <li>Migrate from npx with <code>import from-npx --dry-run</code> before syncing</li>
   <li>Node canonical store is <code>~/.skillctl/skills/</code>; <code>.agents/skills</code> is a Cursor/npx target, not the store</li>
   <li>Install via <code>@skillctl/cli</code> to distinguish from the Python CLI</li>
 </ul>
@@ -1133,7 +1162,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><strong>Empty plan:</strong> no npx/Python markers found — check <code>skills-lock.json</code> or Python repos</li>
   <li><strong>Skill already in lock:</strong> skipped (<code>skip-existing</code> in dry-run plan)</li>
   <li><strong>Partial errors:</strong> check stderr; exit 1 on fatal errors</li>
-  <li>Always use <code>--dry-run</code> before <code>--adopt --write-manifest</code></li>
+  <li>Always use <code>--dry-run</code> before final imports</li>
+  <li>For <code>from-project</code>, manifest and lock update by default; use <code>--sync</code> to refresh agent links immediately</li>
 </ul>
 
 <h2>Audit warnings</h2>

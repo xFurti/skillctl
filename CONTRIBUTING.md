@@ -84,13 +84,13 @@ High-value areas:
 
 ## Versioning
 
-We follow [Semantic Versioning](https://semver.org/). All workspace packages are kept at the same version (currently **0.2.0**). Update `CHANGELOG.md` under `[Unreleased]` or the next version section.
+We follow [Semantic Versioning](https://semver.org/). All workspace packages are kept at the same version (currently **0.3.0**). Update `CHANGELOG.md` under `[Unreleased]` or the next version section.
 
 ## Publishing (maintainers)
 
 GitHub and npm are separate steps:
 
-1. Tag: `git tag v0.2.0 && git push origin v0.2.0`
+1. Tag: `git tag v0.3.0 && git push origin v0.3.0`
 2. npm (from `packages/cli` after build): `npm publish --access public`
 
 Do not publish until `@skillctl/cli` is verified with `pnpm publish:dry`.
