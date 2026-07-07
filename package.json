@@ -9,7 +9,7 @@
     "url": "https://github.com/skillctl/skillctl.git"
   },
   "engines": {
-    "node": ">=20.12"
+    "node": ">=20"
   },
   "packageManager": "pnpm@11.8.0",
   "scripts": {

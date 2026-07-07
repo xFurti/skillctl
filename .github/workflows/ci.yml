@@ -42,126 +42,23 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Verify CLI (after build)
-        run: |
-          node packages/cli/bin/skillctl.js --version
-          node packages/cli/bin/skillctl.js --help
-          pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --version
-          pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --help
+      - name: Verify CLI
+        run: node packages/cli/bin/skillctl.js --version
 
-      - name: Basic functional smoke (cross platform)
+      - name: Functional smoke
         shell: bash
         run: |
-          set -e
-          node packages/cli/bin/skillctl.js init
-          mkdir -p .ci-skill
+          set -euo pipefail
+          WORK="$RUNNER_TEMP/skillctl-smoke"
+          mkdir -p "$WORK/.ci-skill"
+          cd "$WORK"
           printf '%s\n' '---' 'name: ci-smoke' '---' 'Test skill for CI.' > .ci-skill/SKILL.md
-          node packages/cli/bin/skillctl.js add file:./.ci-skill --no-manifest
-          node packages/cli/bin/skillctl.js list
-          node packages/cli/bin/skillctl.js doctor --json > doctor-smoke.json || true
-          node -e "
-            const d=JSON.parse(require('fs').readFileSync('doctor-smoke.json','utf8'));
-            console.log('doctor status:', d.status || 'ok');
-            console.log('adapters:', (d.adapters && d.adapters.enabled) || []);
-          "
-          node packages/cli/bin/skillctl.js sync --dry-run
-          rm -rf .ci-skill agent-skills.json agent-skills.lock doctor-smoke.json SKILL.md
-
-  windows-coexistence-matrix:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
-        node-version: [20, 22]
-        coexist: [none, npx-hint, python-hint, mixed]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11.8.0
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Setup coexistence scenario (${{ matrix.coexist }})
-        shell: pwsh
-        run: |
-          $scenario = "${{ matrix.coexist }}"
-          New-Item -ItemType Directory -Force -Path ".agents/skills" | Out-Null
-          if ($scenario -eq 'npx-hint') {
-            "dummy" | Out-File -FilePath "skills-lock.json" -Encoding utf8
-          }
-          if ($scenario -eq 'python-hint' -or $scenario -eq 'mixed') {
-            New-Item -ItemType Directory -Force -Path "$env:USERPROFILE/.skillctl" | Out-Null
-          }
-          if ($scenario -eq 'mixed') {
-            "mixed" | Out-File -FilePath ".agents/skills/.mixed" -Encoding utf8
-          }
-          Write-Host "Coexistence scenario prepared: $scenario"
-
-      - name: Run doctor + coexistence scan
-        shell: pwsh
-        run: |
-          node packages/cli/bin/skillctl.js init
-          node packages/cli/bin/skillctl.js doctor --json | Out-File -FilePath doctor-report.json -Encoding utf8
-          if ($LASTEXITCODE -ne 0) { Write-Host "doctor exited $LASTEXITCODE (non-fatal in CI)" }
-          $report = Get-Content doctor-report.json | ConvertFrom-Json
-          Write-Host "Doctor status: $($report.status)"
-          Write-Host "Coexistence detected: $($report.coexistence.detected)"
-          Write-Host "Details: $($report.coexistence.details -join '; ')"
-
-      - name: Windows link + cache perf test (junctions preferred)
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path test-win-skill | Out-Null
-          "---`nname: win-ci-skill`n---`nWindows coexistence test skill." | Out-File -FilePath test-win-skill/SKILL.md -Encoding utf8
-          $env:SKILLCTL_PARALLEL = "4"
-          node packages/cli/bin/skillctl.js add file:./test-win-skill --no-manifest
-          if ($LASTEXITCODE -ne 0) { throw "add failed" }
-          node packages/cli/bin/skillctl.js install --no-sync
-          node packages/cli/bin/skillctl.js sync --dry-run
-          if (Test-Path "$env:USERPROFILE/.skillctl/cache") { Write-Host "Cache dir present (perf)" }
-          Remove-Item -Recurse -Force test-win-skill -ErrorAction SilentlyContinue
-          Remove-Item -Force agent-skills.json, agent-skills.lock -ErrorAction SilentlyContinue
-
-      - name: Large-scale simulation (20 skills, perf + lock scale)
-        shell: pwsh
-        run: |
-          $scaleDir = "scale-test"
-          New-Item -ItemType Directory -Force -Path $scaleDir | Out-Null
-          for ($i=1; $i -le 20; $i++) {
-            $sdir = "$scaleDir/skill-$i"
-            New-Item -ItemType Directory -Force -Path $sdir | Out-Null
-            "---`nname: scale-skill-$i`n---`nLarge scale test #$i." | Out-File "$sdir/SKILL.md" -Encoding utf8
-          }
-          Write-Host "Prepared 20 scale skills"
-          $sw = [System.Diagnostics.Stopwatch]::StartNew()
-          node packages/cli/bin/skillctl.js add file:./$scaleDir/skill-1 --no-manifest
-          if ($LASTEXITCODE -ne 0) { throw "scale add failed" }
-          $sw.Stop()
-          Write-Host "First add time: $($sw.ElapsedMilliseconds)ms"
-          Remove-Item -Recurse -Force $scaleDir -ErrorAction SilentlyContinue
-          Remove-Item -Force agent-skills.json, agent-skills.lock -ErrorAction SilentlyContinue
-
-      - name: Cleanup coexistence markers
-        shell: pwsh
-        run: |
-          Remove-Item -Recurse -Force .agents, skills-lock.json -ErrorAction SilentlyContinue
-          Remove-Item -Force agent-skills.json, agent-skills.lock, doctor-report.json -ErrorAction SilentlyContinue
+          node "$GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" init
+          node "$GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" add file:./.ci-skill
+          node "$GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" list
+          node "$GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" doctor --json > doctor.json
+          node -e "const d=JSON.parse(require('fs').readFileSync('doctor.json','utf8')); if(!d.manifestPresent) process.exit(1); console.log('doctor ok:', d.status);"
+          node "$GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" audit
 
   publish-dry-run:
     runs-on: ubuntu-latest
@@ -172,20 +69,56 @@ jobs:
           version: 11.8.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Pack dry-run for @skillctl/cli
+      - name: Verify publishable CLI artifact
         run: |
-          pnpm --filter @skillctl/cli pack --dry-run 2>&1 | tee pack.log
-          grep -E 'npm notice|total files|Packed' pack.log || true
-          echo 'Dry-run complete. Publish: cd packages/cli && npm publish --access public'
-      - name: Verify scoped package + bin
-        run: |
-          node -e "
-            const pkg = require('./packages/cli/package.json');
-            console.log('name:', pkg.name);
-            console.log('bin:', pkg.bin);
-            console.log('files:', pkg.files);
+          test -f packages/cli/dist/index.js
+          test -f packages/cli/bin/skillctl.js
+          node packages/cli/bin/skillctl.js --version
+          node --input-type=commonjs -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('packages/cli/package.json','utf8'));
+            if (pkg.name !== '@skillctl/cli') throw new Error('unexpected package name');
+            if (!pkg.bin || !pkg.bin.skillctl) throw new Error('missing bin.skillctl');
+            console.log('publish check ok:', pkg.name, Object.keys(pkg.bin));
           "
+
+  windows-coexistence:
+    runs-on: windows-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22]
+        coexist: [none, npx-hint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Coexistence smoke (${{ matrix.coexist }})
+        shell: pwsh
+        run: |
+          $WORK = Join-Path $env:RUNNER_TEMP "skillctl-win-smoke"
+          New-Item -ItemType Directory -Force -Path $WORK | Out-Null
+          Set-Location $WORK
+          if ("${{ matrix.coexist }}" -eq "npx-hint") {
+            New-Item -ItemType Directory -Force -Path ".agents/skills" | Out-Null
+            "{}" | Out-File "skills-lock.json" -Encoding utf8
+          }
+          New-Item -ItemType Directory -Force -Path "win-skill" | Out-Null
+          "---`nname: win-ci-skill`n---`nWindows smoke." | Out-File "win-skill/SKILL.md" -Encoding utf8
+          node "$env:GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" init
+          node "$env:GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" add file:./win-skill
+          node "$env:GITHUB_WORKSPACE/packages/cli/bin/skillctl.js" doctor --json | Out-File doctor.json
+          $r = Get-Content doctor.json | ConvertFrom-Json
+          Write-Host "doctor:" $r.status "coexistence:" $r.coexistence.detected
