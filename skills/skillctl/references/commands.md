@@ -2,7 +2,7 @@
 
 | Command | Purpose |
 |---------|---------|
-| `init` | Create `agent-skills.json` |
+| `init` | Create `agent-skills.json`; `--with-skill` adds meta-skill from GitHub |
 | `add <spec>` | Resolve + materialize skill; update lock (and manifest by default) |
 | `install` / `i` | Install all manifest deps into canonical store; optional sync |
 | `sync` | Re-link canonical skills to enabled agent directories |

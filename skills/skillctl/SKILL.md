@@ -25,7 +25,7 @@ Operational playbook for managing Agent Skills with the **skillctl** CLI. Run re
 
 | Situation | Command |
 |-----------|---------|
-| New project, no manifest | `skillctl init` |
+| New project, no manifest | `skillctl init` or `skillctl init --with-skill` |
 | Add a remote or local skill | `skillctl add <specifier>` then `skillctl install` |
 | Skills already in `.claude/skills`, `.codex/skills`, etc. | `skillctl import from-project` |
 | Migrating from `npx skills` | `skillctl import from-npx` |
@@ -38,7 +38,7 @@ Operational playbook for managing Agent Skills with the **skillctl** CLI. Run re
 
 ```bash
 # Bootstrap
-skillctl init
+skillctl init --with-skill
 skillctl add github:vercel-labs/agent-skills#web-design-guidelines
 skillctl install
 

@@ -3,11 +3,12 @@
   const DEFAULT_LANG = 'en';
   const PAGES = ['index', 'config', 'commands', 'problems'];
   const HERO_COMMANDS = [
-    'skillctl init',
+    'skillctl init --with-skill',
+    'skillctl add github:xFurti/skillctl#skills/skillctl',
     'skillctl import from-project --dry-run',
-    'skillctl add owner/repo#skill-name',
     'skillctl install',
     'skillctl sync',
+    'skillctl skill validate skills/skillctl',
     'skillctl doctor',
     'skillctl audit --strict',
   ];

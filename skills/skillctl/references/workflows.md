@@ -3,11 +3,13 @@
 ## New project
 
 ```bash
-skillctl init
+skillctl init --with-skill
 skillctl add <specifier>
 skillctl install
 git add agent-skills.json agent-skills.lock
 ```
+
+Or without the meta-skill: `skillctl init` only.
 
 ## Existing skills in agent folders
 

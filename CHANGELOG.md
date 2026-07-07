@@ -144,6 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Canonical + cache dirs created on demand.
 - Recommend re-running `doctor` after upgrade.
 
+[0.4.0]: https://github.com/xFurti/skillctl/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/xFurti/skillctl/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/xFurti/skillctl/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/xFurti/skillctl/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/xFurti/skillctl/releases/tag/v0.1.0

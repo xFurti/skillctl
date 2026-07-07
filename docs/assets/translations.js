@@ -1,7 +1,7 @@
 window.TRANSLATIONS = {
   it: {
     nav: {
-      brandSub: 'Documentazione v0.3',
+      brandSub: 'Documentazione v0.4',
       navSection: 'Guida',
       navOverview: 'Panoramica',
       navConfig: 'Configurazione',
@@ -19,9 +19,9 @@ window.TRANSLATIONS = {
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.3 · Agent Skills</p>
+    <p class="hero-badge">v0.4 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
-    <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI.</p>
+    <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare skillctl.</p>
     <div class="hero-terminal">
       <div class="terminal-bar">
         <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
@@ -33,8 +33,8 @@ window.TRANSLATIONS = {
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 0.3</strong>
-  Store canonico in <code>~/.skillctl/skills/</code>, manifest dichiarativo, <code>import from-project</code> per migrare skill da <code>.codex/skills</code> e altre directory agente, link relativi portabili in git, sincronizzazione verso Claude Code, Cursor, OpenCode, Codex, Gemini CLI e altri agenti <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a>.
+  <strong>Versione 0.4</strong> (npm <code>@skillctl/cli</code> 0.3.1 fino al tag <code>v0.4.0</code>)
+  Meta-skill <code>skills/skillctl/</code>, adapter <strong>Grok</strong> (<code>.grok/skills</code>), manifest/lock portabili (0.3.1+), <code>init --with-skill</code>, <code>skill validate</code>. Sync verso Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok e altri agenti <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a>.
 </div>
 
 <h2>Cos'è skillctl</h2>
@@ -43,7 +43,16 @@ window.TRANSLATIONS = {
   <li><strong>Store canonico</strong> — <code>~/.skillctl/skills/&lt;name&gt;/SKILL.md</code> + eventuali <code>scripts/</code>, <code>references/</code></li>
   <li><strong>Provenienza e audit</strong> — integrità, sicurezza statica, import da altri tool</li>
   <li><strong>Adattatori built-in</strong> — link automatici verso le directory skill di ogni agente</li>
+  <li><strong>Meta-skill</strong> — <code>skills/skillctl/</code> insegna agli agenti workflow, manifest e lock</li>
 </ul>
+
+<h2>skillctl come skill</h2>
+<p>Il repository include una skill first-party che gli agenti possono caricare automaticamente. Per nuovi progetti:</p>
+<pre><code>skillctl init --with-skill
+# oppure
+skillctl add github:xFurti/skillctl#skills/skillctl
+skillctl install</code></pre>
+<p>Nel monorepo skillctl: <code>file:./skills/skillctl</code>. Valida con <code>skillctl skill validate skills/skillctl</code>.</p>
 
 <h2>Installazione rapida</h2>
 <pre><code>npm install -g @skillctl/cli
@@ -97,6 +106,7 @@ skillctl sync</code></pre>
     <tr><td>OpenCode</td><td><code>.opencode/skills</code></td><td><code>~/.config/opencode/skills</code></td></tr>
     <tr><td>Codex</td><td><code>.codex/skills</code></td><td><code>~/.codex/skills</code></td></tr>
     <tr><td>Gemini CLI</td><td><code>.gemini/skills</code></td><td><code>~/.gemini/skills</code></td></tr>
+    <tr><td>Grok</td><td><code>.grok/skills</code></td><td><code>~/.grok/skills</code></td></tr>
   </tbody>
 </table>
 <p>Altri agenti tramite plugin (sperimentale) o futuri adattatori. Abilita/disabilita ogni agente in <code>~/.skillctl/config.json</code>.</p>
@@ -121,7 +131,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
   </a>
   <a href="#commands" class="card card-interactive" data-nav="commands">
     <h3>Comandi</h3>
-    <p>Riferimento completo CLI: init, add, install, sync, audit, doctor, import, plugin.</p>
+    <p>Riferimento completo CLI: init, add, install, sync, audit, doctor, skill validate, import, plugin.</p>
     <span class="card-arrow">→</span>
   </a>
   <a href="#problems" class="card card-interactive" data-nav="problems">
@@ -132,7 +142,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.3 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.4 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
@@ -171,9 +181,10 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "cursor": true,
     "opencode": true,
     "codex": true,
-    "gemini-cli": true
+    "gemini-cli": true,
+    "grok": true
   },
-  "trustedSources": ["github:vercel-labs/*", "skills.sh/*"],
+  "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/skillctl/*"],
   "experimental": { "plugins": false },
   "plugins": []
 }</code></pre>
@@ -223,6 +234,19 @@ node packages/cli/bin/skillctl.js init</code></pre>
   <li><code>adapter</code> — id adapter che ha fornito la skill (es. <code>codex</code>)</li>
 </ul>
 
+<h3>Portabilità manifest e lock (0.3.1+)</h3>
+<p>Specifier e <code>canonicalPath</code> nel lock committabile devono essere portabili tra macchine:</p>
+<ul>
+  <li><code>file:./path</code>, <code>local:imported/&lt;name&gt;</code>, specifier remoti</li>
+  <li><code>canonicalPath: ~/.skillctl/skills/&lt;name&gt;</code> (espanso a runtime)</li>
+  <li>Evita <code>file:/Users/...</code> o path assoluti nel lock — <code>doctor</code> avvisa; <code>install</code> riscrive</li>
+</ul>
+
+<h3>Meta-skill skillctl</h3>
+<pre><code>skillctl add github:xFurti/skillctl#skills/skillctl
+# in-repo:
+"skillctl": "file:./skills/skillctl"</code></pre>
+
 <h2>Struttura cartelle</h2>
 <pre><code>~/.skillctl/
 ├── config.json          # config globale
@@ -241,6 +265,8 @@ progetto/
 ├── .claude/skills/      # symlink relativi → store (Claude)
 ├── .agents/skills/      # symlink relativi → store (Cursor)
 ├── .codex/skills/       # symlink relativi → store (Codex)
+├── .grok/skills/        # symlink relativi → store (Grok)
+├── skills/skillctl/     # meta-skill first-party (opzionale)
 └── ...</code></pre>
 <p>I link nelle directory agente <strong>del progetto</strong> sono symlink relativi (portabili tra macchine). I path globali (<code>~/.cursor/skills</code>, ecc.) restano assoluti.</p>
 
@@ -303,7 +329,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Comandi — skillctl',
         html: `
 <h1>Comandi CLI</h1>
-<p class="lead">Riferimento completo ai comandi skillctl v0.3. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
+<p class="lead">Riferimento completo ai comandi skillctl v0.4. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
 
 <h2>Workflow principali</h2>
 <div class="card-grid">
@@ -329,10 +355,12 @@ skillctl plugin remove my-plugin</code></pre>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl init</div>
-  <p class="cmd-desc">Crea <code>agent-skills.json</code> di partenza nella directory corrente. Se rileva skill in directory agente (es. <code>.codex/skills</code>), propone un wizard di import. Non sovrascrive un file esistente.</p>
+  <p class="cmd-desc">Crea <code>agent-skills.json</code> di partenza nella directory corrente. Se rileva skill in directory agente (es. <code>.codex/skills</code>), propone un wizard di import. Con <code>--with-skill</code> aggiunge la meta-skill skillctl da GitHub (o <code>file:./skills/skillctl</code> se presente). Non sovrascrive un file esistente.</p>
   <pre><code>skillctl init
+skillctl init --with-skill
+skillctl init --with-skill --no-prompt
 skillctl init --no-prompt</code></pre>
-  <p>Flag: <code>--no-prompt</code> — salta il wizard di import post-init.</p>
+  <p>Flag: <code>--with-skill</code> — aggiunge meta-skill e sync; <code>--no-prompt</code> — salta conferme e wizard import.</p>
 </div>
 
 <div class="cmd-block">
@@ -391,11 +419,11 @@ skillctl rm my-skill --purge</code></pre>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl doctor</div>
-  <p class="cmd-desc">Verifica config, manifest, lock, adattatori, coesistenza (directory agente del progetto, npx, Python) e riepilogo audit. Suggerisce <code>import from-project --dry-run</code> se trova skill in <code>.codex/skills</code>, <code>.claude/skills</code>, ecc.</p>
+  <p class="cmd-desc">Verifica config, manifest, lock, adattatori, coesistenza (directory agente del progetto, npx, Python) e riepilogo audit. Avvisa su path non portabili in manifest/lock (0.3.1+). Suggerisce <code>import from-project --dry-run</code> se trova skill in <code>.codex/skills</code>, <code>.claude/skills</code>, ecc.</p>
   <pre><code>skillctl doctor
 skillctl doctor --fix
 skillctl doctor --json</code></pre>
-  <p>Flag: <code>--fix</code> — re-sincronizza i link dagli entry del lock; <code>--json</code> — report strutturato (exit 2 se problemi).</p>
+  <p>Flag: <code>--fix</code> — re-sincronizza i link dagli entry del lock; <code>--json</code> — report strutturato con <code>warnings</code> (exit 2 se problemi, 1 se solo warning).</p>
 </div>
 
 <div class="cmd-block">
@@ -406,6 +434,14 @@ skillctl audit --json
 skillctl audit --strict
 skillctl audit --json --strict</code></pre>
   <p>Exit code: 0 ok, 1 errori, 2 warning (o warning trattati come errori con <code>--strict</code>).</p>
+</div>
+
+<div class="cmd-block">
+  <div class="cmd-name">skillctl skill validate [path]</div>
+  <p class="cmd-desc">Valida una directory skill (<code>SKILL.md</code>, frontmatter, script, dimensioni) senza lockfile di progetto. Default: <code>skills/skillctl</code>.</p>
+  <pre><code>skillctl skill validate
+skillctl skill validate ./my-skill
+skillctl skill validate --json --strict</code></pre>
 </div>
 
 <h2>Import e migrazione</h2>
@@ -499,6 +535,15 @@ skillctl &lt;comando&gt; --help</code></pre>
   <li>Non committare link assoluti verso <code>~/.skillctl</code> — rigenerali con sync</li>
 </ul>
 
+<h2>Path assoluti in manifest/lock</h2>
+<p><strong>Sintomo:</strong> <code>doctor</code> avvisa su specifier o <code>resolved</code> non portabili (es. <code>file:/Users/...</code>) in <code>agent-skills.json</code> o <code>agent-skills.lock</code>.</p>
+<ul>
+  <li>Da v0.3.1, <code>add</code> e <code>install</code> normalizzano a <code>file:./&lt;relativo&gt;</code> o <code>local:imported/&lt;name&gt;</code></li>
+  <li><code>skillctl install</code> riscrive il lock dal manifest</li>
+  <li>Path fuori progetto → import automatico con specifier <code>local:imported/&lt;name&gt;</code></li>
+  <li>Committa il lock aggiornato dopo la riscrittura</li>
+</ul>
+
 <h2>GitHub 403 / rate limit</h2>
 <p><strong>Sintomo:</strong> fetch tarball GitHub fallisce con 403 o rate limit.</p>
 <ul>
@@ -546,7 +591,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Sintomo:</strong> <code>sync</code> riporta zero adapter o agente specifico assente.</p>
 <ul>
   <li>Verifica <code>agents.&lt;id&gt;: true</code> in <code>~/.skillctl/config.json</code></li>
-  <li>ID validi: <code>claude-code</code>, <code>cursor</code>, <code>opencode</code>, <code>codex</code>, <code>gemini-cli</code></li>
+  <li>ID validi: <code>claude-code</code>, <code>cursor</code>, <code>opencode</code>, <code>codex</code>, <code>gemini-cli</code>, <code>grok</code></li>
   <li><code>skillctl doctor</code> mostra adapter registrati vs abilitati</li>
   <li>Per agenti custom: plugin sperimentale con adattatore dedicato</li>
 </ul>
@@ -557,6 +602,15 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><code>skillctl doctor --fix</code></li>
   <li><code>skillctl sync</code> dopo <code>install</code></li>
   <li>Verifica che la skill esista in <code>~/.skillctl/skills/&lt;name&gt;/</code></li>
+</ul>
+
+<h2>Validazione skill fallita</h2>
+<p><strong>Sintomo:</strong> <code>skill validate</code> o CI segnalano frontmatter, script o dimensioni non conformi.</p>
+<ul>
+  <li>Verifica <code>SKILL.md</code> con frontmatter <code>name</code> e <code>description</code></li>
+  <li>Controlla script in <code>scripts/</code> e riferimenti path traversal</li>
+  <li><code>skillctl skill validate ./my-skill --json</code> per dettaglio errori</li>
+  <li>In CI: <code>skillctl skill validate skills/skillctl --strict</code> per la meta-skill first-party</li>
 </ul>
 
 <h2>Install frozen in CI</h2>
@@ -609,9 +663,12 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   </thead>
   <tbody>
     <tr><td>Setup generale</td><td><code>skillctl doctor</code></td><td>0 se ok</td></tr>
+    <tr><td>Bootstrap con meta-skill</td><td><code>skillctl init --with-skill</code></td><td>0</td></tr>
     <tr><td>Link agenti rotti</td><td><code>skillctl doctor --fix</code></td><td>0</td></tr>
+    <tr><td>Path non portabili in lock</td><td><code>skillctl install</code></td><td>0</td></tr>
     <tr><td>CI riproducibile</td><td><code>skillctl install --frozen</code></td><td>0 o 2 se drift</td></tr>
     <tr><td>Sicurezza pipeline</td><td><code>skillctl audit --json --strict</code></td><td>0 / 1 / 2</td></tr>
+    <tr><td>Lint directory skill</td><td><code>skillctl skill validate [path]</code></td><td>0 / 1 / 2</td></tr>
     <tr><td>Skill in directory agente</td><td><code>skillctl import from-project --dry-run</code></td><td>0</td></tr>
     <tr><td>Piano migrazione npx</td><td><code>skillctl import from-npx --dry-run</code></td><td>0</td></tr>
     <tr><td>Lista skill installate</td><td><code>skillctl list --json</code></td><td>0</td></tr>
@@ -629,7 +686,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   },
   en: {
     nav: {
-      brandSub: 'Documentation v0.3',
+      brandSub: 'Documentation v0.4',
       navSection: 'Guide',
       navOverview: 'Overview',
       navConfig: 'Configuration',
@@ -647,9 +704,9 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.3 · Agent Skills</p>
+    <p class="hero-badge">v0.4 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
-    <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents.</p>
+    <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use skillctl.</p>
     <div class="hero-terminal">
       <div class="terminal-bar">
         <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
@@ -661,8 +718,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 0.3</strong>
-  Canonical store at <code>~/.skillctl/skills/</code>, declarative manifest, <code>import from-project</code> to migrate skills from <code>.codex/skills</code> and other agent dirs, git-portable relative links, and sync to Claude Code, Cursor, OpenCode, Codex, Gemini CLI, and other <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a> agents.
+  <strong>Version 0.4</strong> (npm <code>@skillctl/cli</code> 0.3.1 until <code>v0.4.0</code> tag)
+  First-party meta-skill <code>skills/skillctl/</code>, <strong>Grok</strong> adapter (<code>.grok/skills</code>), portable manifest/lock (0.3.1+), <code>init --with-skill</code>, <code>skill validate</code>. Sync to Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, and other <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a> agents.
 </div>
 
 <h2>What is skillctl</h2>
@@ -671,7 +728,16 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><strong>Canonical store</strong> — <code>~/.skillctl/skills/&lt;name&gt;/SKILL.md</code> plus optional <code>scripts/</code>, <code>references/</code></li>
   <li><strong>Provenance &amp; audit</strong> — integrity checks, static security scan, import from other tools</li>
   <li><strong>Built-in adapters</strong> — automatic links to each agent's skill directories</li>
+  <li><strong>Meta-skill</strong> — <code>skills/skillctl/</code> teaches agents workflows, manifest, and lock semantics</li>
 </ul>
+
+<h2>skillctl as a skill</h2>
+<p>The repository ships a first-party skill agents can load automatically. For new projects:</p>
+<pre><code>skillctl init --with-skill
+# or
+skillctl add github:xFurti/skillctl#skills/skillctl
+skillctl install</code></pre>
+<p>In the skillctl monorepo: <code>file:./skills/skillctl</code>. Validate with <code>skillctl skill validate skills/skillctl</code>.</p>
 
 <h2>Quick install</h2>
 <pre><code>npm install -g @skillctl/cli
@@ -725,6 +791,7 @@ skillctl sync</code></pre>
     <tr><td>OpenCode</td><td><code>.opencode/skills</code></td><td><code>~/.config/opencode/skills</code></td></tr>
     <tr><td>Codex</td><td><code>.codex/skills</code></td><td><code>~/.codex/skills</code></td></tr>
     <tr><td>Gemini CLI</td><td><code>.gemini/skills</code></td><td><code>~/.gemini/skills</code></td></tr>
+    <tr><td>Grok</td><td><code>.grok/skills</code></td><td><code>~/.grok/skills</code></td></tr>
   </tbody>
 </table>
 <p>Additional agents via plugins (experimental) or future adapters. Enable or disable each agent in <code>~/.skillctl/config.json</code>.</p>
@@ -749,7 +816,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
   </a>
   <a href="#commands" class="card card-interactive" data-nav="commands">
     <h3>Commands</h3>
-    <p>Full CLI reference: init, add, install, sync, audit, doctor, import, plugin.</p>
+    <p>Full CLI reference: init, add, install, sync, audit, doctor, skill validate, import, plugin.</p>
     <span class="card-arrow">→</span>
   </a>
   <a href="#problems" class="card card-interactive" data-nav="problems">
@@ -760,7 +827,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.3 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.4 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
@@ -799,9 +866,10 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "cursor": true,
     "opencode": true,
     "codex": true,
-    "gemini-cli": true
+    "gemini-cli": true,
+    "grok": true
   },
-  "trustedSources": ["github:vercel-labs/*", "skills.sh/*"],
+  "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/skillctl/*"],
   "experimental": { "plugins": false },
   "plugins": []
 }</code></pre>
@@ -851,6 +919,19 @@ node packages/cli/bin/skillctl.js init</code></pre>
   <li><code>adapter</code> — adapter id that supplied the skill (e.g. <code>codex</code>)</li>
 </ul>
 
+<h3>Manifest and lock portability (0.3.1+)</h3>
+<p>Committed specifiers and <code>canonicalPath</code> must be portable across machines:</p>
+<ul>
+  <li><code>file:./path</code>, <code>local:imported/&lt;name&gt;</code>, remote specifiers</li>
+  <li><code>canonicalPath: ~/.skillctl/skills/&lt;name&gt;</code> (expanded at runtime)</li>
+  <li>Avoid <code>file:/Users/...</code> or absolute paths in the lock — <code>doctor</code> warns; <code>install</code> rewrites</li>
+</ul>
+
+<h3>skillctl meta-skill</h3>
+<pre><code>skillctl add github:xFurti/skillctl#skills/skillctl
+# in-repo:
+"skillctl": "file:./skills/skillctl"</code></pre>
+
 <h2>Folder structure</h2>
 <pre><code>~/.skillctl/
 ├── config.json          # global config
@@ -869,6 +950,8 @@ project/
 ├── .claude/skills/      # relative symlinks → store (Claude)
 ├── .agents/skills/      # relative symlinks → store (Cursor)
 ├── .codex/skills/       # relative symlinks → store (Codex)
+├── .grok/skills/        # relative symlinks → store (Grok)
+├── skills/skillctl/     # first-party meta-skill (optional)
 └── ...</code></pre>
 <p>Links under <strong>project</strong> agent directories are relative symlinks (portable across machines). Global paths (<code>~/.cursor/skills</code>, etc.) remain absolute.</p>
 
@@ -931,7 +1014,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Commands — skillctl',
         html: `
 <h1>CLI commands</h1>
-<p class="lead">Complete reference for skillctl v0.3 commands. Command blocks remain in English as in the CLI interface.</p>
+<p class="lead">Complete reference for skillctl v0.4 commands. Command blocks remain in English as in the CLI interface.</p>
 
 <h2>Main workflows</h2>
 <div class="card-grid">
@@ -957,10 +1040,12 @@ skillctl plugin remove my-plugin</code></pre>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl init</div>
-  <p class="cmd-desc">Creates a starter <code>agent-skills.json</code> in the current directory. If agent skill directories are detected (e.g. <code>.codex/skills</code>), offers an import wizard. Does not overwrite an existing file.</p>
+  <p class="cmd-desc">Creates a starter <code>agent-skills.json</code> in the current directory. If agent skill directories are detected (e.g. <code>.codex/skills</code>), offers an import wizard. With <code>--with-skill</code>, adds the skillctl meta-skill from GitHub (or <code>file:./skills/skillctl</code> when present). Does not overwrite an existing file.</p>
   <pre><code>skillctl init
+skillctl init --with-skill
+skillctl init --with-skill --no-prompt
 skillctl init --no-prompt</code></pre>
-  <p>Flag: <code>--no-prompt</code> — skip the post-init import wizard.</p>
+  <p>Flags: <code>--with-skill</code> — add meta-skill and sync; <code>--no-prompt</code> — skip prompts and import wizard.</p>
 </div>
 
 <div class="cmd-block">
@@ -1019,11 +1104,11 @@ skillctl rm my-skill --purge</code></pre>
 
 <div class="cmd-block">
   <div class="cmd-name">skillctl doctor</div>
-  <p class="cmd-desc">Checks config, manifest, lock, adapters, coexistence (project agent dirs, npx, Python), and audit summary. Recommends <code>import from-project --dry-run</code> when skills are found under <code>.codex/skills</code>, <code>.claude/skills</code>, etc.</p>
+  <p class="cmd-desc">Checks config, manifest, lock, adapters, coexistence (project agent dirs, npx, Python), and audit summary. Warns on non-portable paths in manifest/lock (0.3.1+). Recommends <code>import from-project --dry-run</code> when skills are found under <code>.codex/skills</code>, <code>.claude/skills</code>, etc.</p>
   <pre><code>skillctl doctor
 skillctl doctor --fix
 skillctl doctor --json</code></pre>
-  <p>Flags: <code>--fix</code> — re-sync links from lock entries; <code>--json</code> — structured report (exit 2 on issues).</p>
+  <p>Flags: <code>--fix</code> — re-sync links from lock entries; <code>--json</code> — structured report with <code>warnings</code> (exit 2 on issues, 1 on warnings only).</p>
 </div>
 
 <div class="cmd-block">
@@ -1034,6 +1119,14 @@ skillctl audit --json
 skillctl audit --strict
 skillctl audit --json --strict</code></pre>
   <p>Exit codes: 0 ok, 1 errors, 2 warnings (or warnings as errors with <code>--strict</code>).</p>
+</div>
+
+<div class="cmd-block">
+  <div class="cmd-name">skillctl skill validate [path]</div>
+  <p class="cmd-desc">Validates a skill directory (<code>SKILL.md</code>, frontmatter, scripts, size) without a project lockfile. Default: <code>skills/skillctl</code>.</p>
+  <pre><code>skillctl skill validate
+skillctl skill validate ./my-skill
+skillctl skill validate --json --strict</code></pre>
 </div>
 
 <h2>Import &amp; migration</h2>
@@ -1127,6 +1220,15 @@ skillctl &lt;command&gt; --help</code></pre>
   <li>Do not commit absolute links to <code>~/.skillctl</code> — regenerate them with sync</li>
 </ul>
 
+<h2>Absolute paths in manifest/lock</h2>
+<p><strong>Symptom:</strong> <code>doctor</code> warns about non-portable specifiers or <code>resolved</code> values (e.g. <code>file:/Users/...</code>) in <code>agent-skills.json</code> or <code>agent-skills.lock</code>.</p>
+<ul>
+  <li>Since v0.3.1, <code>add</code> and <code>install</code> normalize to <code>file:./&lt;relative&gt;</code> or <code>local:imported/&lt;name&gt;</code></li>
+  <li><code>skillctl install</code> rewrites the lock from the manifest</li>
+  <li>Paths outside the project → automatic import with <code>local:imported/&lt;name&gt;</code> specifier</li>
+  <li>Commit the updated lock after rewriting</li>
+</ul>
+
 <h2>GitHub 403 / rate limit</h2>
 <p><strong>Symptom:</strong> GitHub tarball fetch fails with 403 or rate limit.</p>
 <ul>
@@ -1174,7 +1276,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Symptom:</strong> <code>sync</code> reports zero adapters or a specific agent is missing.</p>
 <ul>
   <li>Check <code>agents.&lt;id&gt;: true</code> in <code>~/.skillctl/config.json</code></li>
-  <li>Valid IDs: <code>claude-code</code>, <code>cursor</code>, <code>opencode</code>, <code>codex</code>, <code>gemini-cli</code></li>
+  <li>Valid IDs: <code>claude-code</code>, <code>cursor</code>, <code>opencode</code>, <code>codex</code>, <code>gemini-cli</code>, <code>grok</code></li>
   <li><code>skillctl doctor</code> shows registered vs enabled adapters</li>
   <li>For custom agents: experimental plugin with a dedicated adapter</li>
 </ul>
@@ -1185,6 +1287,15 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><code>skillctl doctor --fix</code></li>
   <li><code>skillctl sync</code> after <code>install</code></li>
   <li>Verify the skill exists at <code>~/.skillctl/skills/&lt;name&gt;/</code></li>
+</ul>
+
+<h2>Skill validation failed</h2>
+<p><strong>Symptom:</strong> <code>skill validate</code> or CI reports invalid frontmatter, scripts, or size limits.</p>
+<ul>
+  <li>Ensure <code>SKILL.md</code> has <code>name</code> and <code>description</code> frontmatter</li>
+  <li>Review scripts under <code>scripts/</code> and path traversal references</li>
+  <li><code>skillctl skill validate ./my-skill --json</code> for detailed errors</li>
+  <li>In CI: <code>skillctl skill validate skills/skillctl --strict</code> for the first-party meta-skill</li>
 </ul>
 
 <h2>Frozen install in CI</h2>
@@ -1237,9 +1348,12 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   </thead>
   <tbody>
     <tr><td>General setup</td><td><code>skillctl doctor</code></td><td>0 if ok</td></tr>
+    <tr><td>Bootstrap with meta-skill</td><td><code>skillctl init --with-skill</code></td><td>0</td></tr>
     <tr><td>Broken agent links</td><td><code>skillctl doctor --fix</code></td><td>0</td></tr>
+    <tr><td>Non-portable lock paths</td><td><code>skillctl install</code></td><td>0</td></tr>
     <tr><td>Reproducible CI</td><td><code>skillctl install --frozen</code></td><td>0 or 2 on drift</td></tr>
     <tr><td>Pipeline security</td><td><code>skillctl audit --json --strict</code></td><td>0 / 1 / 2</td></tr>
+    <tr><td>Lint skill directory</td><td><code>skillctl skill validate [path]</code></td><td>0 / 1 / 2</td></tr>
     <tr><td>Skills in agent directories</td><td><code>skillctl import from-project --dry-run</code></td><td>0</td></tr>
     <tr><td>npx migration plan</td><td><code>skillctl import from-npx --dry-run</code></td><td>0</td></tr>
     <tr><td>List installed skills</td><td><code>skillctl list --json</code></td><td>0</td></tr>

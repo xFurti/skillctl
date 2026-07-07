@@ -641,7 +641,8 @@ Justification for scoped primary: avoids direct unscoped collision risk on npm w
 - **0.1**: Project setup + MVP commands + 5 adapters + lock basics + basic npm source + coexistence detection.
 - **0.2**: Full dependency resolver, update command, search (local + skills.sh API), `audit` skeleton, name collision docs + import polish.
 - **0.3**: Provenance recording, plugin loader (commands + adapters + registries), more adapters (10+), Windows CI + expanded link tests.
-- **0.4**: Security scanner improvements (5+ concrete rules), `doctor` auto-fix + stale cleanup, telemetry opt-in, docs site, performance cache.
+- **0.3.1**: Git-portable manifest/lock (#2); `doctor` warns on non-portable paths.
+- **0.4**: First-party meta-skill (`skills/skillctl/`), Grok adapter, `skill validate`, `init --with-skill`, docs site (GitHub Pages), dogfooding via root manifest/lock.
 - **0.5 / RC**: Stable lockfile v1, full plugin system (registries, installers, new checks), `gh skill` / npx skills interop commands + bidirectional migration.
 - **1.0**: All major agents, reproducible + frozen installs battle-tested, public registry integration (if one emerges), signed releases.
 
