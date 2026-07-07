@@ -34,8 +34,19 @@ export async function syncSkillsToAgents(
     }
     used.push(adapter.id);
 
-    const paths = [...adapter.projectPaths, ...adapter.globalPaths];
-    for (const basePath of paths) {
+    for (const basePath of adapter.projectPaths) {
+      for (const skill of skills) {
+        const fullTarget = resolveAdapterTarget(basePath, skill.name, cwd);
+        try {
+          await adapter.ensureTarget(skill.name, fullTarget, skill.canonicalPath, mode, { relative: true });
+          synced++;
+        } catch (e) {
+          notes.push(`Failed ensure for ${skill.name} on ${adapter.id}: ${(e as Error).message}`);
+        }
+      }
+    }
+
+    for (const basePath of adapter.globalPaths) {
       for (const skill of skills) {
         const fullTarget = resolveAdapterTarget(basePath, skill.name, cwd);
         try {

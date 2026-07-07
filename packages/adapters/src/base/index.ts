@@ -47,14 +47,14 @@ export abstract class BaseAgentAdapter implements AgentAdapter {
     return basicDetect(this.projectPaths, this.globalPaths);
   }
 
-  async ensureTarget(skillName: string, targetPath: string, canonical: string, mode?: 'symlink' | 'copy' | 'junction'): Promise<void> {
-    // targetPath here is the full dir for the skill e.g. ~/.claude/skills/<skillName>
-    // but per interface, adapters are given targetPath which may be the skills root?
-    // Design: ensureTarget(skillName, targetPath, canonical...)
-    // We interpret targetPath as the parent skills dir for agent, so append skillName? But call sites decide.
-    // For simplicity in adapters, we construct full target inside or assume targetPath includes name.
-    // To match: adapters know their layout, LinkManager takes full target for the skill.
-    await linkManager.ensureLink(canonical, targetPath, { mode: mode as any });
+  async ensureTarget(
+    skillName: string,
+    targetPath: string,
+    canonical: string,
+    mode?: 'symlink' | 'copy' | 'junction',
+    options?: { relative?: boolean }
+  ): Promise<void> {
+    await linkManager.ensureLink(canonical, targetPath, { mode: mode as any, relative: options?.relative });
   }
 
   async removeTarget(skillName: string, targetPath: string): Promise<void> {

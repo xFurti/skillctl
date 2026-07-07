@@ -6,7 +6,7 @@
  */
 
 import { symlink, rm, stat, realpath, access, constants, cp as fsCp } from 'node:fs/promises';
-import { join, dirname, resolve as pathResolve } from 'node:path';
+import { join, dirname, relative, resolve as pathResolve } from 'node:path';
 import { homedir } from 'node:os';
 import type { LinkMode } from '@skillctl/core';
 import { ensureDir } from '@skillctl/core';
@@ -15,6 +15,8 @@ export interface LinkOptions {
   mode?: LinkMode;
   dryRun?: boolean;
   force?: boolean;
+  /** Use a relative symlink/junction source for project-scoped targets (git-portable). */
+  relative?: boolean;
 }
 
 export class LinkManager {
@@ -54,13 +56,30 @@ export class LinkManager {
         return;
       }
 
-      if (mode === 'junction' || process.platform === 'win32') {
-        // Prefer junction on win for broader compat (no dev mode needed for junctions)
+      const canonAbs = pathResolve(canonical);
+      const useRelative = !!options.relative;
+      const linkSource = useRelative
+        ? relative(dirname(pathResolve(target)), canonAbs) || '.'
+        : canonAbs;
+
+      if (useRelative) {
+        // Project-scoped targets: relative links survive git clone on other machines.
         try {
-          await symlink(canonical, target, 'junction');
+          await symlink(linkSource, target, 'dir');
         } catch (e: any) {
           if (e.code === 'EPERM' || e.code === 'EEXIST') {
-            // fallback to copy with warning
+            console.warn(`[link-manager] relative symlink failed for ${target}, falling back to copy`);
+            await this.copyDir(canonical, target);
+            return;
+          }
+          throw e;
+        }
+      } else if (mode === 'junction' || process.platform === 'win32') {
+        // Global targets on Windows: absolute junction (relative junctions are unsupported).
+        try {
+          await symlink(canonAbs, target, 'junction');
+        } catch (e: any) {
+          if (e.code === 'EPERM' || e.code === 'EEXIST') {
             console.warn(`[link-manager] junction failed for ${target}, falling back to copy`);
             await this.copyDir(canonical, target);
             return;
@@ -68,8 +87,7 @@ export class LinkManager {
           throw e;
         }
       } else {
-        // Unix dir symlink
-        await symlink(canonical, target, 'dir');
+        await symlink(canonAbs, target, 'dir');
       }
 
       // verify

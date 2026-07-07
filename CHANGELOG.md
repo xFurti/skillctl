@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`local:imported/<name>` manifest specifier** — Migrated skills reference the canonical store, not legacy agent paths.
 - **Lock provenance fields** — `migratedFrom: project-scan`, `originalPath`, `adapter` preserved in `agent-skills.lock`.
 
+### Fixed
+
+- **Git-portable project links (#1)** — `sync` now creates **relative** symlinks for project agent directories (`.codex/skills`, `.claude/skills`, etc.) instead of absolute `~/.skillctl` paths that break on other machines.
+
 ### Changed
 
 - **`import from-project` defaults** — Updates manifest and lock by default; use `--no-manifest` / `--lock-only` for advanced cases.

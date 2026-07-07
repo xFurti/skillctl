@@ -42,7 +42,13 @@ export interface AgentAdapter {
   readonly projectPaths: string[]; // relative e.g. ['.claude/skills']
   readonly globalPaths: string[];
   detect(): Promise<boolean>;
-  ensureTarget(skillName: string, targetPath: string, canonical: string, mode: 'symlink' | 'copy' | 'junction'): Promise<void>;
+  ensureTarget(
+    skillName: string,
+    targetPath: string,
+    canonical: string,
+    mode?: 'symlink' | 'copy' | 'junction',
+    options?: { relative?: boolean }
+  ): Promise<void>;
   removeTarget(skillName: string, targetPath: string): Promise<void>;
 }
 

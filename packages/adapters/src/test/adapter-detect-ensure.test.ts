@@ -111,6 +111,20 @@ async function runTests() {
     assert.ok(res.synced >= 1, 'sync should ensure at least one');
     assert.ok(res.adaptersUsed.includes('claude-code'));
 
+    if (process.platform !== 'win32') {
+      const relCanonical = join(tmp, 'canonical', 'relative-skill');
+      await mkdir(relCanonical, { recursive: true });
+      await writeFile(join(relCanonical, 'SKILL.md'), 'relative');
+      await syncSkillsToAgents(
+        [{ name: 'relative-skill', canonicalPath: relCanonical }],
+        { mode: 'symlink', adapters: [claudeAdapter] }
+      );
+      const relTarget = join(projectDir, '.claude', 'skills', 'relative-skill');
+      const { readlink } = await import('node:fs/promises');
+      const linkVal = await readlink(relTarget);
+      assert.ok(!linkVal.startsWith('/') && !/^[A-Za-z]:/.test(linkVal), 'project link should be relative');
+    }
+
     // cleanup created
     await rm(join(projectDir, '.claude'), { recursive: true, force: true });
 
