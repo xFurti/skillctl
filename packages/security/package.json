@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/security",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Security scanner and audit for skillctl skills",
   "license": "MIT",
   "author": "xFurti & Gabry848",

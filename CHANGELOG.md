@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-07-07
+
+### Fixed
+
+- **Git-portable manifest and lock (#2)** — `add` / `install` no longer persist machine-local absolute paths in `agent-skills.json` or `agent-skills.lock`.
+  - Local specifiers normalize to `file:./<project-relative>` or `local:imported/<name>` (auto-import for paths outside the project).
+  - Lock `specifier` and `resolved` mirror the portable manifest form; `canonicalPath` uses `~/.skillctl/skills/<name>`.
+  - Runtime resolves tilde and legacy absolute lock paths (with store fallback) for `install`, `sync`, `audit`, and `doctor`.
+- **`doctor`** — Warns when manifest/lock still contain non-portable paths (suggests `skillctl install` to rewrite).
+
+### Changed
+
+- **Authors** — README, LICENSE, CONTRIBUTING, and package metadata credit **xFurti** and **Gabry848**.
+
 ## [0.3.0] - 2026-07-07
 
 ### Added

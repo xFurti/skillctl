@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/plugin-system",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Experimental plugin loader for skillctl (commands, adapters, registries)",
   "license": "MIT",
   "author": "xFurti & Gabry848",
