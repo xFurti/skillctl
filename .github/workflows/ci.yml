@@ -46,35 +46,33 @@ jobs:
         run: |
           node packages/cli/bin/skillctl.js --version
           node packages/cli/bin/skillctl.js --help
-          # Also test via pnpm filter + the exact bin entrypoint from package.json "bin" field
-          # (exercises the declared shim; direct 'skillctl' name resolution requires global link)
           pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --version
           pnpm --filter @skillctl/cli exec -- node ./bin/skillctl.js --help
 
       - name: Basic functional smoke (cross platform)
+        shell: bash
         run: |
-          node packages/cli/bin/skillctl.js init || true
-          echo '---\nname: ci-smoke\n---\nTest skill for CI.' > SKILL.md
+          set -e
+          node packages/cli/bin/skillctl.js init
           mkdir -p .ci-skill
-          mv SKILL.md .ci-skill/
-          node packages/cli/bin/skillctl.js add ./.ci-skill --no-manifest || true
-          node packages/cli/bin/skillctl.js list || true
-          node packages/cli/bin/skillctl.js doctor --json | node -e "
-            const d=JSON.parse(require('fs').readFileSync(0,'utf8'));
+          printf '%s\n' '---' 'name: ci-smoke' '---' 'Test skill for CI.' > .ci-skill/SKILL.md
+          node packages/cli/bin/skillctl.js add file:./.ci-skill --no-manifest
+          node packages/cli/bin/skillctl.js list
+          node packages/cli/bin/skillctl.js doctor --json > doctor-smoke.json || true
+          node -e "
+            const d=JSON.parse(require('fs').readFileSync('doctor-smoke.json','utf8'));
             console.log('doctor status:', d.status || 'ok');
             console.log('adapters:', (d.adapters && d.adapters.enabled) || []);
-          " || true
-          node packages/cli/bin/skillctl.js sync --dry-run || true
-          rm -rf .ci-skill agent-skills.* SKILL.md || true
+          "
+          node packages/cli/bin/skillctl.js sync --dry-run
+          rm -rf .ci-skill agent-skills.json agent-skills.lock doctor-smoke.json SKILL.md
 
-  # PR12: Expanded Windows + Coexistence testing matrix (full + large scale elements)
   windows-coexistence-matrix:
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         node-version: [20, 22]
-        # coexistence scenarios
         coexist: [none, npx-hint, python-hint, mixed]
     runs-on: ${{ matrix.os }}
 
@@ -113,61 +111,58 @@ jobs:
           if ($scenario -eq 'mixed') {
             "mixed" | Out-File -FilePath ".agents/skills/.mixed" -Encoding utf8
           }
-          echo "Coexistence scenario prepared: $scenario"
+          Write-Host "Coexistence scenario prepared: $scenario"
 
       - name: Run doctor + coexistence scan
         shell: pwsh
         run: |
-          node packages/cli/bin/skillctl.js doctor --json > doctor-report.json
+          node packages/cli/bin/skillctl.js init
+          node packages/cli/bin/skillctl.js doctor --json | Out-File -FilePath doctor-report.json -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { Write-Host "doctor exited $LASTEXITCODE (non-fatal in CI)" }
           $report = Get-Content doctor-report.json | ConvertFrom-Json
           Write-Host "Doctor status: $($report.status)"
           Write-Host "Coexistence detected: $($report.coexistence.detected)"
           Write-Host "Details: $($report.coexistence.details -join '; ')"
-          # ensure no crash on win junctions etc
 
       - name: Windows link + cache perf test (junctions preferred)
         shell: pwsh
         run: |
-          mkdir -p test-win-skill
+          New-Item -ItemType Directory -Force -Path test-win-skill | Out-Null
           "---`nname: win-ci-skill`n---`nWindows coexistence test skill." | Out-File -FilePath test-win-skill/SKILL.md -Encoding utf8
           $env:SKILLCTL_PARALLEL = "4"
-          node packages/cli/bin/skillctl.js add ./test-win-skill --no-manifest || true
-          node packages/cli/bin/skillctl.js install --no-sync || true
-          node packages/cli/bin/skillctl.js sync --dry-run || true
-          # verify cache dir may exist
+          node packages/cli/bin/skillctl.js add file:./test-win-skill --no-manifest
+          if ($LASTEXITCODE -ne 0) { throw "add failed" }
+          node packages/cli/bin/skillctl.js install --no-sync
+          node packages/cli/bin/skillctl.js sync --dry-run
           if (Test-Path "$env:USERPROFILE/.skillctl/cache") { Write-Host "Cache dir present (perf)" }
           Remove-Item -Recurse -Force test-win-skill -ErrorAction SilentlyContinue
-          Remove-Item -Force agent-skills* -ErrorAction SilentlyContinue
+          Remove-Item -Force agent-skills.json, agent-skills.lock -ErrorAction SilentlyContinue
 
-      - name: Large-scale simulation (50 skills, perf + lock scale)
+      - name: Large-scale simulation (20 skills, perf + lock scale)
         shell: pwsh
         run: |
           $scaleDir = "scale-test"
           New-Item -ItemType Directory -Force -Path $scaleDir | Out-Null
-          for ($i=1; $i -le 20; $i++) {  # 20 for CI speed, represents large (design target 200+)
+          for ($i=1; $i -le 20; $i++) {
             $sdir = "$scaleDir/skill-$i"
             New-Item -ItemType Directory -Force -Path $sdir | Out-Null
-            "---`nname: scale-skill-$i`n---`nLarge scale test #$i on ${{ matrix.os }}." | Out-File "$sdir/SKILL.md" -Encoding utf8
+            "---`nname: scale-skill-$i`n---`nLarge scale test #$i." | Out-File "$sdir/SKILL.md" -Encoding utf8
           }
-          Write-Host "Prepared 20 scale skills (simulates large matrix)"
+          Write-Host "Prepared 20 scale skills"
           $sw = [System.Diagnostics.Stopwatch]::StartNew()
-          node packages/cli/bin/skillctl.js add ./$scaleDir/skill-1 --no-manifest || true
+          node packages/cli/bin/skillctl.js add file:./$scaleDir/skill-1 --no-manifest
+          if ($LASTEXITCODE -ne 0) { throw "scale add failed" }
           $sw.Stop()
-          Write-Host "First add time: $($sw.ElapsedMilliseconds)ms (cache will speed repeats)"
-          # cleanup
-          Remove-Item -Recurse -Force $scaleDir, "agent-skills*" -ErrorAction SilentlyContinue
-          Write-Host "Large-scale sim complete (full 50-200 would use limited parallel + cache)"
+          Write-Host "First add time: $($sw.ElapsedMilliseconds)ms"
+          Remove-Item -Recurse -Force $scaleDir -ErrorAction SilentlyContinue
+          Remove-Item -Force agent-skills.json, agent-skills.lock -ErrorAction SilentlyContinue
 
       - name: Cleanup coexistence markers
         shell: pwsh
         run: |
           Remove-Item -Recurse -Force .agents, skills-lock.json -ErrorAction SilentlyContinue
-          if (Test-Path "$env:USERPROFILE/.skillctl") {
-            # do not purge full, just hints
-            Remove-Item "$env:USERPROFILE/.skillctl/.mixed*" -ErrorAction SilentlyContinue -Force
-          }
+          Remove-Item -Force agent-skills.json, agent-skills.lock, doctor-report.json -ErrorAction SilentlyContinue
 
-  # PR12: npm publish dry-run + release prep notes
   publish-dry-run:
     runs-on: ubuntu-latest
     steps:
@@ -181,12 +176,11 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Pack dry-run for @skillctl/cli (v0.1 RC)
+      - name: Pack dry-run for @skillctl/cli
         run: |
-          pnpm --filter @skillctl/cli pack --dry-run 2>&1 | Select-String -Pattern 'npm notice|total files|Packed in' -Context 0,1 || echo 'pack output:'
-          pnpm --filter @skillctl/cli pack --dry-run > pack.log 2>&1 || true
-          echo 'Dry-run complete. For real publish: cd packages/cli && npm publish (after git tag v0.1.0)'
-          echo 'See README "Release & npm publish" section + CHANGELOG.'
+          pnpm --filter @skillctl/cli pack --dry-run 2>&1 | tee pack.log
+          grep -E 'npm notice|total files|Packed' pack.log || true
+          echo 'Dry-run complete. Publish: cd packages/cli && npm publish --access public'
       - name: Verify scoped package + bin
         run: |
           node -e "
