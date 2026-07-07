@@ -132,7 +132,8 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.3 — <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
+  skillctl v0.3 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
       },
@@ -759,7 +760,8 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.3 — <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
+  skillctl v0.3 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
       },

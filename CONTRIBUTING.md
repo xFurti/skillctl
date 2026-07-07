@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing. This project is an open-source monorepo for managing [Agent Skills](https://agentskills.io) across AI coding agents.
 
+**Authors:** [xFurti](https://github.com/xFurti), [Gabry848](https://github.com/gabry848)
+
 ## Before you start
 
 - Read [README.md](./README.md) for usage, [docs site](https://xfurti.github.io/skillctl/) for CLI reference, and [skillctl-design.md](./skillctl-design.md) for architecture.

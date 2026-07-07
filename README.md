@@ -91,6 +91,11 @@ Run the CLI locally: `node packages/cli/bin/skillctl.js --help`
 
 Architecture and design: [skillctl-design.md](./skillctl-design.md) · Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md)
 
+## Authors
+
+- [xFurti](https://github.com/xFurti)
+- [Gabry848](https://github.com/gabry848)
+
 ## License
 
-[MIT](./LICENSE) — Copyright (c) 2026 skillctl contributors
+[MIT](./LICENSE) — Copyright (c) 2026 xFurti, Gabry848

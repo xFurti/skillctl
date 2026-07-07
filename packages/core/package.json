@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "Core types, config, and FS utilities for skillctl",
   "license": "MIT",
-  "author": "skillctl contributors",
+  "author": "xFurti & Gabry848",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

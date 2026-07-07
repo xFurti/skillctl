@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "agent-skills.lock YAML parser/generator with lockfileVersion and provenance for skillctl",
   "license": "MIT",
-  "author": "skillctl contributors",
+  "author": "xFurti & Gabry848",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

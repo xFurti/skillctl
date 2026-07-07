@@ -3,7 +3,11 @@
   "version": "0.3.0",
   "description": "skillctl CLI - universal manager for Agent Skills",
   "license": "MIT",
-  "author": "skillctl contributors",
+  "author": "xFurti & Gabry848",
+  "contributors": [
+    "xFurti <https://github.com/xFurti>",
+    "Gabry848 <https://github.com/gabry848>"
+  ],
   "bugs": "https://github.com/xFurti/skillctl/issues",
   "homepage": "https://xfurti.github.io/skillctl/",
   "type": "module",

@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "Agent adapters for Claude Code, Cursor, OpenCode, Codex, Gemini CLI + sync and coexistence detection",
   "license": "MIT",
-  "author": "skillctl contributors",
+  "author": "xFurti & Gabry848",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

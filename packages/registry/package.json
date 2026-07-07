@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "Registry manager, sources (github, local, skills.sh, basic npm) + resolution + materialize + integrity for skillctl",
   "license": "MIT",
-  "author": "skillctl contributors",
+  "author": "xFurti & Gabry848",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
