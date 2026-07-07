@@ -1,8 +1,23 @@
 import https from 'node:https';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+function skillctlUserAgent(): string {
+  try {
+    const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8')) as { version?: string };
+    if (pkg.version) return `skillctl/${pkg.version}`;
+  } catch {
+    // fallback if package.json unavailable at runtime
+  }
+  return 'skillctl/0.4.0';
+}
 
 export function httpsGet(url: string, headers: Record<string, string> = {}): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { 'User-Agent': 'skillctl/0.3.0', ...headers } }, (res) => {
+    const req = https.get(url, { headers: { 'User-Agent': skillctlUserAgent(), ...headers } }, (res) => {
       if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         httpsGet(res.headers.location, headers).then(resolve).catch(reject);
         return;
