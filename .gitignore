@@ -43,6 +43,15 @@ coverage/
 # skillctl specific (future)
 .skillctl/
 
+# Agent skill links + project manifest (created by skillctl sync in local dev)
+.agents/
+.claude/
+.codex/
+.opencode/
+.gemini/
+agent-skills.json
+agent-skills.lock
+
 
 
 # Misc
