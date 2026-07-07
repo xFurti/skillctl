@@ -11,6 +11,7 @@ import {
   claudeAdapter,
   cursorAdapter,
   opencodeAdapter,
+  grokAdapter,
   scanCoexistence,
   syncSkillsToAgents,
 } from '../index.js';
@@ -52,6 +53,11 @@ async function runTests() {
     await mkdir(join(projectDir, '.opencode'), { recursive: true });
     assert.strictEqual(await opencodeAdapter.detect(), true, 'opencode detects .opencode');
     await rm(join(projectDir, '.opencode'), { recursive: true, force: true });
+
+    // grok
+    await mkdir(join(projectDir, '.grok', 'skills'), { recursive: true });
+    assert.strictEqual(await grokAdapter.detect(), true, 'grok detects .grok/skills');
+    await rm(join(projectDir, '.grok'), { recursive: true, force: true });
 
     // restore temp for next section
     process.cwd = origCwd;

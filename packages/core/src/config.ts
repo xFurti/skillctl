@@ -17,6 +17,7 @@ const DEFAULT_CONFIG: SkillctlConfig = {
     opencode: true,
     codex: true,
     'gemini-cli': true,
+    grok: true,
   },
   registries: [],
   trustedSources: ['github:vercel-labs/*', 'skills.sh/*'],
