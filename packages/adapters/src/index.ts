@@ -8,6 +8,7 @@ import { geminiAdapter } from './gemini/index.js';
 import { pathExists } from './base/index.js';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { readdir, stat } from 'node:fs/promises';
 
 const BUILTIN_ADAPTERS: AgentAdapter[] = [
   claudeAdapter,
@@ -40,16 +41,58 @@ export interface CoexistenceReport {
   recommendations: string[];
 }
 
+async function countSkillsInDir(dir: string): Promise<number> {
+  let count = 0;
+  try {
+    const items = await readdir(dir, { withFileTypes: true });
+    for (const item of items) {
+      if (!item.isDirectory() || item.name.startsWith('.')) continue;
+      for (const name of ['SKILL.md', 'skill.md']) {
+        try {
+          const st = await stat(join(dir, item.name, name));
+          if (st.isFile()) {
+            count++;
+            break;
+          }
+        } catch {
+          // continue
+        }
+      }
+    }
+  } catch {
+    // missing dir
+  }
+  return count;
+}
+
 export async function scanCoexistence(cwd = process.cwd()): Promise<CoexistenceReport> {
   const details: string[] = [];
   const paths: string[] = [];
   const recs: string[] = [];
+  let projectSkillDirs = 0;
+
+  for (const adapter of BUILTIN_ADAPTERS) {
+    for (const projectPath of adapter.projectPaths) {
+      const abs = join(cwd, projectPath);
+      if (!(await pathExists(abs))) continue;
+      const count = await countSkillsInDir(abs);
+      if (count > 0) {
+        projectSkillDirs++;
+        details.push(`Found ${projectPath} with ${count} skill(s) (${adapter.name})`);
+        paths.push(abs);
+      }
+    }
+  }
+
+  if (projectSkillDirs > 0) {
+    recs.push('Run `skillctl import from-project --dry-run` to migrate agent skills into canonical store');
+  }
 
   const agentsSkills = join(cwd, '.agents', 'skills');
-  if (await pathExists(agentsSkills)) {
+  if (await pathExists(agentsSkills) && !paths.includes(agentsSkills)) {
     details.push('Found .agents/skills (common universal layout used by npx skills and many agents)');
     paths.push(agentsSkills);
-    recs.push('Run `skillctl import --from-npx --dry-run` to migrate into canonical store');
+    recs.push('Run `skillctl import from-npx --dry-run` to migrate into canonical store');
   }
 
   const skillctlHome = join(homedir(), '.skillctl');

@@ -4,6 +4,7 @@ import {
   canonicalizeName,
   computeDirIntegrity,
   ensureDir,
+  importedSpecifier,
   type LockfileEntry,
   type Provenance,
 } from '@skillctl/core';
@@ -12,34 +13,46 @@ import { loadManifest, saveManifest } from '@skillctl/manifest';
 import { RegistryManager } from '@skillctl/registry';
 import { syncSkillsToAgents } from '@skillctl/adapters';
 import { parseNpxSkillsLock, findNpxLock } from './parsers/npx-skills-lock.js';
-import { scanAgentsSkillsDir } from './parsers/agents-skills-dir.js';
+import { scanSkillsDir } from './parsers/scan-skills-dir.js';
 import { scanPythonSkillctlRepos } from './parsers/python-skillctl.js';
+import { discoverProjectSkills } from './discover-project-skills.js';
 
 export interface ImportOptions {
   cwd?: string;
   dryRun?: boolean;
   yes?: boolean;
+  sync?: boolean;
+  /** @deprecated Use sync */
   adopt?: boolean;
   writeManifest?: boolean;
-  source: 'npx' | 'python-skillctl';
+  lockOnly?: boolean;
+  source: 'npx' | 'python-skillctl' | 'project';
+  sources?: string[];
 }
 
 export interface ImportPlanItem {
   name: string;
-  action: 'fetch' | 'copy-local' | 'skip-existing';
+  action: 'fetch' | 'copy-local' | 'register-existing' | 'skip-existing' | 'skip-broken';
   specifier?: string;
   localPath?: string;
   note?: string;
+  adapter?: string;
+  originalPath?: string;
 }
 
 export interface ImportResult {
   plan: ImportPlanItem[];
+  discovered?: Awaited<ReturnType<typeof discoverProjectSkills>>;
   imported: string[];
   skipped: string[];
   errors: string[];
 }
 
-async function materializeLocal(localPath: string, name: string, cwd: string, prov: Provenance): Promise<LockfileEntry> {
+async function materializeLocal(
+  localPath: string,
+  name: string,
+  prov: Provenance
+): Promise<LockfileEntry> {
   const config = await import('@skillctl/core').then((m) => m.loadConfig());
   const store = config.store;
   const canonicalName = canonicalizeName(name);
@@ -47,7 +60,26 @@ async function materializeLocal(localPath: string, name: string, cwd: string, pr
   await ensureDir(target);
   await cp(localPath, target, { recursive: true, force: true });
   const integrity = await computeDirIntegrity(target);
-  return makeLockEntry(canonicalName, prov.originalSource || `file:${localPath}`, `local:${localPath}`, integrity, target, prov);
+  const specifier = importedSpecifier(canonicalName);
+  return makeLockEntry(
+    canonicalName,
+    specifier,
+    specifier,
+    integrity,
+    target,
+    prov
+  );
+}
+
+async function registerExistingCanonical(
+  canonicalPath: string,
+  name: string,
+  prov: Provenance
+): Promise<LockfileEntry> {
+  const canonicalName = canonicalizeName(name);
+  const integrity = await computeDirIntegrity(canonicalPath);
+  const specifier = importedSpecifier(canonicalName);
+  return makeLockEntry(canonicalName, specifier, specifier, integrity, canonicalPath, prov);
 }
 
 export async function planImportFromNpx(cwd: string): Promise<ImportPlanItem[]> {
@@ -72,7 +104,7 @@ export async function planImportFromNpx(cwd: string): Promise<ImportPlanItem[]> 
   }
 
   const agentsDir = join(cwd, '.agents', 'skills');
-  const dirSkills = await scanAgentsSkillsDir(agentsDir);
+  const dirSkills = await scanSkillsDir(agentsDir);
   for (const s of dirSkills) {
     const name = canonicalizeName(s.name);
     if (plan.some((p) => p.name === name)) continue;
@@ -86,6 +118,57 @@ export async function planImportFromNpx(cwd: string): Promise<ImportPlanItem[]> 
   return plan;
 }
 
+export async function planImportFromProject(
+  cwd: string,
+  opts?: { sources?: string[] }
+): Promise<{ plan: ImportPlanItem[]; discovered: Awaited<ReturnType<typeof discoverProjectSkills>> }> {
+  const lock = (await loadLockfile(cwd)) || createEmptyLockfile();
+  const discovered = await discoverProjectSkills({ cwd, sources: opts?.sources });
+  const plan: ImportPlanItem[] = [];
+
+  for (const skill of discovered.deduped) {
+    if (lock.skills[skill.name]) {
+      plan.push({ name: skill.name, action: 'skip-existing', note: 'already in agent-skills.lock' });
+      continue;
+    }
+
+    const primary = skill.occurrences[0];
+    if (skill.action === 'skip-broken') {
+      plan.push({
+        name: skill.name,
+        action: 'skip-broken',
+        note: skill.note || `broken or missing SKILL.md at ${primary?.relativePath}`,
+      });
+      continue;
+    }
+
+    if (skill.action === 'register-existing') {
+      plan.push({
+        name: skill.name,
+        action: 'register-existing',
+        localPath: skill.resolvedPath,
+        specifier: importedSpecifier(skill.name),
+        adapter: primary?.adapterId,
+        originalPath: primary?.relativePath,
+        note: skill.note,
+      });
+      continue;
+    }
+
+    plan.push({
+      name: skill.name,
+      action: 'copy-local',
+      localPath: skill.resolvedPath,
+      specifier: importedSpecifier(skill.name),
+      adapter: primary?.adapterId,
+      originalPath: primary?.relativePath,
+      note: skill.note,
+    });
+  }
+
+  return { plan, discovered };
+}
+
 function normalizeNpxSource(source: string, ref?: string): string {
   if (source.startsWith('github:') || source.startsWith('npm:') || source.startsWith('file:')) {
     return ref ? `${source}@${ref}` : source;
@@ -96,12 +179,27 @@ function normalizeNpxSource(source: string, ref?: string): string {
   return source;
 }
 
+function shouldWriteManifest(opts: ImportOptions): boolean {
+  if (opts.lockOnly) return false;
+  if (opts.writeManifest === false) return false;
+  if (opts.source === 'project') return true;
+  return !!opts.writeManifest;
+}
+
+function shouldSync(opts: ImportOptions): boolean {
+  return !!(opts.sync || opts.adopt);
+}
+
 export async function executeImport(opts: ImportOptions): Promise<ImportResult> {
   const cwd = opts.cwd || process.cwd();
   const result: ImportResult = { plan: [], imported: [], skipped: [], errors: [] };
 
   if (opts.source === 'npx') {
     result.plan = await planImportFromNpx(cwd);
+  } else if (opts.source === 'project') {
+    const { plan, discovered } = await planImportFromProject(cwd, { sources: opts.sources });
+    result.plan = plan;
+    result.discovered = discovered;
   } else {
     const pyEntries = await scanPythonSkillctlRepos();
     const lock = (await loadLockfile(cwd)) || createEmptyLockfile();
@@ -117,7 +215,6 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
 
   if (opts.dryRun) return result;
 
-  const mgr = new RegistryManager();
   let lock = (await loadLockfile(cwd)) || createEmptyLockfile();
 
   for (const item of result.plan) {
@@ -125,18 +222,34 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
       result.skipped.push(item.name);
       continue;
     }
+    if (item.action === 'skip-broken') {
+      result.skipped.push(item.name);
+      result.errors.push(`${item.name}: ${item.note || 'broken skill path'}`);
+      continue;
+    }
 
     try {
       let entry: LockfileEntry;
+      const migratedFrom = opts.source === 'project' ? 'project-scan' : opts.source === 'npx' ? 'npx' : 'python-skillctl';
       const prov: Provenance = {
-        type: 'other',
-        migratedFrom: opts.source === 'npx' ? 'npx' : 'python-skillctl',
-        originalSource: item.specifier || item.localPath,
+        type: 'local',
+        migratedFrom,
+        originalSource: item.originalPath || item.specifier || item.localPath,
+        originalPath: item.originalPath,
+        adapter: item.adapter,
       };
 
       if (item.action === 'fetch' && item.specifier) {
-        entry = await mgr.add(item.specifier, { cwd, updateManifest: false });
+        entry = await new RegistryManager().add(item.specifier, { cwd, updateManifest: false });
         entry.provenance = { ...entry.provenance, ...prov };
+      } else if (item.action === 'register-existing' && item.localPath) {
+        try {
+          await stat(item.localPath);
+        } catch {
+          result.errors.push(`${item.name}: canonical path not found ${item.localPath}`);
+          continue;
+        }
+        entry = await registerExistingCanonical(item.localPath, item.name, prov);
       } else if (item.action === 'copy-local' && item.localPath) {
         try {
           await stat(item.localPath);
@@ -144,7 +257,7 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
           result.errors.push(`${item.name}: local path not found ${item.localPath}`);
           continue;
         }
-        entry = await materializeLocal(item.localPath, item.name, cwd, prov);
+        entry = await materializeLocal(item.localPath, item.name, prov);
       } else {
         continue;
       }
@@ -156,10 +269,10 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
     }
   }
 
-  lock.metadata = { ...lock.metadata, migratedAt: new Date().toISOString(), toolVersion: '0.2.0' };
+  lock.metadata = { ...lock.metadata, migratedAt: new Date().toISOString(), toolVersion: '0.3.0' };
   await saveLockfile(lock, cwd);
 
-  if (opts.writeManifest) {
+  if (shouldWriteManifest(opts)) {
     let manifest = (await loadManifest(cwd)) || (await import('@skillctl/manifest')).createDefaultManifest();
     if (!manifest.agentSkills) manifest.agentSkills = { dependencies: {}, devDependencies: {} };
     if (!manifest.agentSkills.dependencies) manifest.agentSkills.dependencies = {};
@@ -170,7 +283,7 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
     await saveManifest(manifest, cwd);
   }
 
-  if (opts.adopt && result.imported.length > 0) {
+  if (shouldSync(opts) && result.imported.length > 0) {
     const skills = result.imported.map((n) => ({
       name: n,
       canonicalPath: lock.skills[n].canonicalPath,
