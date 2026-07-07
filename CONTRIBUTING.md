@@ -4,16 +4,16 @@ Thank you for your interest in contributing. This project is an open-source mono
 
 ## Before you start
 
-- Read [README.md](./README.md) for usage and [skillctl-design.md](./skillctl-design.md) for architecture.
+- Read [README.md](./README.md) for usage, [docs site](https://xfurti.github.io/skillctl/) for CLI reference, and [skillctl-design.md](./skillctl-design.md) for architecture.
 - Check [CHANGELOG.md](./CHANGELOG.md) for recent changes.
 - **Name collision**: This project shares the CLI name `skillctl` and path `~/.skillctl/` with an existing [Python skillctl](https://skillctl.xyz/). We publish as `@skillctl/cli` on npm.
 
 ## Development setup
 
-**Requirements:** Node.js >= 20.12, pnpm 11.x
+**Requirements:** Node.js >= 22.13, pnpm 11.x
 
 ```bash
-git clone https://github.com/skillctl/skillctl.git
+git clone https://github.com/xFurti/skillctl.git
 cd skillctl
 pnpm install
 pnpm build
@@ -101,7 +101,7 @@ Be respectful and constructive. We welcome beginners and experienced contributor
 
 ## Questions
 
-Open a [GitHub issue](https://github.com/skillctl/skillctl/issues) for bugs, feature requests, or design discussions.
+Open a [GitHub issue](https://github.com/xFurti/skillctl/issues) for bugs, feature requests, or design discussions.
 
 ## License
 

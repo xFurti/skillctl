@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/skillctl/skillctl.git",
+    "url": "https://github.com/xFurti/skillctl.git",
     "directory": "packages/registry"
   },
   "keywords": [

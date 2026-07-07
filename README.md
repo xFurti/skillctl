@@ -10,7 +10,7 @@ Universal, package-manager-style CLI for managing **Agent Skills** across AI cod
 
 > **Status**: v0.2.0 — see [CHANGELOG.md](./CHANGELOG.md).
 
-**Documentation** (commands, configuration, migration, troubleshooting): **[skillctl.github.io/skillctl](https://skillctl.github.io/skillctl/)** · IT/EN
+**Documentation** (commands, configuration, migration, troubleshooting): **[xfurti.github.io/skillctl](https://xfurti.github.io/skillctl/)** · IT/EN
 
 ## Installation
 
@@ -30,6 +30,7 @@ Published package: `@skillctl/cli` (scoped). The `skillctl` command is still ava
 skillctl init
 skillctl add vercel-labs/agent-skills#web-design-guidelines
 skillctl add npm:some-skill-pkg
+skillctl add file:./my-skill
 skillctl install          # fetch + sync all agents
 skillctl sync             # re-link only
 skillctl list
@@ -68,11 +69,15 @@ skillctl audit --json --strict
 skillctl update
 ```
 
-See the [docs site](https://skillctl.github.io/skillctl/) for the full command reference, config schema, Windows notes, and coexistence with other tools.
+See the [docs site](https://xfurti.github.io/skillctl/) for the full command reference, config schema, Windows notes, and coexistence with other tools.
 
 ## Development
 
+**Requirements:** Node.js >= 22.13, pnpm 11.x
+
 ```bash
+git clone https://github.com/xFurti/skillctl.git
+cd skillctl
 pnpm install
 pnpm build
 pnpm test

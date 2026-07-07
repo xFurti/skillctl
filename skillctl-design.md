@@ -145,7 +145,7 @@ skillctl/
 
 ### Stack Choice
 
-- **Language/Runtime**: TypeScript 5.6+ targeting Node.js >= 20.12 (LTS). ESM only.
+- **Language/Runtime**: TypeScript 5.6+ targeting Node.js >= 22.13 (LTS). ESM only.
   - Rationale: Excellent ecosystem integration with npm sources, easy plugin loading via `import()`, mature fs/path handling. Matches skills.sh CLI heritage.
 - **CLI Framework**: Commander.js + supporting libs (ora, chalk, inquirer, table). oclif-style plugin discovery hooks via dynamic registration (we implement a lightweight plugin host rather than full oclif to keep footprint small; future migration path documented).
 - **Package Manager**: pnpm (for workspaces + strict symlinks during development).

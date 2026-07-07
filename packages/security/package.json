@@ -27,7 +27,7 @@
   "engines": { "node": ">=22.13" },
   "repository": {
     "type": "git",
-    "url": "https://github.com/skillctl/skillctl.git",
+    "url": "https://github.com/xFurti/skillctl.git",
     "directory": "packages/security"
   },
   "keywords": ["security", "audit", "agent-skills", "scanner"]
