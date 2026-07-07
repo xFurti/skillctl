@@ -4,6 +4,7 @@
   const PAGES = ['index', 'config', 'commands', 'problems'];
   const HERO_COMMANDS = [
     'skillctl init',
+    'skillctl import from-project --dry-run',
     'skillctl add owner/repo#skill-name',
     'skillctl install',
     'skillctl sync',
