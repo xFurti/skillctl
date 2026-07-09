@@ -63,7 +63,7 @@ export class RegistryManager {
 
   async materialize(
     resolved: ResolvedSource,
-    options?: { name?: string }
+    options?: { name?: string; expectedIntegrity?: string }
   ): Promise<{ canonicalPath: string; integrity: string; sourceType: string }> {
     const config = await loadConfig();
     const store = config.store;
@@ -87,6 +87,11 @@ export class RegistryManager {
     try {
       await assertTreeContained(tmpDest);
       treeIntegrity = await computeDirIntegrity(tmpDest);
+      if (options?.expectedIntegrity && treeIntegrity !== options.expectedIntegrity) {
+        throw new Error(
+          `Locked integrity mismatch for ${canonicalName}: expected ${options.expectedIntegrity}, got ${treeIntegrity}`
+        );
+      }
     } catch (err) {
       await rm(tmpDest, { recursive: true, force: true }).catch(() => {});
       throw err;
@@ -153,6 +158,7 @@ export class RegistryManager {
     }
     if (resolved.sourceType === 'npm') {
       prov.tarballHash = resolved.tarballHash;
+      prov.tarballUrl = resolved.tarballUrl;
       prov.version = resolved.ref;
       prov.requestedRef = resolved.requestedRef;
     }
@@ -185,6 +191,40 @@ export class RegistryManager {
     }
 
     return entry;
+  }
+
+  async installLockedEntry(
+    entry: LockfileEntry,
+    options: { cwd?: string; expectedIntegrity?: string; name?: string } = {}
+  ): Promise<{ canonicalPath: string; integrity: string; sourceType: string }> {
+    const cwd = options.cwd || process.cwd();
+    const resolved = await this.resolveLockedEntry(entry, cwd);
+    return this.materialize(resolved, {
+      name: options.name || entry.name,
+      expectedIntegrity: options.expectedIntegrity || entry.integrity,
+    });
+  }
+
+  private async resolveLockedEntry(entry: LockfileEntry, cwd: string): Promise<ResolvedSource> {
+    if (entry.provenance.type === 'npm') {
+      const match = /^npm:(.+)@([^@]+)$/.exec(entry.resolved);
+      if (!match) throw new Error(`Invalid locked npm resolution: ${entry.resolved}`);
+      if (!entry.provenance.tarballUrl || !entry.provenance.tarballHash) {
+        throw new Error(`Legacy npm lock entry requires update before frozen install: ${entry.name}`);
+      }
+      return {
+        name: entry.name,
+        resolved: entry.resolved,
+        sourceType: 'npm',
+        sourceId: 'npm',
+        originalSpec: entry.specifier,
+        ref: entry.provenance.version || match[2],
+        requestedRef: entry.provenance.requestedRef,
+        tarballUrl: entry.provenance.tarballUrl,
+        tarballHash: entry.provenance.tarballHash,
+      };
+    }
+    return this.resolve(entry.resolved, { cwd });
   }
 }
 

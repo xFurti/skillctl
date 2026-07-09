@@ -28,6 +28,7 @@ export interface Provenance {
   requestedRef?: string;
   version?: string;
   tarballHash?: string; // for npm etc
+  tarballUrl?: string;
   subpath?: string; // e.g. 'skills/foo' inside repo/pkg
   migratedFrom?: 'npx' | 'python-skillctl' | 'project-scan';
   originalHash?: string;

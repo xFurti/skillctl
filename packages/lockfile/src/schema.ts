@@ -7,6 +7,7 @@ export const ProvenanceSchema = z.object({
   requestedRef: z.string().optional(),
   version: z.string().optional(),
   tarballHash: z.string().optional(),
+  tarballUrl: z.string().url().optional(),
   subpath: z.string().optional(),
   migratedFrom: z.enum(['npx', 'python-skillctl', 'project-scan']).optional(),
   originalHash: z.string().optional(),
