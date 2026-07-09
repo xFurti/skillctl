@@ -21,6 +21,8 @@ async function runTests() {
   console.log('Running PR6 adapter detect + ensure tests...');
 
   const tmp = await mkdtemp(join(tmpdir(), 'skillctl-adapters-test-'));
+  const originalStore = process.env.SKILLCTL_STORE;
+  process.env.SKILLCTL_STORE = join(tmp, 'canonical');
   const projectDir = join(tmp, 'project');
   await mkdir(projectDir, { recursive: true });
 
@@ -104,7 +106,7 @@ async function runTests() {
     process.cwd = () => projectDir as any;
     const res = await syncSkillsToAgents(
       [{ name: 'sync-skill', canonicalPath: fakeCanonical2 }],
-      { mode: 'copy', adapters: [claudeAdapter] } // pass explicit to avoid detect skip
+      { mode: 'copy', scope: 'project', adapters: [claudeAdapter] } // pass explicit to avoid detect skip
     );
     assert.ok(res.synced >= 1, 'sync should ensure at least one');
     assert.ok(res.adaptersUsed.includes('claude-code'));
@@ -115,7 +117,7 @@ async function runTests() {
     await writeFile(join(dryRunCanonical, 'SKILL.md'), 'dry run');
     await syncSkillsToAgents(
       [{ name: 'dry-run-skill', canonicalPath: dryRunCanonical }],
-      { mode: 'copy', dryRun: true, adapters: [claudeAdapter] }
+      { mode: 'copy', scope: 'project', dryRun: true, adapters: [claudeAdapter] }
     );
     await assert.rejects(stat(dryRunTarget), (err: any) => err.code === 'ENOENT');
 
@@ -125,13 +127,46 @@ async function runTests() {
       await writeFile(join(relCanonical, 'SKILL.md'), 'relative');
       await syncSkillsToAgents(
         [{ name: 'relative-skill', canonicalPath: relCanonical }],
-        { mode: 'symlink', adapters: [claudeAdapter] }
+        { mode: 'symlink', scope: 'project', adapters: [claudeAdapter] }
       );
       const relTarget = join(projectDir, '.claude', 'skills', 'relative-skill');
       const { readlink } = await import('node:fs/promises');
       const linkVal = await readlink(relTarget);
       assert.ok(!linkVal.startsWith('/') && !/^[A-Za-z]:/.test(linkVal), 'project link should be relative');
     }
+
+    const staleCanonical = join(tmp, 'canonical', 'stale-skill');
+    const staleTarget = join(projectDir, '.claude', 'skills', 'stale-skill');
+    await mkdir(staleCanonical, { recursive: true });
+    await writeFile(join(staleCanonical, 'SKILL.md'), 'stale');
+    await claudeAdapter.ensureTarget('stale-skill', staleTarget, staleCanonical, 'copy');
+    const unmanagedTarget = join(projectDir, '.claude', 'skills', 'keep-user-skill');
+    await mkdir(unmanagedTarget, { recursive: true });
+    await writeFile(join(unmanagedTarget, 'SKILL.md'), 'user managed');
+
+    const pruneResult = await syncSkillsToAgents([], {
+      mode: 'copy', scope: 'project', prune: true, adapters: [claudeAdapter],
+    });
+    assert.ok(pruneResult.counts.pruned >= 2);
+    assert.equal(pruneResult.counts.skipped, 1);
+    await assert.rejects(stat(staleTarget), (err: any) => err.code === 'ENOENT');
+    assert.ok((await stat(unmanagedTarget)).isDirectory());
+
+    const dryPruneCanonical = join(tmp, 'canonical', 'dry-prune');
+    const dryPruneTarget = join(projectDir, '.claude', 'skills', 'dry-prune');
+    await mkdir(dryPruneCanonical, { recursive: true });
+    await writeFile(join(dryPruneCanonical, 'SKILL.md'), 'dry prune');
+    await claudeAdapter.ensureTarget('dry-prune', dryPruneTarget, dryPruneCanonical, 'copy');
+    const dryPrune = await syncSkillsToAgents([], {
+      scope: 'project', prune: true, dryRun: true, adapters: [claudeAdapter],
+    });
+    assert.ok(dryPrune.counts.pruned >= 1);
+    assert.ok((await stat(dryPruneTarget)).isDirectory());
+
+    await assert.rejects(
+      syncSkillsToAgents([], { adapterIds: ['missing-adapter'] }),
+      /Unknown agent adapter/
+    );
 
     // cleanup created
     await rm(join(projectDir, '.claude'), { recursive: true, force: true });
@@ -140,6 +175,8 @@ async function runTests() {
   } finally {
     // restore
     process.cwd = origCwd;
+    if (originalStore === undefined) delete process.env.SKILLCTL_STORE;
+    else process.env.SKILLCTL_STORE = originalStore;
     await rm(tmp, { recursive: true, force: true });
   }
 }

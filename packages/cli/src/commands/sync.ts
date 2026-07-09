@@ -1,16 +1,28 @@
 import type { Command } from 'commander';
 import { loadLockfile } from '@skillctl/lockfile';
 import { lockToSkillTargets } from '@skillctl/core';
-import { syncSkillsToAgents } from '@skillctl/adapters';
+import { syncSkillsToAgents, type SyncScope } from '@skillctl/adapters';
 import { handleCommandError } from '../lib/errors.js';
+
+function collectAgents(value: string, previous: string[]): string[] {
+  return [...previous, ...value.split(',').map((id) => id.trim()).filter(Boolean)];
+}
 
 export function registerSync(program: Command): void {
   program
     .command('sync')
-    .description('Sync canonical skills to all enabled agent directories')
+    .description('Sync canonical skills to enabled agent directories')
     .option('--dry-run', 'show what would be done')
+    .option('--project', 'sync project-scoped agent directories only')
+    .option('--global', 'sync global agent directories only')
+    .option('--agent <ids>', 'limit to comma-separated adapter ids (repeatable)', collectAgents, [])
+    .option('--prune', 'remove managed targets that are absent from the lockfile')
     .action(async (options) => {
       try {
+        if (options.project && options.global) {
+          throw new Error('Use either --project or --global; without either flag both scopes are synced.');
+        }
+        const scope: SyncScope = options.project ? 'project' : options.global ? 'global' : 'both';
         const cwd = process.cwd();
         const lock = await loadLockfile(cwd);
         if (!lock || Object.keys(lock.skills || {}).length === 0) {
@@ -18,10 +30,19 @@ export function registerSync(program: Command): void {
           return;
         }
         const skills = await lockToSkillTargets(lock);
-        const res = await syncSkillsToAgents(skills, { dryRun: options.dryRun });
-        console.log(`sync: ${res.synced} targets processed (adapters: ${res.adaptersUsed.join(', ') || 'none'})`);
-        if (res.notes.length) console.log('Notes:', res.notes.join(' | '));
-        if (options.dryRun) console.log('(dry-run complete)');
+        const result = await syncSkillsToAgents(skills, {
+          dryRun: options.dryRun,
+          scope,
+          adapterIds: options.agent,
+          prune: options.prune,
+        });
+        console.log(
+          `sync: ${result.counts.created} created, ${result.counts.updated} updated, ` +
+          `${result.counts.unchanged} unchanged, ${result.counts.pruned} pruned, ${result.counts.failed} failed`
+        );
+        if (result.notes.length) console.log('Notes:', result.notes.join(' | '));
+        if (options.dryRun) console.log('(dry-run complete; no filesystem changes)');
+        if (result.counts.failed) process.exitCode = 1;
       } catch (err) {
         handleCommandError(err, 'sync');
       }

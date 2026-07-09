@@ -30,6 +30,11 @@ interface ManagedCopyMarker {
   integrity: string;
 }
 
+export interface ManagedTargetInspection {
+  kind: 'missing' | 'link' | 'copy' | 'unmanaged';
+  canonical?: string;
+}
+
 export interface LinkOptions {
   mode?: LinkMode;
   dryRun?: boolean;
@@ -190,6 +195,33 @@ export class LinkManager {
     }
   }
 
+  async inspectManagedTarget(target: string, storeRoot: string): Promise<ManagedTargetInspection> {
+    const existing = await lstat(target).catch(() => null);
+    if (!existing) return { kind: 'missing' };
+    const storeReal = await realpath(storeRoot).catch(() => pathResolve(storeRoot));
+
+    if (existing.isSymbolicLink()) {
+      const canonical = await realpath(target).catch(() => null);
+      if (canonical && isPathInside(storeReal, canonical)) return { kind: 'link', canonical };
+      return { kind: 'unmanaged' };
+    }
+
+    const marker = await this.readManagedCopyMarker(target);
+    if (marker && isPathInside(storeReal, marker.canonical)) {
+      return { kind: 'copy', canonical: marker.canonical };
+    }
+    return { kind: 'unmanaged' };
+  }
+
+  async targetState(canonical: string, target: string): Promise<'missing' | 'current' | 'managed-stale' | 'unmanaged'> {
+    const existing = await lstat(target).catch(() => null);
+    if (!existing) return 'missing';
+    if (await this.isLinkedTo(canonical, target)) return 'current';
+    if (await this.isManagedCopy(canonical, target)) return 'current';
+    if (await this.hasManagedCopyMarker(canonical, target)) return 'managed-stale';
+    return 'unmanaged';
+  }
+
   private async copyDir(src: string, dest: string): Promise<void> {
     const existing = await lstat(dest).catch(() => null);
     if (existing) {
@@ -249,3 +281,8 @@ export async function pathExists(p: string): Promise<boolean> {
 
 export { join, resolve as pathResolve } from 'node:path';
 export { homedir } from 'node:os';
+
+function isPathInside(root: string, candidate: string): boolean {
+  const rel = relative(pathResolve(root), pathResolve(candidate));
+  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
+}
