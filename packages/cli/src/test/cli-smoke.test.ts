@@ -15,7 +15,8 @@ const cli = join(here, '..', '..', 'bin', 'skillctl.js');
 
 test('CLI awaits async parsing and reports its version', async () => {
   const { stdout } = await execFileAsync(process.execPath, [cli, '--version']);
-  assert.match(stdout, /^0\.4\.0\s*$/);
+  const packageJson = JSON.parse(await readFile(join(here, '..', '..', 'package.json'), 'utf8')) as { version: string };
+  assert.equal(stdout.trim(), packageJson.version);
 });
 
 test('frozen install rejects a manifest dependency missing from the lockfile', async () => {

@@ -1,13 +1,16 @@
 {
   "name": "@skillctl/plugin-system",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Experimental plugin loader for skillctl (commands, adapters, registries)",
   "license": "MIT",
   "author": "xFurti & Gabry848",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "!dist/test"],
+  "files": [
+    "dist",
+    "!dist/test"
+  ],
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
@@ -23,11 +26,18 @@
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
   },
-  "engines": { "node": ">=22.13" },
+  "engines": {
+    "node": ">=22.13"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/xFurti/skillctl.git",
     "directory": "packages/plugin-system"
   },
-  "keywords": ["plugins", "extensibility", "agent-skills", "cli"]
+  "keywords": [
+    "plugins",
+    "extensibility",
+    "agent-skills",
+    "cli"
+  ]
 }

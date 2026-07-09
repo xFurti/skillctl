@@ -24,7 +24,7 @@ async function collectTextFiles(path) {
   for (const entry of entries) {
     const child = join(path, entry.name);
     if (entry.isDirectory()) files.push(...await collectTextFiles(child));
-    else if (/\.(?:md|html|js)$/.test(entry.name)) files.push(child);
+    else if (/\.(?:md|html|js|ts)$/.test(entry.name)) files.push(child);
   }
   return files;
 }
@@ -58,7 +58,7 @@ const textFiles = [
   join(root, 'packages', 'cli', 'README.md'),
   ...await collectTextFiles(join(root, 'docs')),
   ...await collectTextFiles(join(root, 'skills', 'skillctl')),
-  join(root, 'packages', 'cli', 'src', 'index.ts')
+  ...await collectTextFiles(join(root, 'packages', 'cli', 'src'))
 ];
 
 for (const path of new Set(textFiles)) {

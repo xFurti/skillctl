@@ -1,13 +1,17 @@
 {
   "name": "@skillctl/project-state",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Cross-process locks and transactional project state updates for skillctl",
   "license": "MIT",
   "author": "xFurti & Gabry848",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "!dist/test", "!dist/*.tsbuildinfo"],
+  "files": [
+    "dist",
+    "!dist/test",
+    "!dist/*.tsbuildinfo"
+  ],
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
@@ -19,7 +23,7 @@
     "@skillctl/core": "workspace:*",
     "@skillctl/manifest": "workspace:*",
     "@skillctl/lockfile": "workspace:*",
-    "proper-lockfile": "^4.1.2"
+    "proper-lockfile": "4.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
@@ -27,7 +31,9 @@
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
   },
-  "engines": { "node": ">=22.13" },
+  "engines": {
+    "node": ">=22.13"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/xFurti/skillctl.git",

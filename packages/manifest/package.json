@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/manifest",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "agent-skills.json parser, generator, and Zod schema for skillctl",
   "license": "MIT",
   "author": "xFurti & Gabry848",

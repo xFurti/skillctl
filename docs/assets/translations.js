@@ -33,7 +33,7 @@ window.TRANSLATIONS = {
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 0.5</strong> — npm <code>@skillctl/cli@0.4.0</code>
+  <strong>Versione 0.5</strong> — npm <code>@skillctl/cli@0.5.0</code>
   Lock remoto immutabile, ripristino frozen su macchine nuove, sync selettivo/prune, transazioni concorrenti e output JSON uniforme. Sync verso Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok e altri agenti <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a>.
 </div>
 
@@ -727,7 +727,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 0.5</strong> — npm <code>@skillctl/cli@0.4.0</code>
+  <strong>Version 0.5</strong> — npm <code>@skillctl/cli@0.5.0</code>
   Immutable remote locks, frozen restoration on new machines, scoped sync/prune, concurrent transactions, and uniform JSON output. Sync to Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, and other <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a> agents.
 </div>
 

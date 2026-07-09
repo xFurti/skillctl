@@ -1,6 +1,6 @@
 {
   "name": "skillctl",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Universal package-manager-like CLI for Agent Skills",
   "license": "MIT",
