@@ -1,5 +1,5 @@
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, readdir, realpath } from 'node:fs/promises';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import type { AuditFinding } from '../types.js';
 
 async function walkAll(dir: string, out: string[]): Promise<void> {
@@ -19,6 +19,7 @@ export async function checkPathTraversal(skillName: string, canonicalPath: strin
   const findings: AuditFinding[] = [];
   const files: string[] = [];
   await walkAll(canonicalPath, files);
+  await inspectSymlinks(canonicalPath, canonicalPath, skillName, findings);
 
   for (const file of files) {
     try {
@@ -37,4 +38,40 @@ export async function checkPathTraversal(skillName: string, canonicalPath: strin
     }
   }
   return findings;
+}
+
+async function inspectSymlinks(
+  root: string,
+  dir: string,
+  skillName: string,
+  findings: AuditFinding[]
+): Promise<void> {
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    const path = join(dir, entry.name);
+    if (entry.isSymbolicLink()) {
+      try {
+        const target = await realpath(path);
+        const rel = relative(resolve(root), target);
+        const escapes = rel.startsWith('..') || isAbsolute(rel);
+        findings.push({
+          rule: 'path-traversal',
+          severity: escapes ? 'error' : 'warning',
+          skill: skillName,
+          message: escapes ? 'Symbolic link escapes the skill directory' : 'Symbolic link present in skill',
+          path,
+        });
+      } catch {
+        findings.push({
+          rule: 'path-traversal',
+          severity: 'error',
+          skill: skillName,
+          message: 'Broken or unreadable symbolic link',
+          path,
+        });
+      }
+    } else if (entry.isDirectory() && !entry.name.startsWith('.')) {
+      await inspectSymlinks(root, path, skillName, findings);
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import { rm, cp } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import semver from 'semver';
 import type { RegistrySource, ResolvedSource } from '@skillctl/core';
 import { ensureDir, computeDirIntegrity } from '@skillctl/core';
@@ -41,12 +41,14 @@ export class NpmSource implements RegistrySource {
     if (meta.error) throw new Error(`npm error: ${meta.error}`);
 
     let version: string;
-    if (range === 'latest' || !semver.validRange(range)) {
-      version = meta['dist-tags']?.latest || Object.keys(meta.versions || {}).pop();
-    } else {
+    if (meta['dist-tags']?.[range]) {
+      version = meta['dist-tags'][range];
+    } else if (semver.validRange(range)) {
       const best = semver.maxSatisfying(Object.keys(meta.versions || {}), range);
       if (!best) throw new Error(`No version satisfying ${range} for ${pkg}`);
       version = best;
+    } else {
+      throw new Error(`Unknown npm dist-tag or invalid semver range: ${range}`);
     }
 
     const pkgInfo = meta.versions[version];
@@ -59,7 +61,7 @@ export class NpmSource implements RegistrySource {
       sourceId: this.id,
       originalSpec: spec,
       tarballUrl: pkgInfo.dist.tarball,
-      tarballHash: pkgInfo.dist.shasum || pkgInfo.dist.integrity,
+      tarballHash: pkgInfo.dist.integrity || pkgInfo.dist.shasum,
       ref: version,
     };
   }
@@ -73,25 +75,41 @@ export class NpmSource implements RegistrySource {
 
     const tarBuf = await fetchCachedBuffer(dlKey, resolved.tarballUrl);
 
-    if (resolved.tarballHash && resolved.tarballHash.length === 40) {
-      const got = computeSha1(tarBuf);
-      if (got !== resolved.tarballHash) {
-        throw new Error(`npm tarball integrity mismatch: expected ${resolved.tarballHash} got ${got}`);
-      }
+    verifyNpmIntegrity(tarBuf, resolved.tarballHash);
+
+    const tmpBase = join(tmpdir(), `skillctl-npm-${randomUUID()}`);
+    await ensureDir(tmpBase);
+    try {
+      await extractTarball(tarBuf, tmpBase, 1);
+
+      const hints = await packageJsonSkillHints(tmpBase);
+      const located = await locateSkillDir(tmpBase, { packageJsonHints: hints });
+      await parseSkillFrontmatterAsync(located);
+
+      await ensureDir(dest);
+      await cp(located, dest, { recursive: true, force: true });
+    } finally {
+      await rm(tmpBase, { recursive: true, force: true }).catch(() => {});
     }
 
-    const tmpBase = join(tmpdir(), `skillctl-npm-${Date.now()}`);
-    await ensureDir(tmpBase);
-    await extractTarball(tarBuf, tmpBase, 1);
-
-    const hints = await packageJsonSkillHints(tmpBase);
-    const located = await locateSkillDir(tmpBase, { packageJsonHints: hints });
-    await parseSkillFrontmatterAsync(located);
-
-    await ensureDir(dest);
-    await cp(located, dest, { recursive: true, force: true });
-    await rm(tmpBase, { recursive: true, force: true }).catch(() => {});
-
     return { integrity: await computeDirIntegrity(dest) };
+  }
+}
+
+function verifyNpmIntegrity(buf: Buffer, expected?: string): void {
+  if (!expected) throw new Error('npm metadata did not provide tarball integrity');
+  if (/^[0-9a-f]{40}$/i.test(expected)) {
+    const got = computeSha1(buf);
+    if (got.toLowerCase() !== expected.toLowerCase()) {
+      throw new Error(`npm tarball integrity mismatch: expected ${expected} got ${got}`);
+    }
+    return;
+  }
+
+  const sri = /^([a-z0-9]+)-([A-Za-z0-9+/=]+)$/i.exec(expected);
+  if (!sri) throw new Error(`Unsupported npm tarball integrity: ${expected}`);
+  const got = createHash(sri[1]).update(buf).digest('base64');
+  if (got !== sri[2]) {
+    throw new Error(`npm tarball integrity mismatch for ${sri[1]}`);
   }
 }

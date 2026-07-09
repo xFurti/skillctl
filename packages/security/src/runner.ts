@@ -1,4 +1,4 @@
-import { resolveEntryCanonicalPath } from '@skillctl/core';
+import { loadConfig, resolveEntryCanonicalPath } from '@skillctl/core';
 import { loadLockfile } from '@skillctl/lockfile';
 import type { AuditReport, AuditFinding } from './types.js';
 import { checkIntegrityDrift } from './rules/integrity-drift.js';
@@ -14,9 +14,19 @@ export async function runAudit(cwd = process.cwd()): Promise<AuditReport> {
   }
 
   const findings: AuditFinding[] = [];
+  const config = await loadConfig();
+  const trustedSources = config.trustedSources || [];
   findings.push(...(await checkIntegrityDrift(lock)));
 
   for (const [name, entry] of Object.entries(lock.skills)) {
+    if (trustedSources.length && !trustedSources.some((pattern) => matchesSource(pattern, entry.specifier))) {
+      findings.push({
+        rule: 'source-trust',
+        severity: 'info',
+        skill: name,
+        message: `Source is not covered by trustedSources: ${entry.specifier}`,
+      });
+    }
     const canonicalPath = await resolveEntryCanonicalPath(entry);
     findings.push(...(await checkNameDirMatch(name, canonicalPath)));
     findings.push(...(await checkScriptHeuristics(name, canonicalPath)));
@@ -32,6 +42,11 @@ export async function runAudit(cwd = process.cwd()): Promise<AuditReport> {
     findings,
     scanned: Object.keys(lock.skills).length,
   };
+}
+
+function matchesSource(pattern: string, source: string): boolean {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+  return new RegExp(`^${escaped}$`, 'i').test(source);
 }
 
 export function auditExitCode(report: AuditReport, strict = false): number {

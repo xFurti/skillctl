@@ -1,5 +1,5 @@
 import { homedir } from 'node:os';
-import { isAbsolute, join, normalize as pathNormalize } from 'node:path';
+import { isAbsolute, join, normalize as pathNormalize, relative, resolve } from 'node:path';
 import { canonicalizeName } from './names.js';
 
 /** Resolve adapter target base + skill name (project-relative or absolute global). */
@@ -39,4 +39,18 @@ export function resolveCanonicalPath(canonicalPath: string, store?: string): str
   }
 
   return join(storeRoot, canonicalPath);
+}
+
+/** Resolve an untrusted relative path and require it to remain inside root. */
+export function resolvePathInside(root: string, candidate: string, label = 'path'): string {
+  if (!candidate || isAbsolute(candidate)) {
+    throw new Error(`Unsafe ${label}: absolute or empty paths are not allowed`);
+  }
+  const rootAbs = resolve(root);
+  const result = resolve(rootAbs, candidate);
+  const rel = relative(rootAbs, result);
+  if (rel.startsWith('..') || isAbsolute(rel)) {
+    throw new Error(`Unsafe ${label}: path escapes its root (${candidate})`);
+  }
+  return result;
 }

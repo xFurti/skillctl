@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { loadConfig, registerAdapter } from '@skillctl/core';
+import { loadConfig, registerAdapter, resolvePathInside } from '@skillctl/core';
 import type { RegistrySource } from '@skillctl/core';
 import type { SkillctlPlugin, PluginAPI, PluginProgram } from './types.js';
 
@@ -84,9 +84,10 @@ export async function discoverPluginEntry(pluginDir: string): Promise<string | n
     const pkgRaw = await readFile(join(pluginDir, 'package.json'), 'utf8');
     const pkg = JSON.parse(pkgRaw);
     const entry = pkg.skillctl?.plugin || pkg.main;
-    if (entry) return join(pluginDir, entry);
-  } catch {
-    // no package.json
+    if (entry) return resolvePathInside(pluginDir, entry, 'plugin entry');
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw err;
   }
   return null;
 }

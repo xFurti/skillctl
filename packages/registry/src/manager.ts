@@ -1,6 +1,7 @@
-import { rm, cp, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { rm, cp, stat, readdir, realpath } from 'node:fs/promises';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
 import type { Provenance, LockfileEntry, ResolvedSource } from '@skillctl/core';
 import {
   loadConfig,
@@ -68,7 +69,7 @@ export class RegistryManager {
 
     const canonicalName = canonicalizeName(options?.name || resolved.name);
     const target = join(store, canonicalName);
-    const tmpDest = join(tmpdir(), `skillctl-mat-${canonicalName}-${Date.now()}`);
+    const tmpDest = join(tmpdir(), `skillctl-mat-${canonicalName}-${randomUUID()}`);
     await ensureDir(tmpDest);
 
     try {
@@ -80,9 +81,23 @@ export class RegistryManager {
       throw err;
     }
 
-    const treeIntegrity = await computeDirIntegrity(tmpDest);
+    let treeIntegrity: string;
+    try {
+      await assertTreeContained(tmpDest);
+      treeIntegrity = await computeDirIntegrity(tmpDest);
+    } catch (err) {
+      await rm(tmpDest, { recursive: true, force: true }).catch(() => {});
+      throw err;
+    }
     await ensureCacheDir().catch(() => {});
-    const cached = await getCachedSkill(treeIntegrity);
+    let cached = await getCachedSkill(treeIntegrity);
+    if (cached) {
+      const cachedIntegrity = await computeDirIntegrity(cached).catch(() => 'invalid');
+      if (cachedIntegrity !== treeIntegrity) {
+        await rm(cached, { recursive: true, force: true }).catch(() => {});
+        cached = null;
+      }
+    }
     let sourceForTarget = tmpDest;
 
     if (cached) {
@@ -92,30 +107,39 @@ export class RegistryManager {
       await putCachedSkill(treeIntegrity, tmpDest).catch(() => {});
     }
 
-    if (await exists(target)) {
-      await rm(target, { recursive: true, force: true });
-    }
-
+    const staging = join(store, `.${canonicalName}.tmp-${randomUUID()}`);
+    const backup = join(store, `.${canonicalName}.backup-${randomUUID()}`);
+    let movedExisting = false;
     try {
-      if (sourceForTarget === tmpDest) {
-        await (await import('node:fs/promises')).rename(sourceForTarget, target);
-      } else {
-        await cp(sourceForTarget, target, { recursive: true, force: true });
+      await cp(sourceForTarget, staging, { recursive: true, force: true });
+      const { rename } = await import('node:fs/promises');
+      if (await exists(target)) {
+        await rename(target, backup);
+        movedExisting = true;
       }
-    } catch {
-      await cp(sourceForTarget, target, { recursive: true, force: true });
-      if (sourceForTarget === tmpDest) {
-        await rm(sourceForTarget, { recursive: true, force: true });
+      await rename(staging, target);
+      if (movedExisting) await rm(backup, { recursive: true, force: true }).catch(() => {});
+    } catch (err) {
+      await rm(staging, { recursive: true, force: true }).catch(() => {});
+      if (movedExisting && !(await exists(target))) {
+        const { rename } = await import('node:fs/promises');
+        await rename(backup, target).catch(() => {});
       }
+      throw err;
+    } finally {
+      await rm(tmpDest, { recursive: true, force: true }).catch(() => {});
     }
 
     return { canonicalPath: target, integrity: treeIntegrity, sourceType: resolved.sourceType };
   }
 
-  async add(spec: string, opts: { cwd?: string; updateManifest?: boolean } = {}): Promise<LockfileEntry> {
+  async add(
+    spec: string,
+    opts: { cwd?: string; updateManifest?: boolean; name?: string } = {}
+  ): Promise<LockfileEntry> {
     const cwd = opts.cwd || process.cwd();
     const resolved = await this.resolve(spec, { cwd });
-    const mat = await this.materialize(resolved);
+    const mat = await this.materialize(resolved, { name: opts.name });
 
     const prov: Provenance = {
       type: resolved.sourceType === 'skills.sh' ? 'skills.sh' : resolved.sourceType,
@@ -128,7 +152,7 @@ export class RegistryManager {
       prov.tarballHash = resolved.tarballHash;
     }
 
-    const skillName = canonicalizeName(resolved.name);
+    const skillName = canonicalizeName(opts.name || resolved.name);
     const portableSpec = portableSpecifierForResolved(spec, resolved, cwd);
     const lockResolved = resolved.sourceType === 'local' ? portableSpec : resolved.resolved;
 
@@ -165,5 +189,22 @@ async function exists(p: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function assertTreeContained(root: string, dir = root): Promise<void> {
+  const rootAbs = resolve(root);
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const path = join(dir, entry.name);
+    if (entry.isSymbolicLink()) {
+      const target = await realpath(path);
+      const rel = relative(rootAbs, target);
+      if (rel.startsWith('..') || isAbsolute(rel)) {
+        throw new Error(`Refusing skill with a symlink escaping its root: ${path}`);
+      }
+    } else if (entry.isDirectory()) {
+      await assertTreeContained(rootAbs, path);
+    }
   }
 }

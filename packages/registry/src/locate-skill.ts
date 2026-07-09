@@ -1,5 +1,6 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
-import { join, dirname, resolve as pathResolve } from 'node:path';
+import { join, dirname } from 'node:path';
+import { resolvePathInside } from '@skillctl/core';
 
 export async function hasSkillMd(d: string): Promise<boolean> {
   for (const name of ['SKILL.md', 'skill.md']) {
@@ -37,7 +38,7 @@ export async function locateSkillDir(
 ): Promise<string> {
   if (options?.packageJsonHints?.length) {
     for (const h of options.packageJsonHints) {
-      const cand = pathResolve(root, h);
+      const cand = resolvePathInside(root, h, 'package skill hint');
       try {
         const st = await stat(cand);
         if (st.isDirectory() && (await hasSkillMd(cand))) return cand;

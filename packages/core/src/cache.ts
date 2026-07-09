@@ -1,6 +1,7 @@
 import { cp, mkdir, stat, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { createHash } from 'node:crypto';
 import { getDirStatSignature } from './fs.js';
 
 /**
@@ -32,8 +33,13 @@ export async function ensureCacheDir(sub?: string): Promise<string> {
 }
 
 export function cacheKeyFromIntegrity(integrity: string): string {
-  // e.g. 'sha256:abc123...' -> 'abc123...'
-  return integrity.replace(/^sha256:/i, '').toLowerCase();
+  const match = /^sha256:([0-9a-f]{64})$/i.exec(integrity);
+  if (!match) throw new Error(`Invalid cache integrity key: ${integrity}`);
+  return match[1].toLowerCase();
+}
+
+function safeDownloadKey(key: string): string {
+  return createHash('sha256').update(key).digest('hex');
 }
 
 /**
@@ -78,7 +84,7 @@ export async function putCachedSkill(integrity: string, srcDir: string): Promise
  */
 export async function getCachedDownload(key: string): Promise<string | null> {
   await ensureCacheDir('downloads');
-  const p = join(DOWNLOAD_CACHE, key);
+  const p = join(DOWNLOAD_CACHE, safeDownloadKey(key));
   try {
     const st = await stat(p);
     if (st.isFile()) return p;
@@ -88,7 +94,7 @@ export async function getCachedDownload(key: string): Promise<string | null> {
 
 export async function putCachedDownload(key: string, srcFile: string): Promise<string> {
   await ensureCacheDir('downloads');
-  const dest = join(DOWNLOAD_CACHE, key);
+  const dest = join(DOWNLOAD_CACHE, safeDownloadKey(key));
   await cp(srcFile, dest, { force: true });
   return dest;
 }

@@ -1,8 +1,9 @@
 import { rm, cp } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
 import type { RegistrySource, ResolvedSource } from '@skillctl/core';
-import { ensureDir, computeDirIntegrity } from '@skillctl/core';
+import { ensureDir, computeDirIntegrity, resolvePathInside } from '@skillctl/core';
 import { canonicalizeName } from '../names.js';
 import { locateSkillDir } from '../locate-skill.js';
 import { fetchCachedBuffer, extractTarball } from '../fetch/tarball.js';
@@ -82,28 +83,36 @@ export class GitHubSource implements RegistrySource {
     const ref = resolved.ref || 'HEAD';
     const url = `https://api.github.com/repos/${owner}/${repo}/tarball/${encodeURIComponent(ref)}`;
     const ghDlKey = `gh-${owner}-${repo}-${encodeURIComponent(ref).slice(0, 32)}`;
+    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+    const headers: Record<string, string> = { Accept: 'application/vnd.github.v3.raw' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const immutableRef = /^[0-9a-f]{40}$/i.test(ref);
 
-    const buf = await fetchCachedBuffer(ghDlKey, url, { Accept: 'application/vnd.github.v3.raw' });
-    const tmpExtract = join(tmpdir(), `skillctl-gh-${Date.now()}`);
+    const buf = await fetchCachedBuffer(ghDlKey, url, headers, { cache: immutableRef });
+    const tmpExtract = join(tmpdir(), `skillctl-gh-${randomUUID()}`);
     await ensureDir(tmpExtract);
-    await extractTarball(buf, tmpExtract, 1);
+    try {
+      await extractTarball(buf, tmpExtract, 1);
 
-    let sourceDir = tmpExtract;
-    if (resolved.subpath) {
-      const candidate = join(tmpExtract, resolved.subpath);
-      try {
-        const { stat } = await import('node:fs/promises');
-        const st = await stat(candidate);
-        if (st.isDirectory()) sourceDir = candidate;
-      } catch {
-        // use root
+      let sourceDir = tmpExtract;
+      if (resolved.subpath) {
+        const candidate = resolvePathInside(tmpExtract, resolved.subpath, 'GitHub skill subpath');
+        try {
+          const { stat } = await import('node:fs/promises');
+          const st = await stat(candidate);
+          if (!st.isDirectory()) throw new Error('not a directory');
+          sourceDir = candidate;
+        } catch (err) {
+          throw new Error(`GitHub skill subpath not found: ${resolved.subpath}`, { cause: err });
+        }
       }
-    }
 
-    const located = await locateSkillDir(sourceDir);
-    await ensureDir(dest);
-    await cp(located, dest, { recursive: true, force: true });
-    await rm(tmpExtract, { recursive: true, force: true }).catch(() => {});
+      const located = await locateSkillDir(sourceDir);
+      await ensureDir(dest);
+      await cp(located, dest, { recursive: true, force: true });
+    } finally {
+      await rm(tmpExtract, { recursive: true, force: true }).catch(() => {});
+    }
 
     return { integrity: await computeDirIntegrity(dest) };
   }

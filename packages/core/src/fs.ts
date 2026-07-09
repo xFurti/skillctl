@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, rename, stat, readdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rename, stat, readdir, lstat, readlink, rm } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { LinkMode } from './types.js';
@@ -18,8 +18,12 @@ export async function ensureDir(dir: string): Promise<void> {
 export async function writeFileAtomic(filePath: string, data: string | Buffer): Promise<void> {
   await ensureDir(dirname(filePath));
   const tmp = `${filePath}.tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  await writeFile(tmp, data);
-  await rename(tmp, filePath);
+  try {
+    await writeFile(tmp, data);
+    await rename(tmp, filePath);
+  } finally {
+    await rm(tmp, { force: true }).catch(() => {});
+  }
 }
 
 /**
@@ -44,15 +48,18 @@ export async function computeDirIntegrity(dir: string): Promise<string> {
   files.sort(); // deterministic
   const hash = createHash('sha256');
   for (const f of files) {
-    try {
+    const fileStat = await lstat(f);
+    hash.update(f.slice(dir.length)); // relative
+    hash.update('\0');
+    if (fileStat.isSymbolicLink()) {
+      hash.update('symlink\0');
+      hash.update(await readlink(f));
+    } else {
       const buf = await readFile(f);
-      hash.update(f.slice(dir.length)); // relative
-      hash.update('\0');
+      hash.update('file\0');
       hash.update(buf);
-      hash.update('\0');
-    } catch {
-      // ignore unreadable
     }
+    hash.update('\0');
   }
   return `sha256:${hash.digest('hex')}`;
 }
@@ -64,7 +71,7 @@ async function walk(dir: string, out: string[]): Promise<void> {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       await walk(p, out);
-    } else if (e.isFile()) {
+    } else if (e.isFile() || e.isSymbolicLink()) {
       out.push(p);
     }
   }

@@ -15,7 +15,7 @@
     "dev": "tsc -b --watch",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
-    "test": "node --test ./dist/test/*.test.js 2>&1 || echo 'run after build; basic resolution tests'",
+    "test": "node --test ./dist/test/*.test.js",
     "prepack": "pnpm run build"
   },
   "dependencies": {
@@ -23,7 +23,7 @@
     "@skillctl/lockfile": "workspace:*",
     "@skillctl/manifest": "workspace:*",
     "semver": "^7.6.3",
-    "tar": "^6.2.1"
+    "tar": "^7.5.16"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
