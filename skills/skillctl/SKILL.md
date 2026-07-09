@@ -39,7 +39,7 @@ Operational playbook for managing Agent Skills with the **skillctl** CLI. Run re
 ```bash
 # Bootstrap
 skillctl init --with-skill
-skillctl add github:vercel-labs/agent-skills#web-design-guidelines
+skillctl add github:vercel-labs/agent-skills@main#web-design-guidelines
 skillctl install
 
 # Project-local skill

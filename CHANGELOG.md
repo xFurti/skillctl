@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lockfile schema remains `1.0`. Legacy 0.4 entries are readable, but frozen install rejects mobile GitHub/npm resolutions until `skillctl update` pins them.
 - `doctor` reports `mutable-resolution`, non-reproducible `local:imported` entries, interrupted journals, and stale operation locks.
 
+### Documentation
+
+- Updated all Markdown references and the bilingual docs site for the 0.5 immutable lock, frozen restore, scoped sync/prune, transaction, JSON, and release workflows.
+
 ## [0.4.0] - 2026-07-07
 
 ### Added
@@ -181,6 +185,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Canonical + cache dirs created on demand.
 - Recommend re-running `doctor` after upgrade.
 
+[0.5.0]: https://github.com/xFurti/skillctl/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/xFurti/skillctl/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/xFurti/skillctl/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/xFurti/skillctl/compare/v0.2.0...v0.3.0

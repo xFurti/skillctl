@@ -1,7 +1,7 @@
 window.TRANSLATIONS = {
   it: {
     nav: {
-      brandSub: 'Documentazione v0.4',
+      brandSub: 'Documentazione v0.5',
       navSection: 'Guida',
       navOverview: 'Panoramica',
       navConfig: 'Configurazione',
@@ -19,7 +19,7 @@ window.TRANSLATIONS = {
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.4 · Agent Skills</p>
+    <p class="hero-badge">v0.5 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare skillctl.</p>
     <div class="hero-terminal">
@@ -88,8 +88,8 @@ npx @skillctl/cli --help</code></pre>
 
 <pre><code>skillctl init
 skillctl import from-project --dry-run   # se hai già skill in .codex/.claude/...
-skillctl add vercel-labs/agent-skills#web-design-guidelines
-skillctl add npm:some-skill-pkg
+skillctl add github:vercel-labs/agent-skills@main#web-design-guidelines
+skillctl add npm:some-skill-pkg@^2
 skillctl install
 # oppure, passo per passo:
 skillctl add owner/repo
@@ -120,7 +120,7 @@ pnpm -r lint
 # CLI locale
 node packages/cli/bin/skillctl.js --help
 node packages/cli/bin/skillctl.js doctor</code></pre>
-<p>Monorepo: <code>cli</code>, <code>core</code>, <code>manifest</code>, <code>lockfile</code>, <code>registry</code>, <code>link-manager</code>, <code>adapters</code>, <code>import</code>, <code>security</code>, <code>plugin-system</code>.</p>
+<p>Monorepo: <code>cli</code>, <code>core</code>, <code>manifest</code>, <code>lockfile</code>, <code>registry</code>, <code>link-manager</code>, <code>adapters</code>, <code>import</code>, <code>security</code>, <code>plugin-system</code>, <code>project-state</code>.</p>
 
 <h2>Navigazione</h2>
 <div class="card-grid">
@@ -142,7 +142,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.4 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.5 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
@@ -196,7 +196,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   <tbody>
     <tr><td><code>version</code></td><td>Versione schema config (attualmente <code>1</code>).</td></tr>
     <tr><td><code>store</code></td><td>Percorso dello store canonico delle skill (default <code>~/.skillctl/skills</code>).</td></tr>
-    <tr><td><code>defaultMode</code></td><td>Modalità link: <code>symlink</code>, <code>junction</code> (default su Windows), <code>copy</code>.</td></tr>
+    <tr><td><code>defaultMode</code></td><td>Modalità link: <code>symlink</code> (default), <code>junction</code> o <code>copy</code>. Su Windows i target globali usano junction e ogni errore di link può ripiegare su copy.</td></tr>
     <tr><td><code>agents</code></td><td>Mappa agente → booleano; solo gli agenti abilitati ricevono sync.</td></tr>
     <tr><td><code>trustedSources</code></td><td>Pattern opzionali per fonti considerate attendibili (audit/informazioni).</td></tr>
     <tr><td><code>registries</code></td><td>Elenco opzionale di registry custom (estensioni future).</td></tr>
@@ -216,8 +216,8 @@ node packages/cli/bin/skillctl.js init</code></pre>
   "version": "1.2.0",
   "agentSkills": {
     "dependencies": {
-      "web-design-guidelines": "github:vercel-labs/agent-skills#web-design-guidelines",
-      "playwright": "skills.sh/playwright@^1.0",
+      "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
+      "playwright": "skills.sh/owner/repo#playwright",
       "local-review": "file:./skills/my-review",
       "my-codex-skill": "local:imported/my-codex-skill"
     },
@@ -227,19 +227,22 @@ node packages/cli/bin/skillctl.js init</code></pre>
 <p>Le skill migrate da directory agente usano <code>local:imported/&lt;name&gt;</code> e puntano allo store canonico, non al path legacy.</p>
 
 <h3>Provenienza nel lock</h3>
-<p>Ogni entry in <code>agent-skills.lock</code> può includere campi di provenienza utili per audit e migrazione:</p>
+<p>Ogni entry in <code>agent-skills.lock</code> include provenienza sufficiente a ripristinare e verificare la sorgente:</p>
 <ul>
+  <li><code>commit</code> e <code>requestedRef</code> — SHA GitHub immutabile e branch/tag richiesto</li>
+  <li><code>version</code>, <code>tarballUrl</code>, <code>tarballHash</code> — versione npm esatta e integrità SRI</li>
   <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code> o <code>python-skillctl</code></li>
   <li><code>originalPath</code> — percorso sorgente al momento dell'import (es. <code>.codex/skills/demo</code>)</li>
   <li><code>adapter</code> — id adapter che ha fornito la skill (es. <code>codex</code>)</li>
 </ul>
 
-<h3>Portabilità manifest e lock (0.3.1+)</h3>
-<p>Specifier e <code>canonicalPath</code> nel lock committabile devono essere portabili tra macchine:</p>
+<h3>Riproducibilità manifest e lock (0.5)</h3>
+<p>Lo specifier conserva la richiesta dell'utente; <code>resolved</code> blocca GitHub/skills.sh a un commit completo e npm a una versione esatta. I path committabili restano portabili:</p>
 <ul>
   <li><code>file:./path</code>, <code>local:imported/&lt;name&gt;</code>, specifier remoti</li>
   <li><code>canonicalPath: ~/.skillctl/skills/&lt;name&gt;</code> (espanso a runtime)</li>
   <li>Evita <code>file:/Users/...</code> o path assoluti nel lock — <code>doctor</code> avvisa; <code>install</code> riscrive</li>
+  <li><code>local:imported/&lt;name&gt;</code> richiede una copia canonica già presente e non può ripristinare da solo una macchina nuova</li>
 </ul>
 
 <h3>Meta-skill skillctl</h3>
@@ -403,7 +406,7 @@ skillctl update --no-sync</code></pre>
 skillctl sync --project --agent codex
 skillctl sync --global --agent codex,claude-code
 skillctl sync --project --prune --dry-run</code></pre>
-  <p>Senza scope sincronizza progetto e globale. <code>--prune</code> rimuove solo target con ownership skillctl verificata.</p>
+  <p>Senza scope sincronizza progetto e globale. <code>--project</code> e <code>--global</code> sono alternativi; <code>--agent</code> è ripetibile o accetta valori separati da virgola. <code>--prune</code> rimuove solo target con ownership skillctl verificata.</p>
 </div>
 
 <div class="cmd-block">
@@ -590,7 +593,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <h2>Windows — symlink / junction</h2>
 <p><strong>Sintomo:</strong> EPERM, link non creati, warning su copy fallback.</p>
 <ul>
-  <li>Default su Windows: <code>junction</code> in <code>config.json</code> (<code>defaultMode</code>)</li>
+  <li>Il config predefinito è <code>symlink</code>; su Windows i target globali vengono creati come junction</li>
   <li>Symlink richiede spesso privilegi Developer Mode o amministratore</li>
   <li>Fallback automatico a <code>copy</code> con warning in log</li>
   <li><code>skillctl doctor --fix</code> per ricreare i link dopo cambio modalità</li>
@@ -626,7 +629,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Sintomo:</strong> pipeline fallisce con exit 2 su <code>install --frozen</code>.</p>
 <ul>
   <li>Lockfile non committato o non aggiornato → committa <code>agent-skills.lock</code></li>
-  <li>Cache CI non include <code>~/.skillctl/skills</code> → esegui <code>install</code> senza frozen in build, frozen in verify</li>
+  <li>Store/cache CI vuoto → è supportato: <code>install --frozen</code> ripristina direttamente dalle risoluzioni immutabili del lock</li>
+  <li>Entry GitHub/npm legacy mobile → esegui una volta <code>skillctl update &lt;name&gt;</code> e committa il lock</li>
   <li>Drift tra runner → usa stesso lock e stessa versione <code>@skillctl/cli</code></li>
 </ul>
 
@@ -649,7 +653,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><strong>Piano vuoto (from-project):</strong> nessuna directory agente con skill — verifica <code>.codex/skills</code>, <code>.claude/skills</code>, ecc.</li>
   <li><strong>Piano vuoto (from-npx/skillctl):</strong> nessun marker npx/Python — verifica <code>skills-lock.json</code> o repos Python</li>
   <li><strong>Skill già nel lock:</strong> vengono saltate (<code>skip-existing</code> nel piano dry-run)</li>
-  <li><strong>Errori parziali:</strong> controlla stderr; exit 1 se errori fatali</li>
+  <li><strong>Errori parziali:</strong> controlla l'envelope JSON; exit 1 per warning/parziali, exit 2 per errori fatali</li>
   <li>Usa sempre <code>--dry-run</code> prima di import definitivi</li>
   <li>Per <code>from-project</code>, manifest e lock si aggiornano di default; usa <code>--sync</code> per ricollegare subito gli agenti</li>
 </ul>
@@ -695,7 +699,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   },
   en: {
     nav: {
-      brandSub: 'Documentation v0.4',
+      brandSub: 'Documentation v0.5',
       navSection: 'Guide',
       navOverview: 'Overview',
       navConfig: 'Configuration',
@@ -713,7 +717,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.4 · Agent Skills</p>
+    <p class="hero-badge">v0.5 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use skillctl.</p>
     <div class="hero-terminal">
@@ -782,8 +786,8 @@ npx @skillctl/cli --help</code></pre>
 
 <pre><code>skillctl init
 skillctl import from-project --dry-run   # if you already have skills in .codex/.claude/...
-skillctl add vercel-labs/agent-skills#web-design-guidelines
-skillctl add npm:some-skill-pkg
+skillctl add github:vercel-labs/agent-skills@main#web-design-guidelines
+skillctl add npm:some-skill-pkg@^2
 skillctl install
 # or step-wise:
 skillctl add owner/repo
@@ -814,7 +818,7 @@ pnpm -r lint
 # Local CLI
 node packages/cli/bin/skillctl.js --help
 node packages/cli/bin/skillctl.js doctor</code></pre>
-<p>Monorepo packages: <code>cli</code>, <code>core</code>, <code>manifest</code>, <code>lockfile</code>, <code>registry</code>, <code>link-manager</code>, <code>adapters</code>, <code>import</code>, <code>security</code>, <code>plugin-system</code>.</p>
+<p>Monorepo packages: <code>cli</code>, <code>core</code>, <code>manifest</code>, <code>lockfile</code>, <code>registry</code>, <code>link-manager</code>, <code>adapters</code>, <code>import</code>, <code>security</code>, <code>plugin-system</code>, <code>project-state</code>.</p>
 
 <h2>Navigation</h2>
 <div class="card-grid">
@@ -836,7 +840,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.4 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.5 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
@@ -890,7 +894,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   <tbody>
     <tr><td><code>version</code></td><td>Config schema version (currently <code>1</code>).</td></tr>
     <tr><td><code>store</code></td><td>Path to the canonical skill store (default <code>~/.skillctl/skills</code>).</td></tr>
-    <tr><td><code>defaultMode</code></td><td>Link mode: <code>symlink</code>, <code>junction</code> (Windows default), or <code>copy</code>.</td></tr>
+    <tr><td><code>defaultMode</code></td><td>Link mode: <code>symlink</code> (default), <code>junction</code>, or <code>copy</code>. Windows global targets use junctions and link failures can fall back to copy.</td></tr>
     <tr><td><code>agents</code></td><td>Agent ID → boolean map; only enabled agents receive sync.</td></tr>
     <tr><td><code>trustedSources</code></td><td>Optional patterns for sources considered trusted (audit/info).</td></tr>
     <tr><td><code>registries</code></td><td>Optional list of custom registries (future extensions).</td></tr>
@@ -910,8 +914,8 @@ node packages/cli/bin/skillctl.js init</code></pre>
   "version": "1.2.0",
   "agentSkills": {
     "dependencies": {
-      "web-design-guidelines": "github:vercel-labs/agent-skills#web-design-guidelines",
-      "playwright": "skills.sh/playwright@^1.0",
+      "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
+      "playwright": "skills.sh/owner/repo#playwright",
       "local-review": "file:./skills/my-review",
       "my-codex-skill": "local:imported/my-codex-skill"
     },
@@ -921,19 +925,22 @@ node packages/cli/bin/skillctl.js init</code></pre>
 <p>Skills migrated from agent directories use <code>local:imported/&lt;name&gt;</code> and point at the canonical store, not legacy paths.</p>
 
 <h3>Lock provenance</h3>
-<p>Each <code>agent-skills.lock</code> entry may include provenance fields for audit and migration:</p>
+<p>Each <code>agent-skills.lock</code> entry includes enough provenance to restore and verify the source:</p>
 <ul>
+  <li><code>commit</code> and <code>requestedRef</code> — immutable GitHub SHA and requested branch/tag</li>
+  <li><code>version</code>, <code>tarballUrl</code>, <code>tarballHash</code> — exact npm version and SRI integrity</li>
   <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code>, or <code>python-skillctl</code></li>
   <li><code>originalPath</code> — source path at import time (e.g. <code>.codex/skills/demo</code>)</li>
   <li><code>adapter</code> — adapter id that supplied the skill (e.g. <code>codex</code>)</li>
 </ul>
 
-<h3>Manifest and lock portability (0.3.1+)</h3>
-<p>Committed specifiers and <code>canonicalPath</code> must be portable across machines:</p>
+<h3>Manifest and lock reproducibility (0.5)</h3>
+<p>The specifier preserves the user's request; <code>resolved</code> pins GitHub/skills.sh to a full commit and npm to an exact version. Committed paths remain portable:</p>
 <ul>
   <li><code>file:./path</code>, <code>local:imported/&lt;name&gt;</code>, remote specifiers</li>
   <li><code>canonicalPath: ~/.skillctl/skills/&lt;name&gt;</code> (expanded at runtime)</li>
   <li>Avoid <code>file:/Users/...</code> or absolute paths in the lock — <code>doctor</code> warns; <code>install</code> rewrites</li>
+  <li><code>local:imported/&lt;name&gt;</code> requires an existing canonical copy and cannot restore a new machine by itself</li>
 </ul>
 
 <h3>skillctl meta-skill</h3>
@@ -1097,7 +1104,7 @@ skillctl update --no-sync</code></pre>
 skillctl sync --project --agent codex
 skillctl sync --global --agent codex,claude-code
 skillctl sync --project --prune --dry-run</code></pre>
-  <p>Without scope flags, project and global targets are synced. <code>--prune</code> removes only targets with verified skillctl ownership.</p>
+  <p>Without scope flags, project and global targets are synced. <code>--project</code> and <code>--global</code> are alternatives; <code>--agent</code> is repeatable or accepts comma-separated values. <code>--prune</code> removes only targets with verified skillctl ownership.</p>
 </div>
 
 <div class="cmd-block">
@@ -1284,7 +1291,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <h2>Windows — symlink / junction</h2>
 <p><strong>Symptom:</strong> EPERM, links not created, copy fallback warnings.</p>
 <ul>
-  <li>Windows default: <code>junction</code> in <code>config.json</code> (<code>defaultMode</code>)</li>
+  <li>The config default is <code>symlink</code>; Windows global targets are created as junctions</li>
   <li>Symlinks often require Developer Mode or administrator privileges</li>
   <li>Automatic fallback to <code>copy</code> with a log warning</li>
   <li><code>skillctl doctor --fix</code> to recreate links after mode changes</li>
@@ -1320,7 +1327,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Symptom:</strong> pipeline fails with exit 2 on <code>install --frozen</code>.</p>
 <ul>
   <li>Lockfile not committed or outdated → commit <code>agent-skills.lock</code></li>
-  <li>CI cache missing <code>~/.skillctl/skills</code> → run <code>install</code> without frozen in build, frozen in verify</li>
+  <li>Empty CI store/cache → supported: <code>install --frozen</code> restores directly from immutable lock resolutions</li>
+  <li>Legacy mobile GitHub/npm entry → run <code>skillctl update &lt;name&gt;</code> once and commit the lock</li>
   <li>Runner drift → use the same lock and same <code>@skillctl/cli</code> version</li>
 </ul>
 
@@ -1343,7 +1351,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li><strong>Empty plan (from-project):</strong> no agent directories with skills — check <code>.codex/skills</code>, <code>.claude/skills</code>, etc.</li>
   <li><strong>Empty plan (from-npx/skillctl):</strong> no npx/Python markers — check <code>skills-lock.json</code> or Python repos</li>
   <li><strong>Skill already in lock:</strong> skipped (<code>skip-existing</code> in dry-run plan)</li>
-  <li><strong>Partial errors:</strong> check stderr; exit 1 on fatal errors</li>
+  <li><strong>Partial errors:</strong> inspect the JSON envelope; exit 1 is warning/partial, exit 2 is fatal</li>
   <li>Always use <code>--dry-run</code> before final imports</li>
   <li>For <code>from-project</code>, manifest and lock update by default; use <code>--sync</code> to refresh agent links immediately</li>
 </ul>

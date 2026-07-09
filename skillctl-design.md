@@ -1,9 +1,24 @@
 # skillctl: Universal Agent Skills Manager
 
-**Author:** [Senior Software Architect, OSS Maintainer placeholder]  
-**Date:** 2026-07-04  
-**Status:** Draft  
-**Version:** 0.1 (Design)
+**Author:** xFurti & Gabry848
+**Date:** 2026-07-10
+**Status:** Implemented through release 0.5.0
+**Version:** 0.5.0
+
+---
+
+## 0.5 implementation baseline
+
+Version 0.5.0 is the implemented baseline for this document. The original proposal and historical PR plan remain below for architectural context; when they differ from this section, the implemented baseline wins.
+
+- Remote GitHub branches, tags, and HEAD resolve to full 40-character commits; skills.sh inherits the same immutable GitHub resolution.
+- npm ranges and dist-tags resolve to an exact version with registry tarball URL and SRI integrity.
+- `install --frozen` restores an empty or corrupt store from the lock without re-resolving or rewriting it.
+- `sync` defaults to project plus global targets, supports scope/agent filters, and prunes only verified managed targets when `--prune` is explicit.
+- `@skillctl/project-state` serializes project then store operations and journals manifest/lock updates for rollback and recovery.
+- First-party `--json` output uses one versioned envelope and exit codes 0 (success), 1 (warning/partial), and 2 (fatal/validation).
+- The workspace contains eleven coordinated publishable packages and is tested on Windows, Linux, and macOS with Node 22.13 and Node 24.
+- Plugin stabilization and permission modelling remain deferred beyond 0.5.
 
 ---
 
@@ -68,7 +83,7 @@ Existing tools (especially vercel-labs/skills) already solve sophisticated insta
 
 `skillctl` MUST detect existing installations:
 - Scan for `.agents/skills`, `~/.skillctl/repos`, `skills-lock.json` (vercel format), and Python skillctl manifests.
-- `skillctl import --from-npx` (or `--from-skillctl`) to migrate skills into the canonical store while preserving provenance.
+- `skillctl import from-npx`, `skillctl import from-skillctl`, and `skillctl import from-project` migrate skills into the canonical store while preserving provenance.
 - Avoid double-managing directories: respect `.skillctl/config.json` "managedBy" or lock presence; warn on overlap and offer "adopt" mode.
 - For npx skills' advanced installer logic, the design intentionally re-uses similar patterns (junctions, safety checks) but layers declarative manifests + YAML locks on top.
 - Future: optional adapter that delegates symlink management to npx skills when present.
@@ -83,13 +98,14 @@ This reduces fragmentation risk. A "contribute upstream" path (porting manifest/
 
 ```mermaid
 graph TD
-    CLI[skillctl CLI<br/>Commander + oclif-style commands] --> Core[Core Engine]
-    Core --> RegistryMgr[Registry Manager]
-    Core --> Installer[Package Installer]
-    Core --> DepResolver[Dependency Resolver]
-    Core --> LockGen[Lockfile Generator]
-    Core --> LinkMgr[Link Manager]
-    Core --> Security[Security Scanner + Auditor]
+    CLI[skillctl CLI<br/>Commander commands] --> RegistryMgr[Registry Manager]
+    CLI --> ProjectState[Project State<br/>locks + transactions]
+    CLI --> Adapters[Agent Adapter Layer]
+    CLI --> Security[Security Scanner + Auditor]
+    RegistryMgr --> Core[Core types + filesystem]
+    ProjectState --> ManifestPkg[Manifest package]
+    ProjectState --> LockGen[Lockfile package]
+    Adapters --> LinkMgr[Link Manager]
 
     RegistryMgr -->|GitHub| GH[github.com resolver]
     RegistryMgr -->|npm| NPM[npm package resolver]
@@ -97,7 +113,6 @@ graph TD
     RegistryMgr -->|local| Local[fs resolver]
     RegistryMgr --> Plugins[Plugin-provided registries]
 
-    LinkMgr --> Adapters[Agent Adapter Layer]
     Adapters --> Claude[Claude Code Adapter]
     Adapters --> Cursor[Cursor Adapter]
     Adapters --> OpenCode[OpenCode Adapter]
@@ -107,39 +122,32 @@ graph TD
 
     Core --> Config[~/.skillctl/config.json]
     Core --> Store[~/.skillctl/skills/&lt;name&gt;/SKILL.md]
-    Core --> GlobalLock[~/.skillctl/skills.lock]
-
-    Project[Project root] --> Manifest[agent-skills.json]
+    Project[Project root] --> ProjectManifest[agent-skills.json]
     Project --> ProjectLock[agent-skills.lock]
-    Project --> ProjectStore[.skillctl/skills/ optional]
+    LockGen --> ProjectLock
 ```
 
 ### Core Components (Modular Packages)
 
-Recommended monorepo layout (pnpm workspaces):
+Current monorepo layout (pnpm workspaces):
 
 ```
 skillctl/
 ├── packages/
-│   ├── cli/                  # @skillctl/cli - entrypoint, command registration
-│   ├── core/                 # @skillctl/core - shared types, config, fs utils, resolver
-│   ├── registry/             # @skillctl/registry - RegistryManager + built-in sources
-│   ├── installer/            # @skillctl/installer - fetch, validate, materialize to canonical
-│   ├── adapters/             # @skillctl/adapters - base + concrete agent adapters
-│   │   ├── base/
-│   │   ├── claude/
-│   │   ├── cursor/
-│   │   └── ...
-│   ├── link-manager/         # @skillctl/link - symlink/copy logic + cross-platform
-│   ├── lockfile/             # @skillctl/lockfile - parser, generator, diff
-│   ├── manifest/             # @skillctl/manifest - agent-skills.json schema + validator
-│   ├── security/             # @skillctl/security - checksum, provenance, audit scanner
-│   ├── plugin-system/        # @skillctl/plugins - loader, registration API
-│   └── types/                # shared interfaces
-├── bin/
-│   └── skillctl
-├── tests/
-├── docs/
+│   ├── cli/                  # public command and JSON envelope
+│   ├── core/                 # shared types, config, paths, integrity
+│   ├── manifest/             # agent-skills.json schema and persistence
+│   ├── lockfile/             # agent-skills.lock schema and persistence
+│   ├── registry/             # immutable GitHub/npm/skills.sh/local materialization
+│   ├── link-manager/         # managed symlink/junction/copy operations
+│   ├── adapters/             # Claude, Cursor, OpenCode, Codex, Gemini, Grok
+│   ├── import/               # project, npx skills, and Python skillctl migration
+│   ├── security/             # audit rules and skill validation
+│   ├── plugin-system/        # experimental plugin loading
+│   └── project-state/        # cross-process locks and project transactions
+├── skills/skillctl/          # first-party operational meta-skill
+├── scripts/                  # version, release-check, and pack tooling
+├── docs/                     # bilingual static documentation site
 └── pnpm-workspace.yaml
 ```
 
@@ -147,12 +155,12 @@ skillctl/
 
 - **Language/Runtime**: TypeScript 5.6+ targeting Node.js >= 22.13 (LTS). ESM only.
   - Rationale: Excellent ecosystem integration with npm sources, easy plugin loading via `import()`, mature fs/path handling. Matches skills.sh CLI heritage.
-- **CLI Framework**: Commander.js + supporting libs (ora, chalk, inquirer, table). oclif-style plugin discovery hooks via dynamic registration (we implement a lightweight plugin host rather than full oclif to keep footprint small; future migration path documented).
+- **CLI Framework**: Commander.js with a small first-party output/error layer; human output remains the default and JSON capture produces one envelope.
 - **Package Manager**: pnpm (for workspaces + strict symlinks during development).
-- **Distribution**: Primary package `@skillctl/cli` (scoped) published to npm. Includes bin shim so `npx skillctl`, `npm i -g @skillctl/cli`, and `skillctl` commands work. Unscoped `skillctl` left unclaimed. See Key Decision #1. Single binary fallback via `pkg` or Bun compile for v1+.
-- **Git interaction**: `execa` + `isomorphic-git` (fallback) or native git (preferred for auth).
+- **Distribution**: Eleven coordinated `@skillctl/*` packages are packed and published in topological order; `@skillctl/cli` exposes the `skillctl` bin. The unscoped npm name remains intentionally unclaimed.
+- **Remote interaction**: An injectable HTTPS client serves GitHub commit/tarball and npm metadata/tarball requests with redirect and byte limits; no local git executable is required for skill acquisition.
 - **Lockfile**: YAML (js-yaml or yaml) styled after pnpm-lock.yaml for human readability.
-- **Testing**: Vitest + node:test for integration.
+- **Testing**: `node:test` across packages, CLI E2E fixtures, and c8 repository coverage gates.
 - **Cross-platform**: `fs.symlink` + explicit Windows junction support (`fs-extra` or `junctions`); graceful fallback to copy with warnings. Detect Developer Mode on Win.
 
 **Expected scale (v1 targets)**:
@@ -217,6 +225,12 @@ export interface SkillManifest {
 }
 ```
 
+The 0.5 registry also accepts an injectable `HttpClient` returning status, headers, body, and final URL. `RegistryManager.installLockedEntry()` materializes `entry.resolved` directly, verifies `entry.integrity` in staging, and swaps the canonical store only after verification. It never re-resolves a branch, tag, dist-tag, or semver range.
+
+Mutating CLI flows use `withOperationLocks()` in fixed project-to-store order. `updateProjectState()` journals and atomically replaces `agent-skills.json` plus `agent-skills.lock`; `recoverProjectState()` restores an interrupted transaction before the next mutation.
+
+Sync returns structured per-target actions (`created`, `updated`, `unchanged`, `pruned`, `skipped`, `failed`) and counts. Prune is restricted to selected scopes/adapters and to links resolving inside the skillctl store or copies carrying a valid ownership marker.
+
 ### Data Model & Storage
 
 **Global (user)**:
@@ -259,8 +273,8 @@ my-repo/
   "version": "1.2.0",
   "agentSkills": {
     "dependencies": {
-      "web-design-guidelines": "vercel-labs/agent-skills#web-design-guidelines",
-      "playwright": "skills.sh/playwright@^1.0",
+      "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
+      "playwright": "npm:@example/playwright-skill@^1.0.0",
       "local-review": "file:./skills/my-review"
     },
     "devDependencies": {}
@@ -277,16 +291,17 @@ agents:
   - cursor
 skills:
   web-design-guidelines:
-    specifier: vercel-labs/agent-skills#web-design-guidelines
-    resolved: github:vercel-labs/agent-skills@abc123def/skills/web-design-guidelines
+    specifier: github:vercel-labs/agent-skills@main#web-design-guidelines
+    resolved: github:vercel-labs/agent-skills@8cbe21a03d9917a54db95c39177e24d03ddc2f81#web-design-guidelines
     integrity: sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
     name: web-design-guidelines
     canonicalPath: ~/.skillctl/skills/web-design-guidelines
     fetchedAt: '2026-07-04T12:00:00Z'
     provenance:
       type: github
-      commit: abc123def
-      subpath: skills/web-design-guidelines
+      commit: 8cbe21a03d9917a54db95c39177e24d03ddc2f81
+      requestedRef: main
+      subpath: web-design-guidelines
   playwright:
     ...
 ```
@@ -485,12 +500,12 @@ Each agent writes its own view; skillctl only generates per-agent manifests.
 **Recommended path (updated)**: Proceed with the designed canonical but ship strong interop/migration from day one. Revisit name (scoped `@skillctl/cli` or `uskillctl`) and canonical path in 0.2 based on community feedback from existing skillctl maintainers. See Coexistence & Migration Strategy below.
 
 ### Coexistence & Migration Strategy (new)
-- **Detection**: On `doctor`/`init`/`sync`, scan common paths and emit "Detected npx skills install at X. Run `skillctl import --from-npx`?"
+- **Detection**: On `doctor`/`init`/`sync`, scan common paths and recommend `skillctl import from-npx --dry-run` when npx skills markers are found.
 - **Import**: Copies/links skills, records original source + hash into new lock, leaves original in place (or offers prune after verification).
 - **Conflict policy**: If a skill name exists in both, prefer the one with matching integrity or prompt; never silently overwrite agent target dirs unless `--adopt`.
 - **Name mitigation**: Per Key Decision #1, MVP primary publish is `@skillctl/cli` (scoped) with bin shim for `skillctl` command UX. Include prominent README warning + `npm notice` about Python skillctl collision risk and the scoped package. Recommend `npm i -g @skillctl/cli` (which provides the `skillctl` bin). Unscoped `skillctl` left for potential future coordination/deprecation shim. PR1 must include a task to verify name availability and test scoped publish + bin resolution.
 - **Store path**: Keep `~/.skillctl/skills` per original request but document `.agents/skills` as a supported *target* (via adapter) and allow config override for canonical root early.
-- **Rollback for coexistence**: `skillctl unlink --all` + manual re-run of other tools.
+- **Rollback for coexistence**: imports leave legacy originals in place; remove only verified skillctl-managed targets and then re-run the other manager.
 
 ---
 
@@ -516,9 +531,9 @@ Each agent writes its own view; skillctl only generates per-agent manifests.
   6. (Future pluggable) Known-bad repo list or Sigstore verification failure.
   Output: table + `--json` (SARIF subset for CI).
 - **Isolation**: Never auto-exec scripts; agents decide. Recommend users review `SKILL.md` before trusting.
-- **Lockfile immutability**: `install --frozen` fails on any drift.
+- **Lockfile immutability**: `install --frozen` rejects manifest/lock drift and mutable legacy entries, but safely repairs a missing or modified store from the immutable lock.
 - **Windows**: Warn on copy fallback (potential TOCTOU if links are later modified).
-- Privacy: Telemetry opt-in only (disabled by default). No skill contents uploaded. Events (example): `skill_added`, `sync_duration_ms`, `doctor_issues`, `import_used` (no PII, no contents). Local file `~/.skillctl/telemetry.jsonl` (rotating).
+- Privacy: 0.5 has no telemetry and uploads no skill contents. Any future telemetry remains opt-in and requires a separate design review.
 
 **Risks**:
 - High severity: Script execution inside agent context (mitigation: documentation + audit; future sandboxing via agent features).
@@ -528,34 +543,29 @@ Each agent writes its own view; skillctl only generates per-agent manifests.
 
 ## Observability
 
-- **Logging**: Structured (pino or console + level). `--verbose` / `SKILLCTL_LOG=debug`. Logs to `~/.skillctl/logs/`.
-- **Metrics** (opt-in): Simple counters (skills added, sync duration, adapter count) via local file or optional anonymous POST (no PII).
+- **Logging**: Human-readable console output by default; fatal stacks are suppressed unless `SKILLCTL_DEBUG=1`.
+- **Metrics**: None in 0.5.
 - **Doctor/Audit output**: Machine-readable `--json` + human tables. Exit codes: 0 clean, 1 warnings, 2 errors.
-- **Alerts**: None (CLI tool). Users can hook `sync` in CI and fail on `doctor --strict`.
+- **Alerts**: None (CLI tool). CI can use command exit codes plus `doctor --json` and `audit --strict --json`.
 - **Error handling**: Actionable messages + suggestions (e.g., "Run `skillctl doctor`"; "Enable Developer Mode on Windows: ...").
 
 ---
 
-## Rollout Plan
+## Release status
 
-1. **Alpha (internal + early OSS contributors)**: npm `skillctl@alpha`. Limited adapters (Claude, Cursor, OpenCode, Codex). Manual testing matrix (Win10/11, macOS, Ubuntu, WSL).
-2. **Beta**: Feature flag via `~/.skillctl/config.json` `experimental: { "plugins": true }`. Publish `skillctl@beta`. Public GitHub repo + Discord.
-3. **Stable v0.5 / v1.0**: Full adapters for top 15 agents (from skills.sh data), plugin system, npm source, audit + provenance.
-4. **Staged rollout of features**:
-   - Behind env `SKILLCTL_EXPERIMENTAL=link-strategy-v2`.
-   - Gradual expansion of default agent list.
-5. **Rollback**:
-   - `npm i -g skillctl@<previous>`.
-   - `skillctl unlink --all && rm -rf ~/.skillctl` (preserves skills via backup warning). On destructive ops (`remove`, `unlink --all`), create timestamped backup tarball in `~/.skillctl/backups/`.
-   - Projects continue to work with committed lockfiles (forward-compatible reads).
-6. **Adoption & Migration**: Detailed "Migration & Interop" (see below). Document migration from `npx skills` and Python skillctl (import existing skills into canonical via `skillctl import --from-npx` / `--from-skillctl` or `add --from-existing`).
+Version 0.5.0 is prepared as a coordinated local release across eleven packages. The guarded manual workflow always checks and packs; npm publication, tag creation, and GitHub Release creation run only when `publish=true` and the protected `npm-production` environment approves the job. npm Trusted Publishing is an external prerequisite.
 
-**Migration & Interop** (added for Issue 7):
-- Detect: `doctor` and init always scan for npx skills locks/dirs and `~/.skillctl/repos` + manifest.json (Python).
-- Import flow: resolve original source if possible, materialize to new canonical with provenance tag "migrated-from-npx", update/create lock, optionally prune old (with confirmation).
-- Concurrency: use `proper-lockfile` (or platform flock) around lock + canonical writes in Core/Installer. Atomic rename for final lock write.
-- Stale cleanup: `doctor --fix` removes canonical entries not referenced by any lock + broken links.
-- File locking and backup details implemented in PR2 + PR10.
+### Rollback after a future publication
+
+- Install the prior coordinated CLI with `npm i -g @skillctl/cli@<previous>`.
+- Keep manifest and lock committed; lockfile 1.0 remains forward-readable.
+- Re-run the prior CLI's `install --frozen` and `sync` instead of deleting the canonical store.
+
+**Migration & Interop**:
+- `doctor` and `init` scan project agent directories, npx skills markers, and Python skillctl repositories.
+- `import from-project`, `import from-npx`, and `import from-skillctl` support dry-run planning and record migration provenance.
+- Manifest and lock changes use `project-state` transactions; store writes are serialized by project→store operation locks.
+- `doctor` reports stale journals/locks and managed-target state. Cleanup of stale agent targets is explicit through scoped `sync --prune`.
 
 **Import Flow (lightweight pseudocode/outline for PR7 implementation)**:
 1. Detect source (scan for `skills-lock.json` (vercel), `~/.skillctl/repos` + manifest.json (Python), or `.agents/skills` contents).
@@ -609,7 +619,7 @@ Justification for scoped primary: avoids direct unscoped collision risk on npm w
 **Activation model (high-level)**: Plugins installed to `~/.skillctl/plugins/<name>/` (npm package with "skillctl" entry in package.json pointing to main). Loaded via dynamic `import()` at CLI start (after trust prompt or allowlist). Registration: default export calls `register({ commands: [...], registries: [...], adapters: [...] })`. Conflicts: last-wins with warning (or explicit priority). No privileged FS/exec by default in v1; sandbox notes in docs. Packaging: standard npm, MIT license recommended. See PR11.
 7. **Mandatory integrity + provenance in lock + optional trust config** — Addresses supply-chain concerns that will be critical as skills execute more actions.
 8. **Default link policy: symlinks on Unix; on Windows detect Developer Mode and default to junction, fall back to copy with warning** — Pragmatic cross-platform support while surfacing realities. `doctor` and config override (`defaultMode`) allow user choice. Resolves prior Open Question #6 for MVP.
-9. **Do not replace existing tools** — skillctl consumes sources and provides interop/import; commands like `add skills.sh/...` and `import --from-npx` keep it complementary. Explicit coexistence testing required. This (plus upstream contribution path) positions it to become the *standard management layer* or a strong complement.
+9. **Do not replace existing tools** — skillctl consumes sources and provides interop/import; commands like `add skills.sh/...` and `import from-npx` keep it complementary. Explicit coexistence testing required. This (plus upstream contribution path) positions it to become the *standard management layer* or a strong complement.
 10. **Monorepo for v1 with clear boundaries** — Enables independent evolution of adapters and plugins. Offset onboarding cost with flat publish script and docs. (Alternative single-package considered for simplicity but rejected for extensibility goals.)
 
 **Stack Trade-offs subsection**: Commander + custom plugin host (lightweight, low dep) vs full oclif (more batteries, heavier, steeper for simple CLI). Chosen for control and smaller initial footprint while matching npx skills (TS) heritage. Full comparison table in implementation notes.
@@ -643,7 +653,8 @@ Justification for scoped primary: avoids direct unscoped collision risk on npm w
 - **0.3**: Provenance recording, plugin loader (commands + adapters + registries), more adapters (10+), Windows CI + expanded link tests.
 - **0.3.1**: Git-portable manifest/lock (#2); `doctor` warns on non-portable paths.
 - **0.4**: First-party meta-skill (`skills/skillctl/`), Grok adapter, `skill validate`, `init --with-skill`, docs site (GitHub Pages), dogfooding via root manifest/lock.
-- **0.5 / RC**: Stable lockfile v1, full plugin system (registries, installers, new checks), `gh skill` / npx skills interop commands + bidirectional migration.
+- **0.5**: Immutable GitHub/npm/skills.sh resolutions, frozen restoration, scoped sync and managed prune, project/store locks, manifest/lock transactions, uniform JSON, E2E/coverage gates, and guarded monorepo release tooling.
+- **0.6**: `info`, `outdated`, `why`, `cache`, and `config`; plugin permission/stability work; broader interop refinement.
 - **1.0**: All major agents, reproducible + frozen installs battle-tested, public registry integration (if one emerges), signed releases.
 
 Post-1.0: Skill dependency graph, OCI distribution, IDE integrations, skill signing UI.
@@ -654,9 +665,9 @@ Post-1.0: Skill dependency graph, OCI distribution, IDE integrations, skill sign
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| Symlink/junction failures on Windows (most common user complaint) | High | Multi-strategy (symlink → junction → copy), clear doctor output + docs, default copy on detected restricted env. |
+| Symlink/junction failures on Windows (most common user complaint) | High | Project-relative symlink with verified copy fallback; global Windows junction with copy fallback; clear doctor output. |
 | Name collisions (same skill name from different sources) | Medium | Enforce unique canonical name; allow scoped aliases or explicit rename on add. Record source in lock. |
-| Concurrent skillctl runs corrupting locks/canonical | Medium | File locking (proper-lockfile or flock), atomic write + rename for lock. |
+| Concurrent skillctl runs corrupting locks/canonical | Medium | Implemented project→store `proper-lockfile` ordering plus journalled, atomic manifest/lock updates and recovery. |
 | GitHub rate limits / auth during mass updates | Low | Cache resolved refs, support `GITHUB_TOKEN`, exponential backoff. |
 | Skill content changes without version bump (drift) | High | Always store + verify integrity hash; `update` only on explicit re-resolve or `--force`. |
 | Plugin security (arbitrary code) | High | v1: plugins from npm only after explicit `plugin add` prompt + allowlist in config; no auto-activation of untrusted; document threat model; run with restricted permissions. Full sig verification + sandbox deferred (or scoped to post-1.0). High-severity items may cause plugin system to ship disabled in MVP with opt-in flag. |
@@ -698,7 +709,7 @@ The implementation is broken into small, independently reviewable and mergeable 
 - **Description**: Implement adapters. Wire into sync. Add initial coexistence scan logic (used by doctor later).
 
 ### PR 7: Core CLI Commands (init, add, install, list, remove, sync, doctor) + Interop/Import
-- **Files**: `packages/cli/src/commands/*`, integration. Include `import --from-npx` / `--from-skillctl` + migration.
+- **Files**: `packages/cli/src/commands/*`, integration. Include `import from-npx` / `from-skillctl` + migration.
 - **Dependencies**: PR 3, PR 4, PR 6.
 - **Description**: Full MVP commands + coexistence detection in `doctor` + import flows. Global + project. `init` creates sample manifest. Basic `--json` and exit codes.
 
@@ -750,11 +761,12 @@ export const AgentSkillsManifest = z.object({
 ```
 Rules: specifier grammar = (github:|skills.sh/|npm:|file:)[^ ]+ (with optional @ref or ^semver); name validation delegates to skills-ref + dir match. Precedence: project manifest > global for same-name resolution in project context.
 
-### agent-skills.lock Full Fields (v1)
+### agent-skills.lock Full Fields (v1, additive in 0.5)
 - `lockfileVersion: '1.0'`
 - `agents: string[]`
-- `skills: Record<name, { specifier, resolved, integrity: 'sha256:..', name, canonicalPath, fetchedAt, provenance: {type: 'github'|'npm'|'local', commit?, tarballHash?, subpath? } }>`
+- `skills: Record<name, { specifier, resolved, integrity: 'sha256:..', name, canonicalPath, fetchedAt, provenance: {type: 'github'|'npm'|'local'|'skills.sh'|'other', commit?, requestedRef?, version?, tarballUrl?, tarballHash?, subpath? } }>`
 - Mixed sources store both original tarball/git hash + canonical tree hash.
+- New GitHub/skills.sh writes require a full commit; npm writes require an exact version and tarball integrity. Legacy mobile entries remain readable but are rejected by frozen install.
 
 ### npm Source Resolution Algorithm (pseudocode)
 1. Parse spec → pkg, versionRange.
@@ -775,7 +787,7 @@ Rules: specifier grammar = (github:|skills.sh/|npm:|file:)[^ ]+ (with optional @
 - 0: clean
 - 1: warnings (e.g. copy fallback, outdated but valid)
 - 2: errors (broken links, hash mismatch, unknown sources)
-`--json` always machine readable for CI.
+`--json` emits exactly one `{ schemaVersion: 1, ok, command, data, warnings, errors }` document on stdout for every first-party command. Fatal stacks require `SKILLCTL_DEBUG=1`.
 
 ### Windows Developer Mode Detection (expanded for implementation)
 ```ts
