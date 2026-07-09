@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import { mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import {
   listInstalledPlugins,
   addPluginRecord,
@@ -50,7 +50,7 @@ export function registerPlugin(program: Command): void {
     .description('Register a local plugin (directory with package.json skillctl.plugin entry)')
     .action(async (pluginPath) => {
       try {
-        const abs = join(process.cwd(), pluginPath);
+        const abs = resolve(process.cwd(), pluginPath);
         const entry = await discoverPluginEntry(abs);
         if (!entry) {
           console.error('No skillctl.plugin entry found in package.json');

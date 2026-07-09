@@ -6,7 +6,7 @@ export function isInteractive(): boolean {
 }
 
 export async function confirm(message: string, defaultYes = true): Promise<boolean> {
-  if (!isInteractive()) return defaultYes;
+  if (!isInteractive()) return false;
   const rl = createInterface({ input, output });
   const suffix = defaultYes ? '[Y/n]' : '[y/N]';
   const answer = (await rl.question(`${message} ${suffix} `)).trim().toLowerCase();

@@ -19,9 +19,23 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
         const manifest = await loadManifest(cwd);
         let lock = (await loadLockfile(cwd)) || createEmptyLockfile();
         const registry = mgr || new RegistryManager();
+        if (!manifest) throw new Error('agent-skills.json not found. Run `skillctl init` first.');
+
+        const deps = {
+          ...(manifest.agentSkills?.devDependencies || {}),
+          ...(manifest.agentSkills?.dependencies || {}),
+        };
 
         if (options.frozen) {
-          const errors = await verifyLockIntegrity(lock);
+          const errors: string[] = [];
+          for (const [name, spec] of Object.entries(deps)) {
+            const entry = lock.skills[name];
+            if (!entry) errors.push(`${name}: missing from lockfile`);
+            else if (entry.specifier !== spec) {
+              errors.push(`${name}: manifest specifier differs from lockfile`);
+            }
+          }
+          errors.push(...(await verifyLockIntegrity(lock)));
           if (errors.length) {
             console.error('Frozen install failed:');
             errors.forEach((e) => console.error(' -', e));
@@ -32,8 +46,6 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
 
         let installed = 0;
         let skipped = 0;
-        const deps = manifest?.agentSkills?.dependencies || {};
-
         for (const [name, spec] of Object.entries(deps)) {
           const existing = lock.skills[name];
           if (existing && !(await needsInstall(existing))) {
@@ -42,7 +54,7 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
             continue;
           }
           console.log(`Installing ${name} from ${spec}...`);
-          await registry.add(spec, { cwd, updateManifest: false });
+          await registry.add(spec, { cwd, updateManifest: false, name });
           lock = (await loadLockfile(cwd)) || lock;
           installed++;
         }

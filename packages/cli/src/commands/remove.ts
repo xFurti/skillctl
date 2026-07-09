@@ -1,7 +1,12 @@
 import type { Command } from 'commander';
 import { loadManifest, saveManifest } from '@skillctl/manifest';
 import { loadLockfile, saveLockfile } from '@skillctl/lockfile';
-import { canonicalizeName, purgeCanonical, resolveAdapterTarget } from '@skillctl/core';
+import {
+  canonicalizeName,
+  purgeCanonical,
+  resolveAdapterTarget,
+  resolveEntryCanonicalPath,
+} from '@skillctl/core';
 import { getEnabledAdapters } from '@skillctl/adapters';
 import { handleCommandError } from '../lib/errors.js';
 
@@ -25,9 +30,16 @@ export function registerRemove(program: Command): void {
           changed = true;
           console.log(`Removed ${canonicalName} from manifest.`);
         }
+        if (manifest?.agentSkills?.devDependencies?.[canonicalName]) {
+          delete manifest.agentSkills.devDependencies[canonicalName];
+          await saveManifest(manifest, cwd);
+          changed = true;
+          console.log(`Removed ${canonicalName} from manifest devDependencies.`);
+        }
 
         if (lock?.skills?.[canonicalName]) {
           const entry = lock.skills[canonicalName];
+          const canonicalPath = await resolveEntryCanonicalPath(entry);
           delete lock.skills[canonicalName];
           await saveLockfile(lock, cwd);
           changed = true;
@@ -37,7 +49,9 @@ export function registerRemove(program: Command): void {
           for (const ad of adapters) {
             for (const p of [...ad.projectPaths, ...ad.globalPaths]) {
               const target = resolveAdapterTarget(p, canonicalName, cwd);
-              await ad.removeTarget(canonicalName, target).catch(() => {});
+              await ad.removeTarget(canonicalName, target, canonicalPath).catch((err) => {
+                console.warn(`Skipped unsafe target ${target}: ${(err as Error).message}`);
+              });
             }
           }
         }

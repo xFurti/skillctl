@@ -1,5 +1,5 @@
 import { join, relative } from 'node:path';
-import { canonicalizeName, getRegisteredAdapters, loadConfig } from '@skillctl/core';
+import { canonicalizeName, computeDirIntegrity, getRegisteredAdapters, loadConfig } from '@skillctl/core';
 import { pathExists } from '@skillctl/adapters';
 import '@skillctl/adapters';
 import { scanSkillsDir } from './parsers/scan-skills-dir.js';
@@ -23,7 +23,12 @@ export interface DiscoveredSource {
   skills: DiscoveredSkillOccurrence[];
 }
 
-export type ProjectImportAction = 'copy-local' | 'register-existing' | 'skip-existing' | 'skip-broken';
+export type ProjectImportAction =
+  | 'copy-local'
+  | 'register-existing'
+  | 'skip-existing'
+  | 'skip-broken'
+  | 'skip-conflict';
 
 export interface DedupedProjectSkill {
   name: string;
@@ -108,6 +113,26 @@ export async function discoverProjectSkills(
   for (const [name, occurrences] of byName.entries()) {
     const primary = pickPrimaryOccurrence(occurrences);
     const kind = primary.kind;
+    const distinctPaths = [...new Set(occurrences.map((o) => o.resolvedPath.toLowerCase()))];
+    if (distinctPaths.length > 1) {
+      const integrities = new Set<string>();
+      for (const occurrence of occurrences) {
+        integrities.add(
+          await computeDirIntegrity(occurrence.resolvedPath).catch(() => `unreadable:${occurrence.resolvedPath}`)
+        );
+      }
+      if (integrities.size > 1) {
+        deduped.push({
+          name,
+          kind,
+          resolvedPath: primary.resolvedPath,
+          action: 'skip-conflict',
+          occurrences,
+          note: `conflicting skill contents found in ${occurrences.map((o) => o.relativePath).join(', ')}`,
+        });
+        continue;
+      }
+    }
     deduped.push({
       name,
       kind,

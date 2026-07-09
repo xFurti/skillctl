@@ -7,4 +7,4 @@ if (process.argv.length <= 2) {
   program.outputHelp();
   process.exit(0);
 }
-program.parse(process.argv);
+await program.parseAsync(process.argv);

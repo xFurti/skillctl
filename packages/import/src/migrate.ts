@@ -34,7 +34,13 @@ export interface ImportOptions {
 
 export interface ImportPlanItem {
   name: string;
-  action: 'fetch' | 'copy-local' | 'register-existing' | 'skip-existing' | 'skip-broken';
+  action:
+    | 'fetch'
+    | 'copy-local'
+    | 'register-existing'
+    | 'skip-existing'
+    | 'skip-broken'
+    | 'skip-conflict';
   specifier?: string;
   localPath?: string;
   note?: string;
@@ -150,6 +156,14 @@ export async function planImportFromProject(
       });
       continue;
     }
+    if (skill.action === 'skip-conflict') {
+      plan.push({
+        name: skill.name,
+        action: 'skip-conflict',
+        note: skill.note || 'conflicting skill contents found under the same canonical name',
+      });
+      continue;
+    }
 
     if (skill.action === 'register-existing') {
       plan.push({
@@ -179,7 +193,8 @@ export async function planImportFromProject(
 }
 
 function normalizeNpxSource(source: string, ref?: string): string {
-  if (source.startsWith('github:') || source.startsWith('npm:') || source.startsWith('file:')) {
+  if (source.startsWith('file:')) return source;
+  if (source.startsWith('github:') || source.startsWith('npm:')) {
     return ref ? `${source}@${ref}` : source;
   }
   if (source.includes('/') && !source.includes(':')) {
@@ -231,7 +246,7 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
       result.skipped.push(item.name);
       continue;
     }
-    if (item.action === 'skip-broken') {
+    if (item.action === 'skip-broken' || item.action === 'skip-conflict') {
       result.skipped.push(item.name);
       result.errors.push(`${item.name}: ${item.note || 'broken skill path'}`);
       continue;
@@ -278,7 +293,7 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
     }
   }
 
-  lock.metadata = { ...lock.metadata, migratedAt: new Date().toISOString(), toolVersion: '0.3.1' };
+  lock.metadata = { ...lock.metadata, migratedAt: new Date().toISOString(), toolVersion: '0.4.0' };
   await saveLockfile(lock, cwd);
 
   if (shouldWriteManifest(opts)) {

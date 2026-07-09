@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { SkillManifest } from '@skillctl/core';
+import { canonicalizeName, type SkillManifest } from '@skillctl/core';
 
 // Specifier grammar: github:, skills.sh/, npm:, file:, local:imported/
 const SpecifierSchema = z.string().regex(
@@ -28,6 +28,11 @@ export function validateManifest(input: unknown): AgentSkillsManifest {
   const deps = parsed.agentSkills?.dependencies || {};
   const devDeps = parsed.agentSkills?.devDependencies || {};
   const allNames = [...Object.keys(deps), ...Object.keys(devDeps)];
+  for (const name of allNames) {
+    if (canonicalizeName(name) !== name) {
+      throw new Error(`Manifest skill name must be canonical lowercase-hyphen form: ${name}`);
+    }
+  }
   const unique = new Set(allNames);
   if (unique.size !== allNames.length) {
     const dups = allNames.filter((n, i) => allNames.indexOf(n) !== i);

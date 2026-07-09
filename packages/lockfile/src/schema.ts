@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { SkillLockfile, LockfileEntry, Provenance } from '@skillctl/core';
+import { canonicalizeName, type SkillLockfile, type LockfileEntry, type Provenance } from '@skillctl/core';
 
 export const ProvenanceSchema = z.object({
   type: z.enum(['github', 'npm', 'local', 'skills.sh', 'other']),
@@ -33,5 +33,11 @@ export const SkillLockfileSchema = z.object({
 export type { LockfileEntry, SkillLockfile, Provenance };
 
 export function validateLockfile(input: unknown): SkillLockfile {
-  return SkillLockfileSchema.parse(input) as SkillLockfile;
+  const lock = SkillLockfileSchema.parse(input) as SkillLockfile;
+  for (const [key, entry] of Object.entries(lock.skills)) {
+    if (canonicalizeName(key) !== key || entry.name !== key) {
+      throw new Error(`Lockfile skill key/name mismatch or non-canonical name: ${key}`);
+    }
+  }
+  return lock;
 }

@@ -12,7 +12,7 @@ export async function scanSkillsDir(dir: string): Promise<DirSkillEntry[]> {
   try {
     const items = await readdir(dir, { withFileTypes: true });
     for (const item of items) {
-      if (!item.isDirectory() || item.name.startsWith('.')) continue;
+      if ((!item.isDirectory() && !item.isSymbolicLink()) || item.name.startsWith('.')) continue;
       const localPath = join(dir, item.name);
       if (await hasSkillMd(localPath)) {
         entries.push({ name: item.name, localPath });

@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import { stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { loadManifest, createDefaultManifest, saveManifest } from '@skillctl/manifest';
 import { loadLockfile, createEmptyLockfile } from '@skillctl/lockfile';
 import { discoverProjectSkills, executeImport } from '@skillctl/import';
@@ -47,7 +47,7 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
         console.log('agent-skills.json already exists');
         return;
       }
-      const sample = createDefaultManifest('demo-project');
+      const sample = createDefaultManifest(basename(cwd));
       await saveManifest(sample, cwd);
       console.log('Created agent-skills.json');
 

@@ -22,7 +22,10 @@ export function registerUpdate(program: Command, mgr?: RegistryManager): void {
         }
 
         const registry = mgr || new RegistryManager();
-        const deps = manifest?.agentSkills?.dependencies || {};
+        const deps = {
+          ...(manifest?.agentSkills?.devDependencies || {}),
+          ...(manifest?.agentSkills?.dependencies || {}),
+        };
         const toUpdate = names.length
           ? names.map((n: string) => canonicalizeName(n))
           : Object.keys(lock.skills);
@@ -35,7 +38,7 @@ export function registerUpdate(program: Command, mgr?: RegistryManager): void {
             continue;
           }
           console.log(`Updating ${name} from ${spec}...`);
-          await registry.add(spec, { cwd, updateManifest: false });
+          await registry.add(spec, { cwd, updateManifest: false, name });
           updated++;
         }
 
