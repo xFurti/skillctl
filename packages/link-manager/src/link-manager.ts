@@ -5,11 +5,30 @@
  * Used by AgentAdapters' ensureTarget/removeTarget.
  */
 
-import { symlink, rm, stat, realpath, access, constants, cp as fsCp } from 'node:fs/promises';
-import { join, dirname, relative, resolve as pathResolve } from 'node:path';
+import {
+  symlink,
+  rm,
+  stat,
+  lstat,
+  realpath,
+  access,
+  constants,
+  cp as fsCp,
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
+import { join, dirname, relative, resolve as pathResolve, isAbsolute } from 'node:path';
 import { homedir } from 'node:os';
 import type { LinkMode } from '@skillctl/core';
-import { ensureDir } from '@skillctl/core';
+import { computeDirIntegrity, ensureDir } from '@skillctl/core';
+
+const MANAGED_COPY_MARKER = '.skillctl-managed.json';
+
+interface ManagedCopyMarker {
+  version: 1;
+  canonical: string;
+  integrity: string;
+}
 
 export interface LinkOptions {
   mode?: LinkMode;
@@ -48,6 +67,16 @@ export class LinkManager {
     // Check if already correctly linked
     if (await this.isLinkedTo(canonical, target)) {
       return;
+    }
+
+    const existing = await lstat(target).catch(() => null);
+    if (existing) {
+      if (await this.isManagedCopy(canonical, target)) return;
+      if (await this.hasManagedCopyMarker(canonical, target)) {
+        await rm(target, { recursive: true, force: true });
+      } else {
+        throw new Error(`Refusing to overwrite unmanaged target: ${target}`);
+      }
     }
 
     try {
@@ -108,14 +137,25 @@ export class LinkManager {
     }
   }
 
-  async removeLink(target: string): Promise<void> {
+  async removeLink(target: string, canonical?: string): Promise<void> {
     try {
-      const st = await stat(target).catch(() => null);
+      const st = await lstat(target).catch(() => null);
       if (!st) return;
-      // remove regardless of symlink/junction/dir
+
+      if (!canonical) {
+        throw new Error('canonical path is required to remove a managed target safely');
+      }
+
+      const managedLink = await this.isLinkedTo(canonical, target);
+      const managedCopy = await this.hasManagedCopyMarker(canonical, target);
+      if (!managedLink && !managedCopy) {
+        throw new Error('target is not a link or copy managed by skillctl');
+      }
+
       await rm(target, { recursive: true, force: true });
-    } catch {
-      // best effort
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') return;
+      throw err;
     }
   }
 
@@ -143,16 +183,54 @@ export class LinkManager {
       if (!st) return true;
       const tReal = await realpath(target);
       const storeReal = await realpath(storeRoot);
-      return tReal.startsWith(storeReal);
-    } catch {
-      return true; // non existing ok
+      const rel = relative(storeReal, tReal);
+      return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
+    } catch (err) {
+      return (err as NodeJS.ErrnoException).code === 'ENOENT';
     }
   }
 
   private async copyDir(src: string, dest: string): Promise<void> {
+    const existing = await lstat(dest).catch(() => null);
+    if (existing) {
+      if (!(await this.hasManagedCopyMarker(src, dest))) {
+        throw new Error(`Refusing to copy over unmanaged target: ${dest}`);
+      }
+      await rm(dest, { recursive: true, force: true });
+    }
     await ensureDir(dest);
-    // Use recursive cp (node 16.7+)
     await fsCp(src, dest, { recursive: true, force: true });
+    const marker: ManagedCopyMarker = {
+      version: 1,
+      canonical: await realpath(src).catch(() => pathResolve(src)),
+      integrity: await computeDirIntegrity(src),
+    };
+    await writeFile(join(dest, MANAGED_COPY_MARKER), `${JSON.stringify(marker)}\n`, 'utf8');
+  }
+
+  private async readManagedCopyMarker(target: string): Promise<ManagedCopyMarker | null> {
+    try {
+      const parsed = JSON.parse(await readFile(join(target, MANAGED_COPY_MARKER), 'utf8')) as ManagedCopyMarker;
+      if (parsed.version !== 1 || !parsed.canonical || !parsed.integrity) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  private async hasManagedCopyMarker(canonical: string, target: string): Promise<boolean> {
+    const marker = await this.readManagedCopyMarker(target);
+    if (!marker) return false;
+    const canonReal = await realpath(canonical).catch(() => pathResolve(canonical));
+    return pathResolve(marker.canonical) === pathResolve(canonReal);
+  }
+
+  private async isManagedCopy(canonical: string, target: string): Promise<boolean> {
+    const marker = await this.readManagedCopyMarker(target);
+    if (!marker) return false;
+    const canonReal = await realpath(canonical).catch(() => pathResolve(canonical));
+    if (pathResolve(marker.canonical) !== pathResolve(canonReal)) return false;
+    return marker.integrity === (await computeDirIntegrity(canonical));
   }
 }
 

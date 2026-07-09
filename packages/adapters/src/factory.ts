@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { isAbsolute, join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import type { AgentAdapter } from '@skillctl/core';
 import { BaseAgentAdapter, basicDetect } from './base/index.js';
@@ -22,7 +22,11 @@ export function createPathAdapter(config: PathAdapterConfig): AgentAdapter {
       if (config.detectDirs?.length) {
         const cwd = process.cwd();
         for (const d of config.detectDirs) {
-          const p = d.startsWith('~') ? join(homedir(), d.slice(2)) : join(cwd, d);
+          const p = d.startsWith('~')
+            ? join(homedir(), d.slice(2))
+            : isAbsolute(d)
+              ? d
+              : resolve(cwd, d);
           if (await pathExists(p)) return true;
         }
       }

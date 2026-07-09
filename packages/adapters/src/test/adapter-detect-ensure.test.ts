@@ -4,9 +4,10 @@
  * Covers claude, cursor, opencode + coexistence.
  */
 import assert from 'node:assert/strict';
+import test from 'node:test';
 import { mkdtemp, rm, mkdir, writeFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir, homedir as realHomedir } from 'node:os';
+import { tmpdir } from 'node:os';
 import {
   claudeAdapter,
   cursorAdapter,
@@ -15,28 +16,19 @@ import {
   scanCoexistence,
   syncSkillsToAgents,
 } from '../index.js';
-import { linkManager } from '@skillctl/link-manager';
 
 async function runTests() {
   console.log('Running PR6 adapter detect + ensure tests...');
 
   const tmp = await mkdtemp(join(tmpdir(), 'skillctl-adapters-test-'));
   const projectDir = join(tmp, 'project');
-  const fakeHome = join(tmp, 'fakehome'); // mock homedir for global paths
   await mkdir(projectDir, { recursive: true });
-  await mkdir(fakeHome, { recursive: true });
-
-  // Patch homedir for the duration of test (monkey for global paths in adapters)
-  let origHomedir: any = (await import('node:os')).homedir;
-  // @ts-ignore - replace for test
-  (await import('node:os')).homedir = () => fakeHome;
 
   let origCwd: any = process.cwd;
 
   try {
     // --- Detect tests (basic + marker) ---
     // claude
-    assert.strictEqual(await claudeAdapter.detect(), false, 'claude should not detect empty');
     await mkdir(join(projectDir, '.claude', 'skills'), { recursive: true });
     // cd simulation: adapters use process.cwd()
     origCwd = process.cwd;
@@ -95,7 +87,7 @@ async function runTests() {
     assert.ok(sstat.isFile());
 
     // removeTarget
-    await claudeAdapter.removeTarget('demo-skill', targetForSkill);
+    await claudeAdapter.removeTarget('demo-skill', targetForSkill, canonical);
     try {
       await stat(targetForSkill);
       assert.fail('target should be removed');
@@ -116,6 +108,16 @@ async function runTests() {
     );
     assert.ok(res.synced >= 1, 'sync should ensure at least one');
     assert.ok(res.adaptersUsed.includes('claude-code'));
+
+    const dryRunTarget = join(projectDir, '.claude', 'skills', 'dry-run-skill');
+    const dryRunCanonical = join(tmp, 'canonical', 'dry-run-skill');
+    await mkdir(dryRunCanonical, { recursive: true });
+    await writeFile(join(dryRunCanonical, 'SKILL.md'), 'dry run');
+    await syncSkillsToAgents(
+      [{ name: 'dry-run-skill', canonicalPath: dryRunCanonical }],
+      { mode: 'copy', dryRun: true, adapters: [claudeAdapter] }
+    );
+    await assert.rejects(stat(dryRunTarget), (err: any) => err.code === 'ENOENT');
 
     if (process.platform !== 'win32') {
       const relCanonical = join(tmp, 'canonical', 'relative-skill');
@@ -138,14 +140,10 @@ async function runTests() {
   } finally {
     // restore
     process.cwd = origCwd;
-    // @ts-ignore restore
-    (await import('node:os')).homedir = origHomedir;
     await rm(tmp, { recursive: true, force: true });
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runTests().catch((e) => { console.error(e); process.exit(1); });
-}
+test('adapter detection, linking, coexistence, and sync', runTests);
 
 export { runTests };

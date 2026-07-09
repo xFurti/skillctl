@@ -47,9 +47,9 @@ export interface AgentAdapter {
     targetPath: string,
     canonical: string,
     mode?: 'symlink' | 'copy' | 'junction',
-    options?: { relative?: boolean }
+    options?: { relative?: boolean; dryRun?: boolean; force?: boolean }
   ): Promise<void>;
-  removeTarget(skillName: string, targetPath: string): Promise<void>;
+  removeTarget(skillName: string, targetPath: string, canonical?: string): Promise<void>;
 }
 
 // Registry source (for resolution in later PRs)

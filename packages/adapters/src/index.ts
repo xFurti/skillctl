@@ -48,7 +48,7 @@ async function countSkillsInDir(dir: string): Promise<number> {
   try {
     const items = await readdir(dir, { withFileTypes: true });
     for (const item of items) {
-      if (!item.isDirectory() || item.name.startsWith('.')) continue;
+      if ((!item.isDirectory() && !item.isSymbolicLink()) || item.name.startsWith('.')) continue;
       for (const name of ['SKILL.md', 'skill.md']) {
         try {
           const st = await stat(join(dir, item.name, name));
@@ -98,10 +98,12 @@ export async function scanCoexistence(cwd = process.cwd()): Promise<CoexistenceR
   }
 
   const skillctlHome = join(homedir(), '.skillctl');
-  if (await pathExists(skillctlHome)) {
-    details.push('Found ~/.skillctl (may be python skillctl or skillctl canonical store)');
+  const pythonRepos = join(skillctlHome, 'repos');
+  const pythonManifest = join(skillctlHome, 'manifest.json');
+  if ((await pathExists(pythonRepos)) || (await pathExists(pythonManifest))) {
+    details.push('Found Python skillctl data under ~/.skillctl');
     paths.push(skillctlHome);
-    recs.push('Run `skillctl import --from-skillctl --dry-run` if using Python skillctl');
+    recs.push('Run `skillctl import from-skillctl --dry-run` if using Python skillctl');
   }
 
   const npxLock = join(cwd, 'skills-lock.json');

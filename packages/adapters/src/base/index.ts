@@ -52,12 +52,17 @@ export abstract class BaseAgentAdapter implements AgentAdapter {
     targetPath: string,
     canonical: string,
     mode?: 'symlink' | 'copy' | 'junction',
-    options?: { relative?: boolean }
+    options?: { relative?: boolean; dryRun?: boolean; force?: boolean }
   ): Promise<void> {
-    await linkManager.ensureLink(canonical, targetPath, { mode: mode as any, relative: options?.relative });
+    await linkManager.ensureLink(canonical, targetPath, {
+      mode,
+      relative: options?.relative,
+      dryRun: options?.dryRun,
+      force: options?.force,
+    });
   }
 
-  async removeTarget(skillName: string, targetPath: string): Promise<void> {
-    await linkManager.removeLink(targetPath);
+  async removeTarget(skillName: string, targetPath: string, canonical?: string): Promise<void> {
+    await linkManager.removeLink(targetPath, canonical);
   }
 }

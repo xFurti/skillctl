@@ -38,7 +38,10 @@ export async function syncSkillsToAgents(
       for (const skill of skills) {
         const fullTarget = resolveAdapterTarget(basePath, skill.name, cwd);
         try {
-          await adapter.ensureTarget(skill.name, fullTarget, skill.canonicalPath, mode, { relative: true });
+          await adapter.ensureTarget(skill.name, fullTarget, skill.canonicalPath, mode, {
+            relative: true,
+            dryRun: options.dryRun,
+          });
           synced++;
         } catch (e) {
           notes.push(`Failed ensure for ${skill.name} on ${adapter.id}: ${(e as Error).message}`);
@@ -50,7 +53,9 @@ export async function syncSkillsToAgents(
       for (const skill of skills) {
         const fullTarget = resolveAdapterTarget(basePath, skill.name, cwd);
         try {
-          await adapter.ensureTarget(skill.name, fullTarget, skill.canonicalPath, mode);
+          await adapter.ensureTarget(skill.name, fullTarget, skill.canonicalPath, mode, {
+            dryRun: options.dryRun,
+          });
           synced++;
         } catch (e) {
           notes.push(`Failed ensure for ${skill.name} on ${adapter.id}: ${(e as Error).message}`);
