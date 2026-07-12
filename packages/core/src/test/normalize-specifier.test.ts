@@ -72,6 +72,7 @@ test('portableSpecifierForResolved adds github: prefix', () => {
 });
 
 test('formatCanonicalPathForLock and expandTilde', () => {
-  assert.equal(formatCanonicalPathForLock('My Skill'), '~/.skillctl/skills/my-skill');
+  assert.equal(formatCanonicalPathForLock('My Skill'), '.skillctl/skills/my-skill');
+  assert.equal(formatCanonicalPathForLock('My Skill', 'global'), '~/.skillctl/skills/my-skill');
   assert.ok(expandTilde('~/.skillctl/skills/foo').includes('.skillctl'));
 });

@@ -1,7 +1,17 @@
 import type { Command } from 'commander';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { loadConfig, getRegisteredAdapters, lockToSkillTargets, findPortablePathWarnings, findLockReproducibilityWarnings } from '@skillctl/core';
+import {
+  findLockReproducibilityWarnings,
+  findPortablePathWarnings,
+  getGlobalSkillctlRoot,
+  getGlobalSkillsStore,
+  getProjectSkillsStore,
+  getRegisteredAdapters,
+  loadConfig,
+  lockToSkillTargets,
+  requireSkillctlProject,
+} from '@skillctl/core';
 import { loadManifest } from '@skillctl/manifest';
 import { loadLockfile } from '@skillctl/lockfile';
 import { scanCoexistence, getEnabledAdapters, syncSkillsToAgents } from '@skillctl/adapters';
@@ -14,22 +24,24 @@ export function registerDoctor(program: Command): void {
     .description('Diagnose environment, links, config, coexistence')
     .option('--json', 'output JSON')
     .option('--fix', 're-sync agent links from lock')
+    .option('-g, --global', 'diagnose the global skill installation')
     .action(async (options) => {
-      const cwd = process.cwd();
+      const cwd = options.global ? getGlobalSkillctlRoot() : await requireSkillctlProject();
+      const store = options.global ? getGlobalSkillsStore() : getProjectSkillsStore(cwd);
       const [config, manifest, lock, coexist, enabledAdapters, audit] = await Promise.all([
         loadConfig(),
         loadManifest(cwd),
         loadLockfile(cwd),
-        scanCoexistence(cwd),
+        options.global ? Promise.resolve({ detected: false, details: [], paths: [], recommendations: [] }) : scanCoexistence(cwd),
         getEnabledAdapters(),
-        runAudit(cwd),
+        runAudit(cwd, { store }),
       ]);
 
       const issues: string[] = [];
       const warnings: string[] = [];
       const info: string[] = [];
 
-      if (!manifest) issues.push('No agent-skills.json in project');
+      if (!manifest && !options.global) issues.push('No agent-skills.json in project');
       if (!lock) info.push('No agent-skills.lock yet (run install after adding skills)');
       if (coexist.detected) info.push('Coexistence markers detected');
 
@@ -37,7 +49,7 @@ export function registerDoctor(program: Command): void {
         warnings.push(...findPortablePathWarnings(lock, manifest));
         warnings.push(...findLockReproducibilityWarnings(lock));
       }
-      warnings.push(...await findStateWarnings(cwd, config.store));
+      warnings.push(...await findStateWarnings(cwd, store));
 
       for (const f of audit.findings.filter((x) => x.severity === 'error')) {
         issues.push(`[audit] ${f.skill}: ${f.message}`);
@@ -45,8 +57,10 @@ export function registerDoctor(program: Command): void {
 
       if (options.fix && lock) {
         const res = await withOperationLocks(
-          { cwd, store: config.store },
-          async () => syncSkillsToAgents(await lockToSkillTargets(lock))
+          { cwd, store },
+          async () => syncSkillsToAgents(await lockToSkillTargets(lock, { store }), {
+            scope: options.global ? 'global' : 'both',
+          })
         );
         info.push(`--fix: re-synced ${res.synced} targets`);
       }
@@ -57,7 +71,7 @@ export function registerDoctor(program: Command): void {
           : warnings.length || audit.status === 'warnings'
             ? 'warnings'
             : 'ok',
-        config: { store: config.store, defaultMode: config.defaultMode },
+        config: { store, defaultMode: config.defaultMode },
         manifestPresent: !!manifest,
         lockPresent: !!lock,
         issues,

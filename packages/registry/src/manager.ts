@@ -151,15 +151,24 @@ export class RegistryManager {
     const requestedCwd = opts.cwd || process.cwd();
     const cwd = opts.global ? getGlobalSkillctlRoot() : await requireSkillctlProject(requestedCwd);
     const store = opts.global ? getGlobalSkillsStore() : getProjectSkillsStore(cwd);
-    return withOperationLocks({ cwd, store }, () => this.addUnlocked(spec, { ...opts, cwd, store }));
+    return withOperationLocks({ cwd, store }, () =>
+      this.addUnlocked(spec, { ...opts, cwd, store, sourceCwd: requestedCwd })
+    );
   }
 
   private async addUnlocked(
     spec: string,
-    opts: { cwd: string; store: string; updateManifest?: boolean; name?: string; global?: boolean }
+    opts: {
+      cwd: string;
+      store: string;
+      sourceCwd: string;
+      updateManifest?: boolean;
+      name?: string;
+      global?: boolean;
+    }
   ): Promise<LockfileEntry> {
     const cwd = opts.cwd;
-    const resolved = await this.resolve(spec, { cwd });
+    const resolved = await this.resolve(spec, { cwd: opts.sourceCwd });
     const mat = await this.materialize(resolved, { name: opts.name, store: opts.store });
 
     const prov: Provenance = {
@@ -178,7 +187,10 @@ export class RegistryManager {
     }
 
     const skillName = canonicalizeName(opts.name || resolved.name);
-    const portableSpec = portableSpecifierForResolved(spec, resolved, cwd);
+    const portableSpec =
+      resolved.sourceType === 'local' && !opts.global
+        ? `file:./.skillctl/skills/${skillName}`
+        : portableSpecifierForResolved(spec, resolved, opts.sourceCwd);
     const lockResolved = resolved.sourceType === 'local' ? portableSpec : resolved.resolved;
 
     const entry = makeLockEntry(

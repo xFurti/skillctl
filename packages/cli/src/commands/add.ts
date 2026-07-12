@@ -1,5 +1,7 @@
 import type { Command } from 'commander';
 import { RegistryManager } from '@skillctl/registry';
+import { syncSkillsToAgents } from '@skillctl/adapters';
+import { getGlobalSkillsStore, resolveEntryCanonicalPath } from '@skillctl/core';
 import { handleCommandError } from '../lib/errors.js';
 
 export function registerAdd(program: Command, mgr?: RegistryManager): void {
@@ -21,6 +23,13 @@ export function registerAdd(program: Command, mgr?: RegistryManager): void {
         console.log(`  resolved: ${entry.resolved}`);
         console.log(`  integrity: ${entry.integrity}`);
         console.log(`  canonical: ${entry.canonicalPath}`);
+        if (options.global) {
+          const result = await syncSkillsToAgents(
+            [{ name: entry.name, canonicalPath: await resolveEntryCanonicalPath(entry, { store: getGlobalSkillsStore() }) }],
+            { scope: 'global' }
+          );
+          console.log(`  synced: ${result.synced} global agent target(s)`);
+        }
       } catch (err) {
         handleCommandError(err, 'add');
       }

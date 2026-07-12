@@ -7,7 +7,7 @@ import { checkNameDirMatch } from './rules/name-dir-match.js';
 import { checkPathTraversal } from './rules/path-traversal.js';
 import { checkSizeLimits } from './rules/size-limits.js';
 
-export async function runAudit(cwd = process.cwd()): Promise<AuditReport> {
+export async function runAudit(cwd = process.cwd(), options?: { store?: string }): Promise<AuditReport> {
   const lock = await loadLockfile(cwd);
   if (!lock || Object.keys(lock.skills).length === 0) {
     return { status: 'ok', findings: [], scanned: 0 };
@@ -16,7 +16,7 @@ export async function runAudit(cwd = process.cwd()): Promise<AuditReport> {
   const findings: AuditFinding[] = [];
   const config = await loadConfig();
   const trustedSources = config.trustedSources || [];
-  findings.push(...(await checkIntegrityDrift(lock)));
+  findings.push(...(await checkIntegrityDrift(lock, options)));
 
   for (const [name, entry] of Object.entries(lock.skills)) {
     if (trustedSources.length && !trustedSources.some((pattern) => matchesSource(pattern, entry.specifier))) {
@@ -27,7 +27,7 @@ export async function runAudit(cwd = process.cwd()): Promise<AuditReport> {
         message: `Source is not covered by trustedSources: ${entry.specifier}`,
       });
     }
-    const canonicalPath = await resolveEntryCanonicalPath(entry);
+    const canonicalPath = await resolveEntryCanonicalPath(entry, options);
     findings.push(...(await checkNameDirMatch(name, canonicalPath)));
     findings.push(...(await checkScriptHeuristics(name, canonicalPath)));
     findings.push(...(await checkPathTraversal(name, canonicalPath)));

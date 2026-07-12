@@ -72,3 +72,33 @@ test('local add outside a skillctl project explains the local/global choice', as
     }
   );
 });
+
+test('global add works outside a project and records global state', async () => {
+  const cwd = await mkdtemp(join(tmpdir(), 'skillctl-global-add-'));
+  const home = join(cwd, 'home');
+  const source = join(cwd, 'demo-skill');
+  await mkdir(source, { recursive: true });
+  await mkdir(home, { recursive: true });
+  await writeFile(join(source, 'SKILL.md'), '---\nname: demo-skill\ndescription: e2e\n---\nDemo\n');
+
+  await execFileAsync(process.execPath, [cli, 'add', '-g', 'file:./demo-skill'], {
+    cwd,
+    env: { ...process.env, HOME: home },
+  });
+  assert.equal((await stat(join(home, '.skillctl', 'skills', 'demo-skill'))).isDirectory(), true);
+  assert.match(await readFile(join(home, '.skillctl', 'agent-skills.lock'), 'utf8'), /canonicalPath: ~\/\.skillctl/);
+});
+
+test('plain import copies discovered skills into the project store', async () => {
+  const cwd = await mkdtemp(join(tmpdir(), 'skillctl-import-command-'));
+  const source = join(cwd, '.codex', 'skills', 'review');
+  await mkdir(source, { recursive: true });
+  await writeFile(join(source, 'SKILL.md'), '---\nname: review\ndescription: review code\n---\nReview\n');
+  await execFileAsync(process.execPath, [cli, 'init', '--no-prompt'], { cwd });
+
+  await execFileAsync(process.execPath, [cli, 'import'], { cwd });
+
+  assert.equal((await stat(join(cwd, '.skillctl', 'skills', 'review'))).isDirectory(), true);
+  assert.equal((await stat(source)).isDirectory(), true);
+  assert.match(await readFile(join(cwd, 'agent-skills.json'), 'utf8'), /file:\.\/\.skillctl\/skills\/review/);
+});

@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { runAudit, auditExitCode } from '@skillctl/security';
 import { handleCommandError } from '../lib/errors.js';
+import { getProjectSkillsStore, requireSkillctlProject } from '@skillctl/core';
 
 export function registerAudit(program: Command): void {
   program
@@ -10,7 +11,8 @@ export function registerAudit(program: Command): void {
     .option('--strict', 'treat warnings as errors (exit 2)')
     .action(async (options) => {
       try {
-        const report = await runAudit(process.cwd());
+        const cwd = await requireSkillctlProject();
+        const report = await runAudit(cwd, { store: getProjectSkillsStore(cwd) });
 
         if (options.json) {
           console.log(JSON.stringify(report, null, 2));

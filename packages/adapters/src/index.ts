@@ -6,6 +6,7 @@ import { opencodeAdapter } from './opencode/index.js';
 import { codexAdapter } from './codex/index.js';
 import { geminiAdapter } from './gemini/index.js';
 import { grokAdapter } from './grok/index.js';
+import { piAdapter } from './pi/index.js';
 import { pathExists } from './base/index.js';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
@@ -18,13 +19,14 @@ const BUILTIN_ADAPTERS: AgentAdapter[] = [
   codexAdapter,
   geminiAdapter,
   grokAdapter,
+  piAdapter,
 ];
 
 for (const adapter of BUILTIN_ADAPTERS) {
   registerAdapter(adapter);
 }
 
-export { claudeAdapter, cursorAdapter, opencodeAdapter, codexAdapter, geminiAdapter, grokAdapter };
+export { claudeAdapter, cursorAdapter, opencodeAdapter, codexAdapter, geminiAdapter, grokAdapter, piAdapter };
 export * from './base/index.js';
 export type { AgentAdapter };
 

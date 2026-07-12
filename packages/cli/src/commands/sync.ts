@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import { loadLockfile } from '@skillctl/lockfile';
-import { loadConfig, lockToSkillTargets } from '@skillctl/core';
+import { getProjectSkillsStore, lockToSkillTargets, requireSkillctlProject } from '@skillctl/core';
 import { syncSkillsToAgents, type SyncScope } from '@skillctl/adapters';
 import { withOperationLocks } from '@skillctl/project-state';
 import { handleCommandError } from '../lib/errors.js';
@@ -25,14 +25,14 @@ export function registerSync(program: Command): void {
           throw new Error('Use either --project or --global; without either flag both scopes are synced.');
         }
         const scope: SyncScope = options.project ? 'project' : options.global ? 'global' : 'both';
-        const cwd = process.cwd();
-        const config = await loadConfig();
-        const result = await withOperationLocks({ cwd, store: config.store }, async () => {
+        const cwd = await requireSkillctlProject();
+        const store = getProjectSkillsStore(cwd);
+        const result = await withOperationLocks({ cwd, store }, async () => {
           const lock = await loadLockfile(cwd);
           if (!lock || Object.keys(lock.skills || {}).length === 0) {
             throw new Error('No lockfile or skills to sync. Run install or add first.');
           }
-          const skills = await lockToSkillTargets(lock);
+          const skills = await lockToSkillTargets(lock, { store });
           return syncSkillsToAgents(skills, {
             dryRun: options.dryRun,
             scope,
