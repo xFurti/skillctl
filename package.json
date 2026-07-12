@@ -20,7 +20,7 @@
     "clean": "pnpm -r clean",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
-    "test:coverage": "c8 --all --include packages/*/dist/**/*.js --exclude packages/*/dist/test/** --check-coverage --lines 60 --functions 60 --statements 60 --branches 50 --reporter=text --reporter=lcov corepack pnpm -r test",
+    "test:coverage": "c8 --all --include=\"packages/*/dist/**/*.js\" --exclude=\"packages/*/dist/test/**\" --check-coverage --lines 60 --functions 60 --statements 60 --branches 50 --reporter=text --reporter=lcov corepack pnpm -r test",
     "version:set": "node scripts/set-version.mjs",
     "release:check": "node scripts/release-check.mjs",
     "release:pack": "node scripts/pack-all.mjs",

@@ -14,9 +14,11 @@ function normalizeStoreRoot(storeRoot: string): string {
   return normalizePath(storeRoot);
 }
 
-function isUnderStore(resolved: string, storeRoot: string): boolean {
+async function isUnderStore(resolved: string, storeRoot: string): Promise<boolean> {
   const norm = normalizePath(resolved);
-  const store = normalizeStoreRoot(storeRoot);
+  // macOS resolves /tmp through /private/tmp; resolve the configured store too
+  // so it can be compared with the realpath obtained from a link target.
+  const store = normalizeStoreRoot(await realpath(storeRoot).catch(() => storeRoot));
   return norm === store || norm.startsWith(`${store}/`);
 }
 
@@ -41,7 +43,7 @@ export async function classifySkillPath(localPath: string, storeRoot: string): P
       return { kind: 'broken', resolvedPath: localPath };
     }
 
-    if (isUnderStore(resolvedPath, storeRoot)) {
+    if (await isUnderStore(resolvedPath, storeRoot)) {
       const parts = pathResolve(resolvedPath).split(/[/\\]/);
       const canonicalName = parts[parts.length - 1];
       return { kind: 'skillctl-link', resolvedPath, canonicalName };
