@@ -38,7 +38,13 @@ if (toolShimRoot) {
 const useInstalledPnpm = Boolean(process.env.CI);
 
 function runPnpm(args, options = {}) {
-  if (useInstalledPnpm) return run('pnpm', args, options);
+  if (useInstalledPnpm) {
+    return run(
+      process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+      args,
+      process.platform === 'win32' ? { ...options, shell: true } : options
+    );
+  }
   if (corepack) return run(process.execPath, [corepack, 'pnpm', ...args], options);
   return run('corepack', ['pnpm', ...args], options);
 }
