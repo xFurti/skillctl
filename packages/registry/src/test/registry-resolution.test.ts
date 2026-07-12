@@ -5,7 +5,6 @@
  * No network dependent in CI path (github/npm resolve tested structurally).
  */
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -175,6 +174,6 @@ async function runTests() {
   }
 }
 
-test('registry resolution and materialization', runTests);
+await runTests();
 
 export { runTests };

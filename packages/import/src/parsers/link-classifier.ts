@@ -11,13 +11,20 @@ export interface ClassifiedSkillPath {
 }
 
 function normalizeStoreRoot(storeRoot: string): string {
-  return pathResolve(storeRoot).replace(/\\/g, '/').toLowerCase();
+  return normalizePath(storeRoot);
 }
 
 function isUnderStore(resolved: string, storeRoot: string): boolean {
-  const norm = pathResolve(resolved).replace(/\\/g, '/').toLowerCase();
+  const norm = normalizePath(resolved);
   const store = normalizeStoreRoot(storeRoot);
   return norm === store || norm.startsWith(`${store}/`);
+}
+
+function normalizePath(path: string): string {
+  const normalized = pathResolve(path).replace(/\\/g, '/');
+  // Windows realpath() may return an extended-length path (//?/C:/...).
+  // Strip that prefix before comparing it with the ordinary configured store path.
+  return (normalized.startsWith('//?/') ? normalized.slice(4) : normalized).toLowerCase();
 }
 
 export async function classifySkillPath(localPath: string, storeRoot: string): Promise<ClassifiedSkillPath> {

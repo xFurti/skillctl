@@ -32,6 +32,17 @@ if (toolShimRoot) {
   );
 }
 
+// GitHub Actions installs the pinned pnpm version before this script runs.
+// Using it directly avoids the stale Corepack bundled with Node 22.13, whose
+// registry signing keys cannot verify current pnpm releases.
+const useInstalledPnpm = Boolean(process.env.CI);
+
+function runPnpm(args, options = {}) {
+  if (useInstalledPnpm) return run('pnpm', args, options);
+  if (corepack) return run(process.execPath, [corepack, 'pnpm', ...args], options);
+  return run('corepack', ['pnpm', ...args], options);
+}
+
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: root,
@@ -65,8 +76,7 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 
 const archives = [];
-if (corepack) run(process.execPath, [corepack, 'pnpm', '-r', 'build']);
-else run('corepack', ['pnpm', '-r', 'build']);
+runPnpm(['-r', 'build']);
 for (const directoryName of packageOrder) {
   const directory = join(root, 'packages', directoryName);
   const packageJson = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
@@ -81,8 +91,7 @@ for (const directoryName of packageOrder) {
       ? { ...process.env, PATH: `${toolShimRoot};${process.env.PATH || ''}` }
       : process.env
   };
-  if (corepack) run(process.execPath, [corepack, ...packArgs], packOptions);
-  else run('corepack', packArgs, packOptions);
+  runPnpm(packArgs, packOptions);
   const archive = join(output, packageArchiveName(packageJson.name, packageJson.version));
   await assertFile(archive, `Missing archive for ${packageJson.name}: ${archive}`);
 
