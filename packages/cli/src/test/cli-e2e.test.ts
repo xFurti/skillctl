@@ -20,9 +20,12 @@ test('local CLI lifecycle: init, add, sync, audit, remove', async () => {
   await writeFile(join(source, 'SKILL.md'), '---\nname: demo-skill\ndescription: e2e\n---\nDemo\n');
 
   await execFileAsync(process.execPath, [cli, 'init', '--no-prompt'], { cwd, env });
+  assert.equal((await stat(join(cwd, '.skillctl', 'skills'))).isDirectory(), true);
   await execFileAsync(process.execPath, [cli, 'add', 'file:./demo-skill'], { cwd, env });
   const lock = await readFile(join(cwd, 'agent-skills.lock'), 'utf8');
   assert.match(lock, /demo-skill:/);
+  assert.match(lock, /canonicalPath: \.skillctl\/skills\/demo-skill/);
+  assert.equal((await stat(join(cwd, '.skillctl', 'skills', 'demo-skill'))).isDirectory(), true);
 
   let syncStdout: string;
   try {
@@ -52,4 +55,20 @@ test('local CLI lifecycle: init, add, sync, audit, remove', async () => {
 
   await execFileAsync(process.execPath, [cli, 'remove', 'demo-skill', '--purge'], { cwd, env });
   await assert.rejects(stat(join(cwd, '.codex', 'skills', 'demo-skill')), (err: NodeJS.ErrnoException) => err.code === 'ENOENT');
+});
+
+test('local add outside a skillctl project explains the local/global choice', async () => {
+  const cwd = await mkdtemp(join(tmpdir(), 'skillctl-no-project-'));
+  const source = join(cwd, 'demo-skill');
+  await mkdir(source);
+  await writeFile(join(source, 'SKILL.md'), '---\nname: demo-skill\ndescription: e2e\n---\nDemo\n');
+
+  await assert.rejects(
+    execFileAsync(process.execPath, [cli, 'add', 'file:./demo-skill'], { cwd }),
+    (error: { stderr?: string }) => {
+      assert.match(error.stderr || '', /skillctl add -g/);
+      assert.match(error.stderr || '', /skillctl init/);
+      return true;
+    }
+  );
 });

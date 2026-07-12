@@ -13,6 +13,10 @@ import {
   canonicalizeName,
   formatCanonicalPathForLock,
   portableSpecifierForResolved,
+  getGlobalSkillctlRoot,
+  getGlobalSkillsStore,
+  getProjectSkillsStore,
+  requireSkillctlProject,
 } from '@skillctl/core';
 import { createEmptyLockfile, addOrUpdateEntry, makeLockEntry } from '@skillctl/lockfile';
 import { updateProjectState, withOperationLocks } from '@skillctl/project-state';
@@ -63,10 +67,10 @@ export class RegistryManager {
 
   async materialize(
     resolved: ResolvedSource,
-    options?: { name?: string; expectedIntegrity?: string }
+    options?: { name?: string; expectedIntegrity?: string; store?: string }
   ): Promise<{ canonicalPath: string; integrity: string; sourceType: string }> {
     const config = await loadConfig();
-    const store = config.store;
+    const store = options?.store || config.store;
     await ensureDir(store);
 
     const canonicalName = canonicalizeName(options?.name || resolved.name);
@@ -142,20 +146,21 @@ export class RegistryManager {
 
   async add(
     spec: string,
-    opts: { cwd?: string; updateManifest?: boolean; name?: string } = {}
+    opts: { cwd?: string; updateManifest?: boolean; name?: string; global?: boolean } = {}
   ): Promise<LockfileEntry> {
-    const cwd = opts.cwd || process.cwd();
-    const config = await loadConfig();
-    return withOperationLocks({ cwd, store: config.store }, () => this.addUnlocked(spec, { ...opts, cwd }));
+    const requestedCwd = opts.cwd || process.cwd();
+    const cwd = opts.global ? getGlobalSkillctlRoot() : await requireSkillctlProject(requestedCwd);
+    const store = opts.global ? getGlobalSkillsStore() : getProjectSkillsStore(cwd);
+    return withOperationLocks({ cwd, store }, () => this.addUnlocked(spec, { ...opts, cwd, store }));
   }
 
   private async addUnlocked(
     spec: string,
-    opts: { cwd: string; updateManifest?: boolean; name?: string }
+    opts: { cwd: string; store: string; updateManifest?: boolean; name?: string; global?: boolean }
   ): Promise<LockfileEntry> {
     const cwd = opts.cwd;
     const resolved = await this.resolve(spec, { cwd });
-    const mat = await this.materialize(resolved, { name: opts.name });
+    const mat = await this.materialize(resolved, { name: opts.name, store: opts.store });
 
     const prov: Provenance = {
       type: resolved.sourceType === 'skills.sh' ? 'skills.sh' : resolved.sourceType,
@@ -181,7 +186,7 @@ export class RegistryManager {
       portableSpec,
       lockResolved,
       mat.integrity,
-      formatCanonicalPathForLock(skillName),
+      formatCanonicalPathForLock(skillName, opts.global ? 'global' : 'project'),
       prov
     );
 
@@ -201,22 +206,24 @@ export class RegistryManager {
 
   async installLockedEntry(
     entry: LockfileEntry,
-    options: { cwd?: string; expectedIntegrity?: string; name?: string } = {}
+    options: { cwd?: string; expectedIntegrity?: string; name?: string; store?: string } = {}
   ): Promise<{ canonicalPath: string; integrity: string; sourceType: string }> {
     const cwd = options.cwd || process.cwd();
     const config = await loadConfig();
-    return withOperationLocks({ cwd, store: config.store }, () => this.installLockedEntryUnlocked(entry, { ...options, cwd }));
+    const store = options.store || config.store;
+    return withOperationLocks({ cwd, store }, () => this.installLockedEntryUnlocked(entry, { ...options, cwd, store }));
   }
 
   private async installLockedEntryUnlocked(
     entry: LockfileEntry,
-    options: { cwd: string; expectedIntegrity?: string; name?: string }
+    options: { cwd: string; store: string; expectedIntegrity?: string; name?: string }
   ): Promise<{ canonicalPath: string; integrity: string; sourceType: string }> {
     const cwd = options.cwd;
     const resolved = await this.resolveLockedEntry(entry, cwd);
     return this.materialize(resolved, {
       name: options.name || entry.name,
       expectedIntegrity: options.expectedIntegrity || entry.integrity,
+      store: options.store,
     });
   }
 

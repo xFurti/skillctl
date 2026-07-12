@@ -4,9 +4,10 @@ import { loadManifest } from '@skillctl/manifest';
 import { loadLockfile, createEmptyLockfile } from '@skillctl/lockfile';
 import {
   lockToSkillTargets,
-  loadConfig,
   needsInstall,
   resolveEntryCanonicalPath,
+  getProjectSkillsStore,
+  requireSkillctlProject,
   type LockfileEntry,
 } from '@skillctl/core';
 import { RegistryManager } from '@skillctl/registry';
@@ -33,7 +34,8 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
     .option('--prod', 'exclude devDependencies')
     .action(async (options) => {
       try {
-        const cwd = process.cwd();
+        const cwd = await requireSkillctlProject();
+        const store = getProjectSkillsStore(cwd);
         const manifest = await loadManifest(cwd);
         let lock = (await loadLockfile(cwd)) || createEmptyLockfile();
         const registry = mgr || new RegistryManager();
@@ -79,16 +81,16 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
             continue;
           }
 
-          if (!(await needsInstall(entry))) {
+          if (!(await needsInstall(entry, { store }))) {
             console.log(`Using locked ${name}`);
             summary.reused.push(name);
             continue;
           }
 
-          const canonicalPath = await resolveEntryCanonicalPath(entry);
+          const canonicalPath = await resolveEntryCanonicalPath(entry, { store });
           const existed = await stat(canonicalPath).then(() => true, () => false);
           console.log(`${existed ? 'Repairing' : 'Installing'} ${name} from locked resolution...`);
-          await registry.installLockedEntry(entry, { cwd, name, expectedIntegrity: entry.integrity });
+          await registry.installLockedEntry(entry, { cwd, store, name, expectedIntegrity: entry.integrity });
           (existed ? summary.repaired : summary.installed).push(name);
         }
 
@@ -97,13 +99,12 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
         );
 
         if (options.sync !== false) {
-          let skills = await lockToSkillTargets(lock);
+          let skills = await lockToSkillTargets(lock, { store });
           if (options.prod) {
             const allowed = new Set(Object.keys(production));
             skills = skills.filter((skill) => allowed.has(skill.name));
           }
-          const config = await loadConfig();
-          const result = await withOperationLocks({ cwd, store: config.store }, () => syncSkillsToAgents(skills));
+          const result = await withOperationLocks({ cwd, store }, () => syncSkillsToAgents(skills));
           console.log(`Synced ${result.synced} links via adapters: ${result.adaptersUsed.join(', ') || 'none'}`);
           if (result.notes.length) console.log('Notes:', result.notes.join('; '));
         }

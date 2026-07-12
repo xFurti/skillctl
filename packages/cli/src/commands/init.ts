@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { stat } from 'node:fs/promises';
+import { mkdir, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { createDefaultManifest } from '@skillctl/manifest';
 import { loadLockfile, createEmptyLockfile } from '@skillctl/lockfile';
@@ -52,11 +52,13 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
           return { state: { ...state, manifest: sample }, result: true };
         })
       );
+      await mkdir(join(cwd, '.skillctl', 'skills'), { recursive: true });
       if (!created) {
         console.log('agent-skills.json already exists');
         return;
       }
       console.log('Created agent-skills.json');
+      console.log('Created .skillctl/skills');
 
       const registry = mgr || new RegistryManager();
 

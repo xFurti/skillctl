@@ -1,9 +1,9 @@
 import type { LockfileEntry, SkillLockfile, SkillManifest } from './types.js';
 
-const PORTABLE_CANONICAL_PREFIX = '~/.skillctl/skills/';
+const PORTABLE_CANONICAL_PREFIXES = ['~/.skillctl/skills/', '.skillctl/skills/'];
 
 export function isPortableCanonicalPath(path: string): boolean {
-  return path.startsWith(PORTABLE_CANONICAL_PREFIX);
+  return PORTABLE_CANONICAL_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
 export function isPortableSpecifier(spec: string): boolean {
