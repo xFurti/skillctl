@@ -35,16 +35,10 @@ if (toolShimRoot) {
 // GitHub Actions installs the pinned pnpm version before this script runs.
 // Using it directly avoids the stale Corepack bundled with Node 22.13, whose
 // registry signing keys cannot verify current pnpm releases.
-const useInstalledPnpm = Boolean(process.env.CI);
+const useInstalledPnpm = Boolean(process.env.CI) && process.platform !== 'win32';
 
 function runPnpm(args, options = {}) {
-  if (useInstalledPnpm) {
-    return run(
-      process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
-      args,
-      process.platform === 'win32' ? { ...options, shell: true } : options
-    );
-  }
+  if (useInstalledPnpm) return run('pnpm', args, options);
   if (corepack) return run(process.execPath, [corepack, 'pnpm', ...args], options);
   return run('corepack', ['pnpm', ...args], options);
 }
