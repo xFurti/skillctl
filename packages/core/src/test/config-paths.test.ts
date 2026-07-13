@@ -39,10 +39,11 @@ test('resolvePathInside rejects absolute and escaping paths', () => {
 });
 
 test('project lock paths resolve inside the supplied project store', () => {
+  const projectStore = join('/project', '.skillctl', 'skills');
   assert.equal(formatCanonicalPathForLock('My Skill'), '.skillctl/skills/my-skill');
   assert.equal(
-    resolveCanonicalPath('.skillctl/skills/my-skill', '/project/.skillctl/skills'),
-    '/project/.skillctl/skills/my-skill'
+    resolveCanonicalPath('.skillctl/skills/my-skill', projectStore),
+    join(projectStore, 'my-skill')
   );
   assert.equal(formatCanonicalPathForLock('My Skill', 'global'), '~/.skillctl/skills/my-skill');
 });
