@@ -1,7 +1,12 @@
 import type { Command } from 'commander';
 import { loadManifest } from '@skillctl/manifest';
 import { loadLockfile } from '@skillctl/lockfile';
-import { lockToSkillTargets, canonicalizeName, loadConfig } from '@skillctl/core';
+import {
+  canonicalizeName,
+  getProjectSkillsStore,
+  lockToSkillTargets,
+  requireSkillctlProject,
+} from '@skillctl/core';
 import { RegistryManager } from '@skillctl/registry';
 import { syncSkillsToAgents } from '@skillctl/adapters';
 import { handleCommandError } from '../lib/errors.js';
@@ -15,7 +20,8 @@ export function registerUpdate(program: Command, mgr?: RegistryManager): void {
     .option('--no-sync', 'skip agent sync after update')
     .action(async (names, options) => {
       try {
-        const cwd = process.cwd();
+        const cwd = await requireSkillctlProject();
+        const store = getProjectSkillsStore(cwd);
         const manifest = await loadManifest(cwd);
         const lock = await loadLockfile(cwd);
         if (!lock) {
@@ -47,10 +53,9 @@ export function registerUpdate(program: Command, mgr?: RegistryManager): void {
         console.log(`Updated ${updated} skill(s).`);
         if (options.sync !== false) {
           const freshLock = (await loadLockfile(cwd)) || lock;
-          const config = await loadConfig();
           const res = await withOperationLocks(
-            { cwd, store: config.store },
-            async () => syncSkillsToAgents(await lockToSkillTargets(freshLock))
+            { cwd, store },
+            async () => syncSkillsToAgents(await lockToSkillTargets(freshLock, { store }))
           );
           console.log(`Synced ${res.synced} links.`);
         }

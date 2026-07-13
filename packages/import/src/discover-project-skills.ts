@@ -1,5 +1,5 @@
 import { join, relative } from 'node:path';
-import { canonicalizeName, computeDirIntegrity, getRegisteredAdapters, loadConfig } from '@skillctl/core';
+import { canonicalizeName, computeDirIntegrity, getProjectSkillsStore, getRegisteredAdapters } from '@skillctl/core';
 import { pathExists } from '@skillctl/adapters';
 import '@skillctl/adapters';
 import { scanSkillsDir } from './parsers/scan-skills-dir.js';
@@ -60,8 +60,7 @@ export async function discoverProjectSkills(
   opts: DiscoverProjectSkillsOptions = {}
 ): Promise<{ sources: DiscoveredSource[]; deduped: DedupedProjectSkill[] }> {
   const cwd = opts.cwd || process.cwd();
-  const config = await loadConfig();
-  const storeRoot = config.store;
+  const storeRoot = getProjectSkillsStore(cwd);
   const filter = opts.sources?.map((s) => s.toLowerCase());
 
   const sources: DiscoveredSource[] = [];

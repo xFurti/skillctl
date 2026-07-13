@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Project-local `.skillctl/skills/` store with parent-project discovery and clear errors when local operations run outside an initialized project.
+- Explicit global operations via `add -g`, `list -g`, `doctor -g`, and `remove -g`.
+- Native Pi adapter for `.pi/skills/` and `~/.pi/agent/skills/`.
+- Plain `skillctl import`, with automatic agent discovery, identical-content deduplication, optional `--select`, and interactive conflict resolution.
+
+### Changed
+
+- Local and imported skills are copied into the project store and recorded with portable `file:./.skillctl/skills/<name>` specifiers.
+- Conflicting same-name imports abort before project state is updated unless the user resolves them with `--interactive`.
+
 ## [0.5.0] - 2026-07-09
 
 ### Added

@@ -3,7 +3,14 @@ import test from 'node:test';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { getDefaultConfig, loadConfig, resolvePathInside, saveConfig } from '../index.js';
+import {
+  formatCanonicalPathForLock,
+  getDefaultConfig,
+  loadConfig,
+  resolveCanonicalPath,
+  resolvePathInside,
+  saveConfig,
+} from '../index.js';
 
 test('loadConfig distinguishes a missing config from a corrupted config', async () => {
   const root = await mkdtemp(join(tmpdir(), 'skillctl-config-'));
@@ -29,6 +36,16 @@ test('resolvePathInside rejects absolute and escaping paths', () => {
   assert.equal(resolvePathInside(root, 'skills/demo'), join(root, 'skills', 'demo'));
   assert.throws(() => resolvePathInside(root, '../outside'), /escapes its root/);
   assert.throws(() => resolvePathInside(root, resolve(root, 'absolute')), /absolute/);
+});
+
+test('project lock paths resolve inside the supplied project store', () => {
+  const projectStore = join('/project', '.skillctl', 'skills');
+  assert.equal(formatCanonicalPathForLock('My Skill'), '.skillctl/skills/my-skill');
+  assert.equal(
+    resolveCanonicalPath('.skillctl/skills/my-skill', projectStore),
+    join(projectStore, 'my-skill')
+  );
+  assert.equal(formatCanonicalPathForLock('My Skill', 'global'), '~/.skillctl/skills/my-skill');
 });
 
 function resolve(...parts: string[]): string {

@@ -56,8 +56,9 @@ test('findLockReproducibilityWarnings distinguishes pinned and legacy entries', 
   ]);
 });
 
-test('isPortableCanonicalPath accepts tilde store paths only', () => {
+test('isPortableCanonicalPath accepts project and global store paths', () => {
   assert.equal(isPortableCanonicalPath(formatCanonicalPathForLock('demo')), true);
+  assert.equal(isPortableCanonicalPath(formatCanonicalPathForLock('demo', 'global')), true);
   assert.equal(isPortableCanonicalPath('/Users/me/.skillctl/skills/demo'), false);
 });
 

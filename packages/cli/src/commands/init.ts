@@ -1,10 +1,10 @@
 import type { Command } from 'commander';
-import { stat } from 'node:fs/promises';
+import { mkdir, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { createDefaultManifest } from '@skillctl/manifest';
 import { loadLockfile, createEmptyLockfile } from '@skillctl/lockfile';
 import { discoverProjectSkills, executeImport } from '@skillctl/import';
-import { loadConfig, lockToSkillTargets } from '@skillctl/core';
+import { getProjectSkillsStore, lockToSkillTargets } from '@skillctl/core';
 import { RegistryManager } from '@skillctl/registry';
 import { syncSkillsToAgents } from '@skillctl/adapters';
 import { confirm } from '../lib/prompt.js';
@@ -28,7 +28,7 @@ async function addMetaSkill(cwd: string, registry: RegistryManager, sync: boolea
   await registry.add(spec, { cwd, updateManifest: true });
   if (sync) {
     const lock = (await loadLockfile(cwd)) || createEmptyLockfile();
-    const skills = await lockToSkillTargets(lock);
+    const skills = await lockToSkillTargets(lock, { store: getProjectSkillsStore(cwd) });
     const res = await syncSkillsToAgents(skills);
     console.log(`Synced ${res.synced} agent target(s).`);
     if (res.notes.length) console.log('Notes:', res.notes.join('; '));
@@ -44,19 +44,21 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
     .option('--with-skill', 'add the skillctl meta-skill and sync to agents')
     .action(async (options) => {
       const cwd = process.cwd();
-      const config = await loadConfig();
+      const store = getProjectSkillsStore(cwd);
       const sample = createDefaultManifest(basename(cwd));
-      const created = await withOperationLocks({ cwd, store: config.store }, async () =>
+      const created = await withOperationLocks({ cwd, store }, async () =>
         updateProjectState(cwd, async (state) => {
           if (state.manifest) return { state, result: false };
           return { state: { ...state, manifest: sample }, result: true };
         })
       );
+      await mkdir(join(cwd, '.skillctl', 'skills'), { recursive: true });
       if (!created) {
         console.log('agent-skills.json already exists');
         return;
       }
       console.log('Created agent-skills.json');
+      console.log('Created .skillctl/skills');
 
       const registry = mgr || new RegistryManager();
 

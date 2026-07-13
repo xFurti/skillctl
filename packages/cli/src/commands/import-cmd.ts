@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
 import { executeImport, planImportFromProject, type ImportPlanItem } from '@skillctl/import';
 import { handleCommandError } from '../lib/errors.js';
-import { confirm } from '../lib/prompt.js';
+import { choose, confirm, isInteractive } from '../lib/prompt.js';
 
 function printPlan(plan: ImportPlanItem[]): void {
   for (const item of plan) {
@@ -31,7 +31,19 @@ function printDiscoverySummary(discovered: Awaited<ReturnType<typeof planImportF
 export function registerImport(program: Command): void {
   const importCmd = program
     .command('import')
-    .description('Import skills from npx skills, Python skillctl, or agent directories in the project');
+    .description('Import all skills discovered in project agent directories')
+    .option('--dry-run', 'show import plan only')
+    .option('--select', 'interactively select skills to import')
+    .option('--interactive', 'interactively resolve conflicting skills')
+    .option('--sources <list>', 'comma-separated adapter ids')
+    .option('--sync', 'sync agent links after import')
+    .action(async (options) => {
+      try {
+        await importProject(options);
+      } catch (err) {
+        handleCommandError(err, 'import');
+      }
+    });
 
   importCmd
     .command('from-project')
@@ -168,4 +180,65 @@ export function registerImport(program: Command): void {
         handleCommandError(err, 'import');
       }
     });
+}
+
+async function importProject(options: {
+  dryRun?: boolean;
+  select?: boolean;
+  interactive?: boolean;
+  sources?: string;
+  sync?: boolean;
+  yes?: boolean;
+  lockOnly?: boolean;
+  noManifest?: boolean;
+}): Promise<void> {
+  const cwd = process.cwd();
+  const sources = options.sources
+    ? String(options.sources).split(',').map((value) => value.trim()).filter(Boolean)
+    : undefined;
+  let { plan, discovered } = await planImportFromProject(cwd, { sources });
+  const conflictChoices: Record<string, string> = {};
+
+  const conflicts = discovered.deduped.filter((skill) => skill.action === 'skip-conflict');
+  if (conflicts.length && options.interactive) {
+    if (!isInteractive()) throw new Error('`skillctl import --interactive` requires an interactive terminal.');
+    for (const conflict of conflicts) {
+      const index = await choose(
+        `Conflicting contents found for "${conflict.name}". Choose which copy to import:`,
+        conflict.occurrences.map((occurrence) => `${occurrence.adapterName}: ${occurrence.relativePath}`)
+      );
+      conflictChoices[conflict.name] = conflict.occurrences[index].localPath;
+    }
+    ({ plan, discovered } = await planImportFromProject(cwd, { sources, conflictChoices }));
+  }
+
+  printDiscoverySummary(discovered);
+  if (options.dryRun) {
+    console.log('Import plan:');
+    printPlan(plan);
+    return;
+  }
+  if (!discovered.sources.length) return;
+
+  let selectedNames: string[] | undefined;
+  if (options.select) {
+    if (!isInteractive()) throw new Error('`skillctl import --select` requires an interactive terminal.');
+    selectedNames = [];
+    for (const item of plan.filter((candidate) => !candidate.action.startsWith('skip-'))) {
+      if (await confirm(`Import ${item.name}?`, true)) selectedNames.push(item.name);
+    }
+  }
+
+  const result = await executeImport({
+    source: 'project',
+    cwd,
+    sync: options.sync,
+    lockOnly: options.lockOnly || options.noManifest,
+    sources,
+    selectedNames,
+    conflictChoices,
+  });
+  console.log(`Imported: ${result.imported.join(', ') || '(none)'}`);
+  if (result.skipped.length) console.log(`Skipped: ${result.skipped.join(', ')}`);
+  if (result.imported.length && !options.sync) console.log('Run `skillctl sync` to refresh agent links.');
 }

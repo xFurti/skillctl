@@ -89,8 +89,8 @@ export async function lockToSkillTargets(
   return targets;
 }
 
-export async function purgeCanonical(name: string): Promise<void> {
-  const config = await loadConfig();
-  const p = join(config.store, canonicalizeName(name));
+export async function purgeCanonical(name: string, options?: { store?: string }): Promise<void> {
+  const store = await resolveStoreRoot(options?.store);
+  const p = join(store, canonicalizeName(name));
   await rm(p, { recursive: true, force: true }).catch(() => {});
 }

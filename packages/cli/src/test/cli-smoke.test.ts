@@ -35,7 +35,7 @@ test('frozen install rejects a manifest dependency missing from the lockfile', a
 
 test('frozen install restores an empty store without changing the lockfile', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'skillctl-frozen-restore-'));
-  const store = join(cwd, '.store');
+  const store = join(cwd, '.skillctl', 'skills');
   const source = join(cwd, 'demo-skill');
   await mkdir(source);
   await writeFile(join(source, 'SKILL.md'), '---\nname: demo\n---\nlocked content\n');
@@ -57,7 +57,7 @@ test('frozen install restores an empty store without changing the lockfile', asy
 
   await execFileAsync(process.execPath, [cli, 'install', '--frozen', '--no-sync'], {
     cwd,
-    env: { ...process.env, SKILLCTL_STORE: store },
+    env: process.env,
   });
 
   assert.match(await readFile(join(store, 'demo', 'SKILL.md'), 'utf8'), /locked content/);
@@ -66,7 +66,7 @@ test('frozen install restores an empty store without changing the lockfile', asy
   await writeFile(join(store, 'demo', 'SKILL.md'), 'corrupt');
   await execFileAsync(process.execPath, [cli, 'install', '--frozen', '--no-sync'], {
     cwd,
-    env: { ...process.env, SKILLCTL_STORE: store },
+    env: process.env,
   });
   assert.match(await readFile(join(store, 'demo', 'SKILL.md'), 'utf8'), /locked content/);
 });

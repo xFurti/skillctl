@@ -103,16 +103,20 @@ async function runTests() {
   await writeFile(join(skillDir, 'SKILL.md'), '---\nname: my-test-skill\n---\nContent here.\n');
   // extra file for hash
   await writeFile(join(skillDir, 'notes.txt'), 'hello');
+  await writeFile(
+    join(fixtureRoot, 'agent-skills.json'),
+    JSON.stringify({ agentSkills: { dependencies: {}, devDependencies: {} } })
+  );
 
   const localSpec = `file:${skillDir}`;
   const entry = await mgr.add(localSpec, { cwd: fixtureRoot, updateManifest: true });
 
   assert.equal(entry.name, 'my-test-skill');
   assert.ok(entry.integrity.startsWith('sha256:'));
-  assert.equal(entry.specifier, 'file:./my-test-skill');
-  assert.equal(entry.resolved, 'file:./my-test-skill');
+  assert.equal(entry.specifier, 'file:./.skillctl/skills/my-test-skill');
+  assert.equal(entry.resolved, 'file:./.skillctl/skills/my-test-skill');
   assert.ok(entry.provenance.type === 'local');
-  assert.equal(entry.canonicalPath, '~/.skillctl/skills/my-test-skill');
+  assert.equal(entry.canonicalPath, '.skillctl/skills/my-test-skill');
   assert.ok(!entry.specifier.includes(skillDir), 'specifier must not contain absolute source path');
 
   // lock was written
@@ -120,17 +124,17 @@ async function runTests() {
   assert.ok(lock);
   assert.ok(lock!.skills['my-test-skill']);
   assert.equal(lock!.skills['my-test-skill'].integrity, entry.integrity);
-  assert.equal(lock!.skills['my-test-skill'].canonicalPath, '~/.skillctl/skills/my-test-skill');
+  assert.equal(lock!.skills['my-test-skill'].canonicalPath, '.skillctl/skills/my-test-skill');
 
-  // outside-project path auto-imports as local:imported
+  // outside-project paths are vendored into the project store
   const outsideRoot = await mkdtemp(join(tmpdir(), 'outside-fixture-'));
   const outsideSkill = join(outsideRoot, 'external-skill');
   await mkdir(outsideSkill, { recursive: true });
   await writeFile(join(outsideSkill, 'SKILL.md'), '---\nname: external-skill\n---\nBody\n');
   const outsideEntry = await mgr.add(`file:${outsideSkill}`, { cwd: fixtureRoot, updateManifest: false });
-  assert.equal(outsideEntry.specifier, 'local:imported/external-skill');
-  assert.equal(outsideEntry.resolved, 'local:imported/external-skill');
-  assert.equal(outsideEntry.canonicalPath, '~/.skillctl/skills/external-skill');
+  assert.equal(outsideEntry.specifier, 'file:./.skillctl/skills/external-skill');
+  assert.equal(outsideEntry.resolved, 'file:./.skillctl/skills/external-skill');
+  assert.equal(outsideEntry.canonicalPath, '.skillctl/skills/external-skill');
   await rm(outsideRoot, { recursive: true, force: true });
   try {
     const cfg = await loadConfig();

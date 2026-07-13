@@ -1,11 +1,14 @@
 import type { Command } from 'commander';
 import {
   canonicalizeName,
-  loadConfig,
+  getGlobalSkillctlRoot,
+  getGlobalSkillsStore,
+  getProjectSkillsStore,
   purgeCanonical,
   resolveAdapterTarget,
   resolveEntryCanonicalPath,
   type LockfileEntry,
+  requireSkillctlProject,
 } from '@skillctl/core';
 import { getEnabledAdapters } from '@skillctl/adapters';
 import { updateProjectState, withOperationLocks } from '@skillctl/project-state';
@@ -17,13 +20,14 @@ export function registerRemove(program: Command): void {
     .alias('rm')
     .description('Remove skill from manifest/lock and unlink agent targets')
     .option('--json', 'machine-readable output')
-    .option('--purge', 'also remove from canonical ~/.skillctl/skills/<name>')
+    .option('-g, --global', 'remove from the global skill store')
+    .option('--purge', 'also remove installed skill contents')
     .action(async (name, options) => {
       try {
-        const cwd = process.cwd();
-        const config = await loadConfig();
+        const cwd = options.global ? getGlobalSkillctlRoot() : await requireSkillctlProject();
+        const store = options.global ? getGlobalSkillsStore() : getProjectSkillsStore(cwd);
         const canonicalName = canonicalizeName(name);
-        await withOperationLocks({ cwd, store: config.store }, async () => {
+        await withOperationLocks({ cwd, store }, async () => {
           let removedEntry: LockfileEntry | undefined;
           let changed = false;
           await updateProjectState(cwd, async (state) => {
@@ -46,9 +50,10 @@ export function registerRemove(program: Command): void {
           });
 
           if (removedEntry) {
-            const canonicalPath = await resolveEntryCanonicalPath(removedEntry);
+            const canonicalPath = await resolveEntryCanonicalPath(removedEntry, { store });
             for (const adapter of await getEnabledAdapters()) {
-              for (const path of [...adapter.projectPaths, ...adapter.globalPaths]) {
+              const paths = options.global ? adapter.globalPaths : [...adapter.projectPaths, ...adapter.globalPaths];
+              for (const path of paths) {
                 const target = resolveAdapterTarget(path, canonicalName, cwd);
                 await adapter.removeTarget(canonicalName, target, canonicalPath).catch((err) => {
                   console.warn(`Skipped unsafe target ${target}: ${(err as Error).message}`);
@@ -56,7 +61,7 @@ export function registerRemove(program: Command): void {
               }
             }
           }
-          if (options.purge) await purgeCanonical(canonicalName);
+          if (options.purge || options.global) await purgeCanonical(canonicalName, { store });
           if (!changed && !options.purge) console.log(`No entry for ${name} found.`);
           else console.log(`Removed ${canonicalName}.`);
         });

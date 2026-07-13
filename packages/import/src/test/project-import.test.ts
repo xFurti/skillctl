@@ -29,14 +29,14 @@ test('discoverProjectSkills finds skills in .codex/skills', async () => {
   }
 });
 
-test('planImportFromProject uses local:imported specifier', async () => {
+test('planImportFromProject uses a vendored project-relative specifier', async () => {
   const root = await mkdtemp(join(tmpdir(), 'skillctl-import-'));
   try {
     await writeSkill(join(root, '.claude', 'skills'), 'grill-me');
     const { plan } = await planImportFromProject(root);
     assert.equal(plan.length, 1);
     assert.equal(plan[0].action, 'copy-local');
-    assert.equal(plan[0].specifier, 'local:imported/grill-me');
+    assert.equal(plan[0].specifier, 'file:./.skillctl/skills/grill-me');
     assert.match(plan[0].originalPath || '', /\.claude\/skills\/grill-me/);
   } finally {
     await rm(root, { recursive: true, force: true });

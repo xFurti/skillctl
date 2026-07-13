@@ -5,9 +5,9 @@ import {
   computeDirIntegrity,
   ensureDir,
   formatCanonicalPathForLock,
-  importedSpecifier,
-  loadConfig,
+  getProjectSkillsStore,
   lockToSkillTargets,
+  requireSkillctlProject,
   type LockfileEntry,
   type Provenance,
 } from '@skillctl/core';
@@ -31,6 +31,8 @@ export interface ImportOptions {
   lockOnly?: boolean;
   source: 'npx' | 'python-skillctl' | 'project';
   sources?: string[];
+  selectedNames?: string[];
+  conflictChoices?: Record<string, string>;
 }
 
 export interface ImportPlanItem {
@@ -60,22 +62,22 @@ export interface ImportResult {
 async function materializeLocal(
   localPath: string,
   name: string,
-  prov: Provenance
+  prov: Provenance,
+  projectRoot: string
 ): Promise<LockfileEntry> {
-  const config = await import('@skillctl/core').then((m) => m.loadConfig());
-  const store = config.store;
+  const store = getProjectSkillsStore(projectRoot);
   const canonicalName = canonicalizeName(name);
   const target = join(store, canonicalName);
   await ensureDir(target);
   await cp(localPath, target, { recursive: true, force: true });
   const integrity = await computeDirIntegrity(target);
-  const specifier = importedSpecifier(canonicalName);
+  const specifier = `file:./.skillctl/skills/${canonicalName}`;
   return makeLockEntry(
     canonicalName,
     specifier,
     specifier,
     integrity,
-    formatCanonicalPathForLock(canonicalName),
+    formatCanonicalPathForLock(canonicalName, 'project'),
     prov
   );
 }
@@ -87,13 +89,13 @@ async function registerExistingCanonical(
 ): Promise<LockfileEntry> {
   const canonicalName = canonicalizeName(name);
   const integrity = await computeDirIntegrity(canonicalPath);
-  const specifier = importedSpecifier(canonicalName);
+  const specifier = `file:./.skillctl/skills/${canonicalName}`;
   return makeLockEntry(
     canonicalName,
     specifier,
     specifier,
     integrity,
-    formatCanonicalPathForLock(canonicalName),
+    formatCanonicalPathForLock(canonicalName, 'project'),
     prov
   );
 }
@@ -136,18 +138,13 @@ export async function planImportFromNpx(cwd: string): Promise<ImportPlanItem[]> 
 
 export async function planImportFromProject(
   cwd: string,
-  opts?: { sources?: string[] }
+  opts?: { sources?: string[]; conflictChoices?: Record<string, string> }
 ): Promise<{ plan: ImportPlanItem[]; discovered: Awaited<ReturnType<typeof discoverProjectSkills>> }> {
   const lock = (await loadLockfile(cwd)) || createEmptyLockfile();
   const discovered = await discoverProjectSkills({ cwd, sources: opts?.sources });
   const plan: ImportPlanItem[] = [];
 
   for (const skill of discovered.deduped) {
-    if (lock.skills[skill.name]) {
-      plan.push({ name: skill.name, action: 'skip-existing', note: 'already in agent-skills.lock' });
-      continue;
-    }
-
     const primary = skill.occurrences[0];
     if (skill.action === 'skip-broken') {
       plan.push({
@@ -157,7 +154,8 @@ export async function planImportFromProject(
       });
       continue;
     }
-    if (skill.action === 'skip-conflict') {
+    const conflictChoice = opts?.conflictChoices?.[skill.name];
+    if (skill.action === 'skip-conflict' && !conflictChoice) {
       plan.push({
         name: skill.name,
         action: 'skip-conflict',
@@ -166,12 +164,34 @@ export async function planImportFromProject(
       continue;
     }
 
+    if (skill.action === 'skip-conflict' && conflictChoice) {
+      const chosen = skill.occurrences.find(
+        (occurrence) => occurrence.localPath === conflictChoice || occurrence.relativePath === conflictChoice
+      );
+      if (!chosen) throw new Error(`Invalid conflict choice for ${skill.name}: ${conflictChoice}`);
+      plan.push({
+        name: skill.name,
+        action: 'copy-local',
+        localPath: chosen.resolvedPath,
+        specifier: `file:./.skillctl/skills/${skill.name}`,
+        adapter: chosen.adapterId,
+        originalPath: chosen.relativePath,
+        note: `selected ${chosen.relativePath}`,
+      });
+      continue;
+    }
+
+    if (lock.skills[skill.name]) {
+      plan.push({ name: skill.name, action: 'skip-existing', note: 'already in agent-skills.lock' });
+      continue;
+    }
+
     if (skill.action === 'register-existing') {
       plan.push({
         name: skill.name,
         action: 'register-existing',
         localPath: skill.resolvedPath,
-        specifier: importedSpecifier(skill.name),
+        specifier: `file:./.skillctl/skills/${skill.name}`,
         adapter: primary?.adapterId,
         originalPath: primary?.relativePath,
         note: skill.note,
@@ -183,7 +203,7 @@ export async function planImportFromProject(
       name: skill.name,
       action: 'copy-local',
       localPath: skill.resolvedPath,
-      specifier: importedSpecifier(skill.name),
+      specifier: `file:./.skillctl/skills/${skill.name}`,
       adapter: primary?.adapterId,
       originalPath: primary?.relativePath,
       note: skill.note,
@@ -216,13 +236,16 @@ function shouldSync(opts: ImportOptions): boolean {
 }
 
 export async function executeImport(opts: ImportOptions): Promise<ImportResult> {
-  const cwd = opts.cwd || process.cwd();
+  const cwd = await requireSkillctlProject(opts.cwd || process.cwd());
   const result: ImportResult = { plan: [], imported: [], skipped: [], errors: [] };
 
   if (opts.source === 'npx') {
     result.plan = await planImportFromNpx(cwd);
   } else if (opts.source === 'project') {
-    const { plan, discovered } = await planImportFromProject(cwd, { sources: opts.sources });
+    const { plan, discovered } = await planImportFromProject(cwd, {
+      sources: opts.sources,
+      conflictChoices: opts.conflictChoices,
+    });
     result.plan = plan;
     result.discovered = discovered;
   } else {
@@ -238,7 +261,19 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
     }
   }
 
+  if (opts.selectedNames) {
+    const selected = new Set(opts.selectedNames.map(canonicalizeName));
+    result.plan = result.plan.filter((item) => selected.has(item.name));
+  }
+
   if (opts.dryRun) return result;
+
+  const conflicts = result.plan.filter((item) => item.action === 'skip-conflict');
+  if (conflicts.length) {
+    throw new Error(
+      `Import aborted before making changes: ${conflicts.map((item) => `${item.name} (${item.note})`).join('; ')}`
+    );
+  }
 
   let lock = (await loadLockfile(cwd)) || createEmptyLockfile();
 
@@ -282,7 +317,7 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
           result.errors.push(`${item.name}: local path not found ${item.localPath}`);
           continue;
         }
-        entry = await materializeLocal(item.localPath, item.name, prov);
+        entry = await materializeLocal(item.localPath, item.name, prov, cwd);
       } else {
         continue;
       }
@@ -295,8 +330,8 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
   }
 
   lock.metadata = { ...lock.metadata, migratedAt: new Date().toISOString(), toolVersion: '0.5.0' };
-  const config = await loadConfig();
-  await withOperationLocks({ cwd, store: config.store }, async () => {
+  const store = getProjectSkillsStore(cwd);
+  await withOperationLocks({ cwd, store }, async () => {
     await updateProjectState(cwd, async (state) => {
       const existingLock = state.lockfile || createEmptyLockfile();
       const mergedLock = {
@@ -320,10 +355,10 @@ export async function executeImport(opts: ImportOptions): Promise<ImportResult> 
   });
 
   if (shouldSync(opts) && result.imported.length > 0) {
-    const allTargets = await lockToSkillTargets(lock);
+    const allTargets = await lockToSkillTargets(lock, { store });
     const imported = new Set(result.imported);
     const skills = allTargets.filter((s) => imported.has(s.name));
-    await withOperationLocks({ cwd, store: config.store }, () => syncSkillsToAgents(skills));
+    await withOperationLocks({ cwd, store }, () => syncSkillsToAgents(skills));
   }
 
   return result;

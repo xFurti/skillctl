@@ -6,7 +6,7 @@
 
 Universal, package-manager-style CLI for managing **Agent Skills** across AI coding agents.
 
-`skillctl` keeps a single canonical store at `~/.skillctl/skills/` and syncs skills (symlink, junction on Windows, or copy) into Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, and other [agentskills.io](https://agentskills.io)-compatible agents.
+`skillctl` installs project skills into `.skillctl/skills/` and personal skills into `~/.skillctl/skills/`, then syncs them (symlink, junction on Windows, or copy) into Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, Pi, and other [agentskills.io](https://agentskills.io)-compatible agents.
 
 > **Status**: v0.5.0 — immutable GitHub/npm resolutions, frozen store restoration, scoped sync/prune, transactional state, and uniform JSON output. See [CHANGELOG.md](./CHANGELOG.md).
 
@@ -28,6 +28,7 @@ Published package: `@skillctl/cli` (scoped). The `skillctl` command is still ava
 
 ```bash
 skillctl init
+skillctl import          # copy existing agent skills into .skillctl/skills
 skillctl add github:vercel-labs/agent-skills@main#web-design-guidelines
 skillctl add npm:some-skill-pkg@^2
 skillctl add file:./my-skill
@@ -41,7 +42,18 @@ Project files (commit these):
 - `agent-skills.json` — declarative manifest (like `package.json`)
 - `agent-skills.lock` — reproducible YAML lockfile (like `pnpm-lock.yaml`)
 
-Canonical store: `~/.skillctl/skills/<name>/SKILL.md` (+ optional `scripts/`, `references/`).
+Project store: `.skillctl/skills/<name>/SKILL.md` (+ optional `scripts/`, `references/`). Commit vendored project skills so private or unpublished skills are available to the whole team.
+
+Global skills are explicit and remain outside the project:
+
+```bash
+skillctl add -g file:../my-personal-skill
+skillctl list -g
+skillctl doctor -g
+skillctl remove -g my-personal-skill
+```
+
+Local commands search parent directories for `agent-skills.json`. Outside an initialized project, use `-g` or run `skillctl init` first.
 
 ## Reproducible installs
 
@@ -51,7 +63,7 @@ Remote requests remain readable in the manifest, while the lock pins GitHub and 
 skillctl install --frozen
 ```
 
-`update` is the operation that intentionally refreshes a valid remote resolution. A missing `local:imported/...` copy cannot be reconstructed on another machine; prefer a remote source or `file:./...` for team workflows.
+`update` is the operation that intentionally refreshes a valid remote resolution. Imported and local skills use project-relative `file:./.skillctl/skills/<name>` entries, so committed skills remain available without a registry.
 
 ## Selective sync and automation
 
@@ -76,6 +88,7 @@ Every first-party command supports `--json` and writes one envelope with `schema
 | Codex | `.codex/skills` | `~/.codex/skills` |
 | Gemini CLI | `.gemini/skills` | `~/.gemini/skills` |
 | Grok | `.grok/skills` | `~/.grok/skills` |
+| Pi | `.pi/skills` | `~/.pi/agent/skills` |
 
 More agents via plugins (experimental) or future adapter releases.
 
@@ -102,9 +115,13 @@ skillctl skill validate skills/skillctl
 ## Common Tasks
 
 ```bash
-# Import skills already in agent directories (.codex/skills, .claude/skills, ...)
-skillctl import from-project --dry-run
-skillctl import from-project
+# Import every skill already in agent directories without changing the sources
+skillctl import --dry-run
+skillctl import
+
+# Optional selection and conflict resolution
+skillctl import --select
+skillctl import --interactive
 
 # Migrate from npx skills
 skillctl import from-npx --dry-run
