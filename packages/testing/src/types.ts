@@ -73,6 +73,7 @@ export interface AgentRunResult {
 export interface AgentRunner {
   readonly id: string;
   detect(): Promise<RunnerDetection>;
+  preflight?(policies: NetworkPolicy[]): Promise<void>;
   run(request: AgentRunRequest): Promise<AgentRunResult>;
 }
 

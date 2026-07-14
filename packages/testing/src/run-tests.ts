@@ -37,6 +37,8 @@ export async function runSkillTests(testFile: SkillTestFile, options: RunSkillTe
   const runId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID()}`;
   const detection = await options.runner.detect();
   if (!detection.available) throw new Error(detection.reason || `Runner ${options.runner.id} is unavailable`);
+  const policies = testFile.cases.map((testCase) => testCase.network || { mode: 'deny' as const, webSearch: 'disabled' as const });
+  await options.runner.preflight?.([...new Map(policies.map((policy) => [`${policy.mode}:${policy.webSearch}`, policy])).values()]);
   const auth = resolveCodexAuth();
   const caseResults: CaseResult[] = [];
   const allBaseline: VariantResult[] = [];
