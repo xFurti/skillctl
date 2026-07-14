@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { resolve } from 'node:path';
 import { validateSkillDir, auditExitCode } from '@skillctl/security';
@@ -17,17 +18,17 @@ export function registerSkill(program: Command): void {
         const report = await validateSkillDir(skillPath);
 
         if (options.json) {
-          console.log(JSON.stringify({ ...report, path: skillPath }, null, 2));
+          cliLog(JSON.stringify({ ...report, path: skillPath }, null, 2));
           process.exitCode = auditExitCode(report, options.strict);
           return;
         }
 
-        console.log(`skillctl skill validate — ${skillPath}`);
-        console.log(`Status: ${report.status} (scanned ${report.scanned})`);
+        cliLog(`skillctl skill validate — ${skillPath}`);
+        cliLog(`Status: ${report.status} (scanned ${report.scanned})`);
         for (const f of report.findings) {
-          console.log(`  [${f.severity}] ${f.rule}: ${f.message}`);
+          cliLog(`  [${f.severity}] ${f.rule}: ${f.message}`);
         }
-        if (report.findings.length === 0) console.log('  No issues found.');
+        if (report.findings.length === 0) cliLog('  No issues found.');
 
         process.exitCode = auditExitCode(report, options.strict);
       } catch (err) {

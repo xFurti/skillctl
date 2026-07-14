@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { stat } from 'node:fs/promises';
 import { loadLockfile } from '@skillctl/lockfile';
@@ -70,7 +71,7 @@ export function registerInfo(program: Command, registry = new RegistryManager())
             },
           };
         }
-        if (options.json) console.log(JSON.stringify(report, null, 2));
+        if (options.json) cliLog(JSON.stringify(report, null, 2));
         else printReport(report as Record<string, unknown>);
       } catch (err) {
         handleCommandError(err, 'info');
@@ -88,14 +89,14 @@ function tryCanonicalizeName(value: string): string | undefined {
 }
 
 function printReport(report: Record<string, unknown>): void {
-  console.log(`${report.name}${report.description ? ` — ${report.description}` : ''}`);
+  cliLog(`${report.name}${report.description ? ` — ${report.description}` : ''}`);
   for (const key of ['scope', 'specifier', 'resolved', 'integrity', 'canonicalPath', 'present']) {
-    if (report[key] !== undefined) console.log(`${key}: ${report[key]}`);
+    if (report[key] !== undefined) cliLog(`${key}: ${report[key]}`);
   }
-  if (report.provenance) console.log(`provenance: ${JSON.stringify(report.provenance)}`);
+  if (report.provenance) cliLog(`provenance: ${JSON.stringify(report.provenance)}`);
   if (Array.isArray(report.targets)) {
     for (const target of report.targets as Array<Record<string, unknown>>) {
-      console.log(`target: ${target.adapter}/${target.scope} ${target.state} ${target.target}`);
+      cliLog(`target: ${target.adapter}/${target.scope} ${target.state} ${target.target}`);
     }
   }
 }

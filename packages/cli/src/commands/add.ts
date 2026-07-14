@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { RegistryManager } from '@skillctl/registry';
 import { syncSkillsToAgents } from '@skillctl/adapters';
@@ -14,21 +15,21 @@ export function registerAdd(program: Command, mgr?: RegistryManager): void {
     .action(async (spec, options) => {
       try {
         const registry = mgr || new RegistryManager();
-        console.log(`Resolving ${spec} via registry...`);
+        cliLog(`Resolving ${spec} via registry...`);
         const entry = await registry.add(spec, {
           global: options.global,
           updateManifest: options.global ? false : options.manifest !== false,
         });
-        console.log(`Added ${entry.name}`);
-        console.log(`  resolved: ${entry.resolved}`);
-        console.log(`  integrity: ${entry.integrity}`);
-        console.log(`  canonical: ${entry.canonicalPath}`);
+        cliLog(`Added ${entry.name}`);
+        cliLog(`  resolved: ${entry.resolved}`);
+        cliLog(`  integrity: ${entry.integrity}`);
+        cliLog(`  canonical: ${entry.canonicalPath}`);
         if (options.global) {
           const result = await syncSkillsToAgents(
             [{ name: entry.name, canonicalPath: await resolveEntryCanonicalPath(entry, { store: getGlobalSkillsStore() }) }],
             { scope: 'global' }
           );
-          console.log(`  synced: ${result.synced} global agent target(s)`);
+          cliLog(`  synced: ${result.synced} global agent target(s)`);
         }
       } catch (err) {
         handleCommandError(err, 'add');

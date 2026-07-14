@@ -1,4 +1,5 @@
 import type { Command } from 'commander';
+import { redactSecrets } from './redaction.js';
 
 export interface CliIssue {
   code: string;
@@ -15,47 +16,88 @@ export interface CliEnvelope<T> {
   errors: CliIssue[];
 }
 
+interface OutputState {
+  json: boolean;
+  command: string;
+  messages: string[];
+  warnings: CliIssue[];
+  errors: CliIssue[];
+}
+
+let state: OutputState = freshState(false);
+
+export function cliLog(...args: unknown[]): void {
+  const message = redactText(formatArgs(args));
+  if (state.json) state.messages.push(message);
+  else process.stdout.write(`${message}\n`);
+}
+
+export function cliWarn(...args: unknown[]): void {
+  const message = redactText(formatArgs(args));
+  state.warnings.push({ code: 'COMMAND_WARNING', message });
+  process.stderr.write(`${message}\n`);
+}
+
+export function cliError(...args: unknown[]): void {
+  const message = redactText(formatArgs(args));
+  state.errors.push({ code: 'COMMAND_ERROR', message });
+  process.stderr.write(`${message}\n`);
+}
+
+export function addCliIssue(kind: 'warning' | 'error', issue: CliIssue): void {
+  const redacted = redactSecrets(issue, knownSecrets()).value;
+  state[kind === 'warning' ? 'warnings' : 'errors'].push(redacted);
+  process.stderr.write(`${redacted.message}\n`);
+}
+
+export function writeCliRaw(stream: 'stdout' | 'stderr', value: string): void {
+  process[stream].write(redactText(value));
+}
+
 export async function runCli(program: Command, argv = process.argv): Promise<void> {
-  if (!argv.includes('--json')) {
+  state = freshState(argv.includes('--json'));
+  if (!state.json) {
+    configureHumanCommands(program);
     await program.parseAsync(argv);
     return;
   }
 
-  const original = { log: console.log, warn: console.warn, error: console.error };
-  const messages: string[] = [];
-  const warningMessages: string[] = [];
-  const errorMessages: string[] = [];
-  console.log = (...args: unknown[]) => messages.push(formatArgs(args));
-  console.warn = (...args: unknown[]) => warningMessages.push(formatArgs(args));
-  console.error = (...args: unknown[]) => errorMessages.push(formatArgs(args));
-
+  configureJsonCommands(program);
   try {
     await program.parseAsync(argv);
   } catch (err) {
-    errorMessages.push(err instanceof Error ? err.message : String(err));
+    addCliIssue('error', {
+      code: 'COMMAND_ERROR',
+      message: err instanceof Error ? err.message : String(err),
+    });
     process.exitCode = process.exitCode || 2;
-  } finally {
-    console.log = original.log;
-    console.warn = original.warn;
-    console.error = original.error;
   }
 
-  const parsedData = parseSingleStructuredMessage(messages);
-  const errors = errorMessages.map((message) => ({ code: 'COMMAND_ERROR', message }));
-  const warnings = warningMessages.map((message) => ({ code: 'COMMAND_WARNING', message }));
-  const currentExitCode = numericExitCode();
-  if (errors.length && currentExitCode < 2) process.exitCode = 2;
-  else if (warnings.length && !process.exitCode) process.exitCode = 1;
-
+  const data = parseSingleStructuredMessage(state.messages)
+    ?? (state.messages.length ? { messages: state.messages } : null);
+  const exitCode = numericExitCode();
   const envelope: CliEnvelope<unknown> = {
     schemaVersion: 1,
-    ok: errors.length === 0 && numericExitCode() < 2,
-    command: commandName(argv),
-    data: parsedData ?? (messages.length ? { messages } : null),
-    warnings,
-    errors,
+    ok: state.errors.length === 0 && exitCode < 2,
+    command: state.command,
+    data,
+    warnings: state.warnings,
+    errors: state.errors,
   };
-  original.log(JSON.stringify(envelope, null, 2));
+  const redacted = redactSecrets(envelope, knownSecrets());
+  process.stdout.write(`${JSON.stringify(redacted.value, null, 2)}\n`);
+}
+
+function configureHumanCommands(program: Command): void {
+  program.configureOutput({
+    writeOut: (value) => writeCliRaw('stdout', value),
+    writeErr: (value) => writeCliRaw('stderr', value),
+    outputError: (value, write) => write(redactText(value)),
+  });
+}
+
+function freshState(json: boolean): OutputState {
+  return { json, command: 'help', messages: [], warnings: [], errors: [] };
 }
 
 function numericExitCode(): number {
@@ -77,9 +119,36 @@ function parseSingleStructuredMessage(messages: string[]): unknown | undefined {
   }
 }
 
-function commandName(argv: string[]): string {
-  const tokens = argv.slice(2).filter((arg) => !arg.startsWith('-'));
-  if (!tokens.length) return 'help';
-  if (['import', 'plugin', 'skill'].includes(tokens[0]) && tokens[1]) return `${tokens[0]} ${tokens[1]}`;
-  return tokens[0];
+function configureJsonCommands(program: Command): void {
+  const visit = (command: Command): void => {
+    command.exitOverride();
+    command.hook('preSubcommand', (_thisCommand, subcommand) => { state.command = commandPath(subcommand); });
+    for (const child of command.commands) visit(child);
+  };
+  visit(program);
+  program.configureOutput({
+    writeOut: (value) => state.messages.push(redactText(value.trimEnd())),
+    writeErr: () => {},
+    outputError: (_value, write) => write(''),
+  });
+  program.hook('preAction', (_thisCommand, actionCommand) => { state.command = commandPath(actionCommand); });
+}
+
+function commandPath(command: Command): string {
+  const names: string[] = [];
+  for (let current: Command | null = command; current?.parent; current = current.parent) names.unshift(current.name());
+  return names.join(' ') || 'help';
+}
+
+function knownSecrets(): Record<string, string | undefined> {
+  return {
+    CODEX_API_KEY: process.env.CODEX_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    NPM_TOKEN: process.env.NPM_TOKEN,
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
+  };
+}
+
+function redactText(value: string): string {
+  return redactSecrets(value, knownSecrets()).value;
 }

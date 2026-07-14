@@ -1,3 +1,4 @@
+import { cliLog, writeCliRaw } from '../lib/output.js';
 import type { Command } from 'commander';
 import { writeFile } from 'node:fs/promises';
 import { auditReportToSarif, runAudit, auditExitCode } from '@skillctl/security';
@@ -23,17 +24,17 @@ export function registerAudit(program: Command): void {
         const cwd = await requireSkillctlProject();
         const report = await runAudit(cwd, { store: getProjectSkillsStore(cwd) });
         await appendPluginFindings(report, cwd);
-        if (options.json) console.log(JSON.stringify(report, null, 2));
+        if (options.json) cliLog(JSON.stringify(report, null, 2));
         else if (options.format === 'sarif') {
           const serialized = `${JSON.stringify(auditReportToSarif(report), null, 2)}\n`;
           if (options.output) {
             await writeFile(options.output, serialized, 'utf8');
-            console.log(`Wrote SARIF report to ${options.output}.`);
-          } else process.stdout.write(serialized);
+            cliLog(`Wrote SARIF report to ${options.output}.`);
+          } else writeCliRaw('stdout', serialized);
         } else {
-          console.log(`skillctl audit — scanned ${report.scanned} skill(s), status: ${report.status}`);
-          for (const finding of report.findings) console.log(`  [${finding.severity}] ${finding.skill} (${finding.rule}): ${finding.message}`);
-          if (!report.findings.length) console.log('  No issues found.');
+          cliLog(`skillctl audit — scanned ${report.scanned} skill(s), status: ${report.status}`);
+          for (const finding of report.findings) cliLog(`  [${finding.severity}] ${finding.skill} (${finding.rule}): ${finding.message}`);
+          if (!report.findings.length) cliLog('  No issues found.');
         }
         process.exitCode = auditExitCode(report, options.strict);
       } catch (err) { handleCommandError(err, 'audit'); }

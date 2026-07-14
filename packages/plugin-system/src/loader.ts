@@ -54,8 +54,8 @@ export async function loadPlugins(
       if (typeof plugin.register !== 'function') throw new Error('plugin does not export register(api)');
       await plugin.register(api);
       loaded.push(name);
-    } catch (err) {
-      console.warn(`[plugin] failed to load ${name}: ${(err as Error).message}`);
+    } catch {
+      // Startup remains isolated; `plugin doctor` exposes actionable diagnostics.
     }
   }
   return loaded;

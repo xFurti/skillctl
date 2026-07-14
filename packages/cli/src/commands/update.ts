@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import * as prompts from '@clack/prompts';
 import { loadManifest } from '@skillctl/manifest';
@@ -36,14 +37,14 @@ export function registerUpdate(program: Command, manager = new RegistryManager()
         const actionable = candidates.filter((candidate) => ['outdated', 'modified', 'legacy'].includes(candidate.status));
 
         if (options.dryRun) {
-          if (options.json) console.log(JSON.stringify({ dryRun: true, candidates }, null, 2));
+          if (options.json) cliLog(JSON.stringify({ dryRun: true, candidates }, null, 2));
           else printCandidates(candidates);
           if (candidates.some((candidate) => candidate.status === 'unavailable')) process.exitCode = 1;
           return;
         }
         if (!actionable.length) {
-          if (options.json) console.log(JSON.stringify({ dryRun: false, candidates, updated: [], sync: null }, null, 2));
-          else console.log('All selected skills are current.');
+          if (options.json) cliLog(JSON.stringify({ dryRun: false, candidates, updated: [], sync: null }, null, 2));
+          else cliLog('All selected skills are current.');
           return;
         }
         if (candidates.some((candidate) => candidate.status === 'unavailable')) {
@@ -70,7 +71,7 @@ export function registerUpdate(program: Command, manager = new RegistryManager()
           await restoreUpdateSnapshot(snapshot);
           throw new Error(`Update failed and project state was restored: ${(err as Error).message}`, { cause: err });
         }
-        if (!options.json) console.log(`Updated ${actionable.length} skill(s).`);
+        if (!options.json) cliLog(`Updated ${actionable.length} skill(s).`);
         let syncResult: Awaited<ReturnType<typeof syncSkillsToAgents>> | null = null;
         if (options.sync !== false) {
           const freshLock = (await loadLockfile(cwd)) || lock;
@@ -78,9 +79,9 @@ export function registerUpdate(program: Command, manager = new RegistryManager()
             { cwd, store },
             async () => syncSkillsToAgents(await lockToSkillTargets(freshLock, { store }), { cwd }),
           );
-          if (!options.json) console.log(`Synced ${syncResult.synced} targets.`);
+          if (!options.json) cliLog(`Synced ${syncResult.synced} targets.`);
         }
-        if (options.json) console.log(JSON.stringify({
+        if (options.json) cliLog(JSON.stringify({
           dryRun: false,
           candidates,
           updated: actionable.map((candidate) => candidate.name),

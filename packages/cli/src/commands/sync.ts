@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { loadLockfile } from '@skillctl/lockfile';
 import { getProjectSkillsStore, lockToSkillTargets, requireSkillctlProject } from '@skillctl/core';
@@ -60,14 +61,14 @@ export function registerSync(program: Command): void {
             replaceUnmanaged: options.replaceUnmanaged,
           });
         });
-        if (options.json) console.log(JSON.stringify(result, null, 2));
+        if (options.json) cliLog(JSON.stringify(result, null, 2));
         else {
-          console.log(
+          cliLog(
             `sync: ${result.counts.created} created, ${result.counts.updated} updated, ` +
             `${result.counts.unchanged} unchanged, ${result.counts.pruned} pruned, ${result.counts.failed} failed`
           );
-          if (result.notes.length) console.log('Notes:', result.notes.join(' | '));
-          if (options.dryRun) console.log('(dry-run complete; no filesystem changes)');
+          if (result.notes.length) cliLog('Notes:', result.notes.join(' | '));
+          if (options.dryRun) cliLog('(dry-run complete; no filesystem changes)');
         }
         if (result.counts.failed) process.exitCode = 1;
       } catch (err) {

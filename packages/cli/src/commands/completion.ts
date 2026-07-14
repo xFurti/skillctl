@@ -3,6 +3,7 @@ import { findSkillctlProject } from '@skillctl/core';
 import { loadLockfile } from '@skillctl/lockfile';
 import { loadPluginManifest } from '@skillctl/plugin-system';
 import { SkillctlError, handleCommandError } from '../lib/errors.js';
+import { cliLog, writeCliRaw } from '../lib/output.js';
 
 const commands = ['init', 'add', 'install', 'list', 'search', 'info', 'outdated', 'update', 'sync', 'remove', 'doctor', 'import', 'audit', 'plugin', 'skill', 'completion'];
 const agents = ['claude-code', 'cursor', 'opencode', 'codex', 'gemini-cli', 'grok', 'pi'];
@@ -11,27 +12,32 @@ export function registerCompletion(program: Command): void {
   program
     .command('completion <shell>')
     .description('Print completion setup for bash, zsh, or PowerShell')
-    .action((shell) => {
+    .option('--json', 'machine-readable envelope output')
+    .action((shell, options) => {
       try {
         const normalized = String(shell).toLowerCase();
-        if (normalized === 'bash') process.stdout.write(bashCompletion());
-        else if (normalized === 'zsh') process.stdout.write(zshCompletion());
-        else if (normalized === 'powershell' || normalized === 'pwsh') process.stdout.write(powerShellCompletion());
-        else throw new SkillctlError('Supported shells: bash, zsh, powershell', 'INVALID_SHELL', 2);
+        const selected = normalized === 'pwsh' ? 'powershell' : normalized;
+        const script = selected === 'bash' ? bashCompletion()
+          : selected === 'zsh' ? zshCompletion()
+          : selected === 'powershell' ? powerShellCompletion()
+          : null;
+        if (!script) throw new SkillctlError('Supported shells: bash, zsh, powershell', 'INVALID_SHELL', 2);
+        if (options.json) cliLog(JSON.stringify({ shell: selected, script }));
+        else writeCliRaw('stdout', script);
       } catch (err) { handleCommandError(err, 'completion'); }
     });
 
   program
     .command('completion-candidates <kind>', { hidden: true })
     .action(async (kind) => {
-      if (kind === 'agents') process.stdout.write(`${agents.join('\n')}\n`);
+      if (kind === 'agents') writeCliRaw('stdout', `${agents.join('\n')}\n`);
       else if (kind === 'plugins') {
         const manifest = await loadPluginManifest();
-        process.stdout.write(`${Object.keys(manifest.plugins).sort().join('\n')}\n`);
+        writeCliRaw('stdout', `${Object.keys(manifest.plugins).sort().join('\n')}\n`);
       } else if (kind === 'skills') {
         const root = await findSkillctlProject();
         const lock = root ? await loadLockfile(root) : null;
-        process.stdout.write(`${Object.keys(lock?.skills || {}).sort().join('\n')}\n`);
+        writeCliRaw('stdout', `${Object.keys(lock?.skills || {}).sort().join('\n')}\n`);
       } else throw new SkillctlError('Candidate kind must be skills, plugins, or agents', 'INVALID_COMPLETION_KIND', 2);
     });
 }

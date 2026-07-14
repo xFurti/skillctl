@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { loadManifest } from '@skillctl/manifest';
 import { loadLockfile } from '@skillctl/lockfile';
@@ -16,16 +17,16 @@ export function registerList(program: Command): void {
       const skills = lock ? Object.keys(lock.skills) : [];
 
       if (options.json) {
-        console.log(JSON.stringify({ manifest: manifest ?? null, lock: lock ?? null, skills }, null, 2));
+        cliLog(JSON.stringify({ manifest: manifest ?? null, lock: lock ?? null, skills }, null, 2));
         return;
       }
 
-      console.log('skillctl list');
+      cliLog('skillctl list');
       if (manifest) {
-        console.log('Manifest deps:', Object.keys(manifest.agentSkills?.dependencies || {}).length);
+        cliLog('Manifest deps:', Object.keys(manifest.agentSkills?.dependencies || {}).length);
       } else {
-        console.log('No agent-skills.json (run `skillctl init`)');
+        cliLog('No agent-skills.json (run `skillctl init`)');
       }
-      console.log('Skills in lock:', skills.length ? skills.join(', ') : '(none)');
+      cliLog('Skills in lock:', skills.length ? skills.join(', ') : '(none)');
     });
 }

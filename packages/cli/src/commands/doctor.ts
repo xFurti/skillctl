@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -98,26 +99,26 @@ export function registerDoctor(program: Command): void {
       };
 
       if (options.json) {
-        console.log(JSON.stringify(report, null, 2));
+        cliLog(JSON.stringify(report, null, 2));
         process.exitCode = issues.length ? 2 : auditExitCode(audit);
         return;
       }
 
-      console.log('skillctl doctor');
-      console.log('Config store:', report.config.store);
-      console.log('Manifest:', report.manifestPresent ? 'present' : 'missing');
-      console.log('Lockfile:', report.lockPresent ? 'present' : 'missing');
-      console.log('Adapters enabled:', report.adapters.enabled.join(', ') || '(none)');
+      cliLog('skillctl doctor');
+      cliLog('Config store:', report.config.store);
+      cliLog('Manifest:', report.manifestPresent ? 'present' : 'missing');
+      cliLog('Lockfile:', report.lockPresent ? 'present' : 'missing');
+      cliLog('Adapters enabled:', report.adapters.enabled.join(', ') || '(none)');
       if (coexist.detected) {
-        console.log('Coexistence:', coexist.details.join('; '));
-        if (coexist.recommendations.length) console.log('Recommendations:', coexist.recommendations.join('; '));
+        cliLog('Coexistence:', coexist.details.join('; '));
+        if (coexist.recommendations.length) cliLog('Recommendations:', coexist.recommendations.join('; '));
       }
       if (audit.findings.length) {
-        console.log(`Audit: ${audit.findings.length} finding(s) across ${audit.scanned} skill(s)`);
+        cliLog(`Audit: ${audit.findings.length} finding(s) across ${audit.scanned} skill(s)`);
       }
-      if (issues.length) console.log('Issues:', issues.join('; '));
-      if (warnings.length) console.log('Warnings:', warnings.join('; '));
-      if (info.length) console.log('Info:', info.join('; '));
+      if (issues.length) cliLog('Issues:', issues.join('; '));
+      if (warnings.length) cliLog('Warnings:', warnings.join('; '));
+      if (info.length) cliLog('Info:', info.join('; '));
 
       process.exitCode = issues.length ? 2 : warnings.length ? 1 : auditExitCode(audit);
     });

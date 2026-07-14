@@ -1,3 +1,4 @@
+import { cliLog, cliError } from '../lib/output.js';
 import type { Command } from 'commander';
 import {
   addPlugin,
@@ -16,9 +17,9 @@ export function registerPlugin(program: Command): void {
 
   plugin.command('list').option('--json', 'machine-readable output').action(async (options) => {
     const plugins = await listInstalledPlugins();
-    if (options.json) console.log(JSON.stringify({ experimental: true, plugins }, null, 2));
-    else if (!plugins.length) console.log('No plugins installed.');
-    else for (const item of plugins) console.log(`${item.enabled ? 'enabled' : 'disabled'} ${item.name} -> ${item.path}`);
+    if (options.json) cliLog(JSON.stringify({ experimental: true, plugins }, null, 2));
+    else if (!plugins.length) cliLog('No plugins installed.');
+    else for (const item of plugins) cliLog(`${item.enabled ? 'enabled' : 'disabled'} ${item.name} -> ${item.path}`);
   });
 
   plugin
@@ -29,55 +30,63 @@ export function registerPlugin(program: Command): void {
     .action(async (specifier, options) => {
       try {
         const entry = await addPlugin(specifier, { allowLocal: options.allowLocal });
-        if (options.json) console.log(JSON.stringify(entry, null, 2));
-        else console.log(`Installed experimental plugin ${entry.name} (${entry.resolved}).`);
+        if (options.json) cliLog(JSON.stringify(entry, null, 2));
+        else cliLog(`Installed experimental plugin ${entry.name} (${entry.resolved}).`);
       } catch (err) { handleCommandError(err, 'plugin add'); }
     });
 
-  plugin.command('install').description('Restore all plugins from the plugin manifest').action(async () => {
-    try { console.log(`Installed ${await installPlugins().then((entries) => entries.length)} plugin(s).`); }
+  plugin.command('install').description('Restore all plugins from the plugin manifest').option('--json', 'machine-readable output').action(async (options) => {
+    try {
+      const entries = await installPlugins();
+      if (options.json) cliLog(JSON.stringify({ installed: entries }, null, 2));
+      else cliLog(`Installed ${entries.length} plugin(s).`);
+    }
     catch (err) { handleCommandError(err, 'plugin install'); }
   });
 
-  plugin.command('update [names...]').description('Re-resolve selected plugin specifiers').action(async (names) => {
+  plugin.command('update [names...]').description('Re-resolve selected plugin specifiers').option('--json', 'machine-readable output').action(async (names, options) => {
     try {
       const manifest = await loadPluginManifest({ migrateLegacy: true });
       const selected = names.length ? names : Object.keys(manifest.plugins);
+      const updated = [];
       for (const name of selected) {
         const requested = manifest.plugins[name];
         if (!requested) throw new Error(`Plugin not found: ${name}`);
-        await addPlugin(requested.specifier, { allowLocal: requested.allowLocal });
+        updated.push(await addPlugin(requested.specifier, { allowLocal: requested.allowLocal }));
       }
-      console.log(`Updated ${selected.length} plugin(s).`);
+      if (options.json) cliLog(JSON.stringify({ updated }, null, 2));
+      else cliLog(`Updated ${selected.length} plugin(s).`);
     } catch (err) { handleCommandError(err, 'plugin update'); }
   });
 
   for (const enabled of [true, false]) {
-    plugin.command(`${enabled ? 'enable' : 'disable'} <name>`).action(async (name) => {
+    plugin.command(`${enabled ? 'enable' : 'disable'} <name>`).option('--json', 'machine-readable output').action(async (name, options) => {
       const ok = await setPluginEnabled(name, enabled);
-      if (!ok) { console.error(`Plugin not found: ${name}`); process.exitCode = 1; return; }
-      console.log(`${enabled ? 'Enabled' : 'Disabled'} ${name}. Restart skillctl to apply.`);
+      if (!ok) { cliError(`Plugin not found: ${name}`); process.exitCode = 1; return; }
+      if (options.json) cliLog(JSON.stringify({ name, enabled, restartRequired: true }, null, 2));
+      else cliLog(`${enabled ? 'Enabled' : 'Disabled'} ${name}. Restart skillctl to apply.`);
     });
   }
 
   plugin.command('info <name>').option('--json', 'machine-readable output').action(async (name, options) => {
     const [manifest, lock] = await Promise.all([loadPluginManifest({ migrateLegacy: true }), loadPluginLock()]);
     const report = { requested: manifest.plugins[name], locked: lock.plugins[name] };
-    if (!report.requested) { console.error(`Plugin not found: ${name}`); process.exitCode = 1; return; }
-    if (options.json) console.log(JSON.stringify(report, null, 2));
-    else console.log(JSON.stringify(report, null, 2));
+    if (!report.requested) { cliError(`Plugin not found: ${name}`); process.exitCode = 1; return; }
+    if (options.json) cliLog(JSON.stringify(report, null, 2));
+    else cliLog(JSON.stringify(report, null, 2));
   });
 
   plugin.command('doctor').option('--json', 'machine-readable output').action(async (options) => {
     const diagnostics = await pluginDiagnostics();
-    if (options.json) console.log(JSON.stringify({ diagnostics }, null, 2));
-    else for (const item of diagnostics) console.log(`${item.ok ? 'ok' : 'error'} ${item.name}: ${item.message}`);
+    if (options.json) cliLog(JSON.stringify({ diagnostics }, null, 2));
+    else for (const item of diagnostics) cliLog(`${item.ok ? 'ok' : 'error'} ${item.name}: ${item.message}`);
     if (diagnostics.some((item) => !item.ok)) process.exitCode = 1;
   });
 
-  plugin.command('remove <name>').action(async (name) => {
+  plugin.command('remove <name>').option('--json', 'machine-readable output').action(async (name, options) => {
     const ok = await removePlugin(name);
-    if (!ok) { console.error(`Plugin not found: ${name}`); process.exitCode = 1; return; }
-    console.log(`Removed ${name}.`);
+    if (!ok) { cliError(`Plugin not found: ${name}`); process.exitCode = 1; return; }
+    if (options.json) cliLog(JSON.stringify({ name, removed: true }, null, 2));
+    else cliLog(`Removed ${name}.`);
   });
 }

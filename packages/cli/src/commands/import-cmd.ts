@@ -1,3 +1,4 @@
+import { cliLog, cliError } from '../lib/output.js';
 import type { Command } from 'commander';
 import { executeImport, planImportFromProject, type ImportPlanItem } from '@skillctl/import';
 import { handleCommandError } from '../lib/errors.js';
@@ -13,18 +14,18 @@ function printPlan(plan: ImportPlanItem[]): void {
     ]
       .filter(Boolean)
       .join(' — ');
-    console.log(`  ${item.name}: ${item.action}${extra ? ` (${extra})` : ''}`);
+    cliLog(`  ${item.name}: ${item.action}${extra ? ` (${extra})` : ''}`);
   }
 }
 
 function printDiscoverySummary(discovered: Awaited<ReturnType<typeof planImportFromProject>>['discovered']): void {
   if (!discovered.sources.length) {
-    console.log('No agent skill directories with skills found in this project.');
+    cliLog('No agent skill directories with skills found in this project.');
     return;
   }
-  console.log('Discovered skill sources in project:');
+  cliLog('Discovered skill sources in project:');
   for (const src of discovered.sources) {
-    console.log(`  ${src.projectPath} (${src.adapterName}) → ${src.skills.length} skill(s)`);
+    cliLog(`  ${src.projectPath} (${src.adapterName}) → ${src.skills.length} skill(s)`);
   }
 }
 
@@ -69,13 +70,13 @@ export function registerImport(program: Command): void {
 
         if (options.dryRun) {
           printDiscoverySummary(discovered);
-          console.log('Migration plan:');
+          cliLog('Migration plan:');
           printPlan(plan);
           return;
         }
 
         if (!discovered.sources.length) {
-          console.log('No agent skill directories with skills found in this project.');
+          cliLog('No agent skill directories with skills found in this project.');
           return;
         }
 
@@ -84,7 +85,7 @@ export function registerImport(program: Command): void {
         if (!options.yes) {
           const proceed = await confirm('Import these skills into the canonical store?', true);
           if (!proceed) {
-            console.log('Import cancelled.');
+            cliLog('Import cancelled.');
             return;
           }
         }
@@ -98,14 +99,14 @@ export function registerImport(program: Command): void {
           sources,
         });
 
-        console.log(`Imported: ${result.imported.join(', ') || '(none)'}`);
-        if (result.skipped.length) console.log(`Skipped: ${result.skipped.join(', ')}`);
+        cliLog(`Imported: ${result.imported.join(', ') || '(none)'}`);
+        if (result.skipped.length) cliLog(`Skipped: ${result.skipped.join(', ')}`);
         if (result.errors.length) {
-          console.error('Errors:', result.errors.join('; '));
+          cliError('Errors:', result.errors.join('; '));
           process.exitCode = 1;
         }
         if (result.imported.length && !options.sync) {
-          console.log('Manifest and lock updated. Run `skillctl sync` to refresh agent links.');
+          cliLog('Manifest and lock updated. Run `skillctl sync` to refresh agent links.');
         }
       } catch (err) {
         handleCommandError(err, 'import');
@@ -132,15 +133,15 @@ export function registerImport(program: Command): void {
         });
 
         if (options.dryRun) {
-          console.log('Migration plan:');
+          cliLog('Migration plan:');
           printPlan(result.plan);
           return;
         }
 
-        console.log(`Imported: ${result.imported.join(', ') || '(none)'}`);
-        if (result.skipped.length) console.log(`Skipped: ${result.skipped.join(', ')}`);
+        cliLog(`Imported: ${result.imported.join(', ') || '(none)'}`);
+        if (result.skipped.length) cliLog(`Skipped: ${result.skipped.join(', ')}`);
         if (result.errors.length) {
-          console.error('Errors:', result.errors.join('; '));
+          cliError('Errors:', result.errors.join('; '));
           process.exitCode = 1;
         }
       } catch (err) {
@@ -166,14 +167,14 @@ export function registerImport(program: Command): void {
         });
 
         if (options.dryRun) {
-          console.log('Migration plan:');
+          cliLog('Migration plan:');
           printPlan(result.plan);
           return;
         }
 
-        console.log(`Imported: ${result.imported.join(', ') || '(none)'}`);
+        cliLog(`Imported: ${result.imported.join(', ') || '(none)'}`);
         if (result.errors.length) {
-          console.error('Errors:', result.errors.join('; '));
+          cliError('Errors:', result.errors.join('; '));
           process.exitCode = 1;
         }
       } catch (err) {
@@ -214,7 +215,7 @@ async function importProject(options: {
 
   printDiscoverySummary(discovered);
   if (options.dryRun) {
-    console.log('Import plan:');
+    cliLog('Import plan:');
     printPlan(plan);
     return;
   }
@@ -238,7 +239,7 @@ async function importProject(options: {
     selectedNames,
     conflictChoices,
   });
-  console.log(`Imported: ${result.imported.join(', ') || '(none)'}`);
-  if (result.skipped.length) console.log(`Skipped: ${result.skipped.join(', ')}`);
-  if (result.imported.length && !options.sync) console.log('Run `skillctl sync` to refresh agent links.');
+  cliLog(`Imported: ${result.imported.join(', ') || '(none)'}`);
+  if (result.skipped.length) cliLog(`Skipped: ${result.skipped.join(', ')}`);
+  if (result.imported.length && !options.sync) cliLog('Run `skillctl sync` to refresh agent links.');
 }

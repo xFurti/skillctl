@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import * as prompts from '@clack/prompts';
 import { CatalogManager, RegistryManager } from '@skillctl/registry';
@@ -31,19 +32,19 @@ export function registerSearch(
 
         const results = await catalog.search(searchQuery, { owner: options.owner, limit: options.limit });
         if (options.json && !options.add) {
-          console.log(JSON.stringify({ query: searchQuery, results }, null, 2));
+          cliLog(JSON.stringify({ query: searchQuery, results }, null, 2));
           if (results.some((result) => result.stale)) process.exitCode = 1;
           return;
         }
 
         if (results.length === 0) {
-          console.log(`No skills found for "${searchQuery}".`);
+          cliLog(`No skills found for "${searchQuery}".`);
           return;
         }
         if (!options.json) {
           for (const result of results) {
-            console.log(`${result.id}${result.installs ? ` (${result.installs} installs)` : ''}${result.stale ? ' [cached]' : ''}`);
-            console.log(`  ${result.url || result.installSpecifier}`);
+            cliLog(`${result.id}${result.installs ? ` (${result.installs} installs)` : ''}${result.stale ? ' [cached]' : ''}`);
+            cliLog(`  ${result.url || result.installSpecifier}`);
           }
         }
 
@@ -80,10 +81,10 @@ export function registerSearch(
           throw new SkillctlError('Non-interactive catalog adds require --yes', 'CONFIRMATION_REQUIRED', 2);
         }
 
-        if (!options.json) console.log(`Adding ${selected.installSpecifier} to ${global ? 'global' : 'project'} scope...`);
+        if (!options.json) cliLog(`Adding ${selected.installSpecifier} to ${global ? 'global' : 'project'} scope...`);
         const entry = await registry.add(selected.installSpecifier, { global, updateManifest: !global });
-        if (options.json) console.log(JSON.stringify({ query: searchQuery, results, added: entry }, null, 2));
-        else console.log(`Added ${entry.name} (${entry.resolved}). Run skillctl sync to refresh agent targets.`);
+        if (options.json) cliLog(JSON.stringify({ query: searchQuery, results, added: entry }, null, 2));
+        else cliLog(`Added ${entry.name} (${entry.resolved}). Run skillctl sync to refresh agent targets.`);
       } catch (err) {
         handleCommandError(err, 'search');
       }

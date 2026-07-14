@@ -1,3 +1,4 @@
+import { cliLog, cliWarn } from '../lib/output.js';
 import type { Command } from 'commander';
 import {
   canonicalizeName,
@@ -56,14 +57,14 @@ export function registerRemove(program: Command): void {
               for (const path of paths) {
                 const target = resolveAdapterTarget(path, canonicalName, cwd);
                 await adapter.removeTarget(canonicalName, target, canonicalPath).catch((err) => {
-                  console.warn(`Skipped unsafe target ${target}: ${(err as Error).message}`);
+                  cliWarn(`Skipped unsafe target ${target}: ${(err as Error).message}`);
                 });
               }
             }
           }
           if (options.purge || options.global) await purgeCanonical(canonicalName, { store });
-          if (!changed && !options.purge) console.log(`No entry for ${name} found.`);
-          else console.log(`Removed ${canonicalName}.`);
+          if (!changed && !options.purge) cliLog(`No entry for ${name} found.`);
+          else cliLog(`Removed ${canonicalName}.`);
         });
       } catch (err) {
         handleCommandError(err, 'remove');

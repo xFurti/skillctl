@@ -1,3 +1,4 @@
+import { cliLog } from '../lib/output.js';
 import type { Command } from 'commander';
 import { loadManifest } from '@skillctl/manifest';
 import { loadLockfile } from '@skillctl/lockfile';
@@ -29,7 +30,7 @@ export function registerOutdated(program: Command): void {
           latest: options.latest,
           store,
         });
-        if (options.json) console.log(JSON.stringify({ scope: options.global ? 'global' : 'project', candidates }, null, 2));
+        if (options.json) cliLog(JSON.stringify({ scope: options.global ? 'global' : 'project', candidates }, null, 2));
         else printCandidates(candidates);
         if (candidates.some((candidate) => candidate.status !== 'current')) process.exitCode = 1;
       } catch (err) {
@@ -40,14 +41,14 @@ export function registerOutdated(program: Command): void {
 
 export function printCandidates(candidates: Awaited<ReturnType<typeof planUpdates>>): void {
   if (!candidates.length) {
-    console.log('No skills to check.');
+    cliLog('No skills to check.');
     return;
   }
   for (const candidate of candidates) {
     const versions = candidate.currentVersion && candidate.candidateVersion
       ? ` ${candidate.currentVersion} -> ${candidate.candidateVersion}`
       : '';
-    console.log(`${candidate.name}: ${candidate.status}${versions}${candidate.kind !== 'none' ? ` (${candidate.kind})` : ''}`);
-    if (candidate.warning) console.log(`  ${candidate.warning}`);
+    cliLog(`${candidate.name}: ${candidate.status}${versions}${candidate.kind !== 'none' ? ` (${candidate.kind})` : ''}`);
+    if (candidate.warning) cliLog(`  ${candidate.warning}`);
   }
 }

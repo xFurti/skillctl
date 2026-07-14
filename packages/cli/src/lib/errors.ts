@@ -12,6 +12,11 @@ export class SkillctlError extends Error {
 
 export function handleCommandError(err: unknown, label: string): void {
   const message = err instanceof Error ? err.message : String(err);
-  console.error(`${label} failed:`, message);
+  addCliIssue('error', {
+    code: err instanceof SkillctlError ? err.code : 'COMMAND_ERROR',
+    message: `${label} failed: ${message}`,
+    details: err instanceof SkillctlError ? err.details : undefined,
+  });
   process.exitCode = err instanceof SkillctlError ? err.exitCode : 2;
 }
+import { addCliIssue } from './output.js';

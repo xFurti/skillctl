@@ -54,7 +54,6 @@ export class LinkManager {
     const dry = !!options.dryRun;
 
     if (dry) {
-      console.log(`[dry-run] would link ${canonical} -> ${target} (${mode})`);
       return;
     }
 
@@ -102,7 +101,6 @@ export class LinkManager {
           await symlink(linkSource, target, 'dir');
         } catch (e: any) {
           if (e.code === 'EPERM' || e.code === 'EEXIST') {
-            console.warn(`[link-manager] relative symlink failed for ${target}, falling back to copy`);
             await this.copyDir(canonical, target);
             return;
           }
@@ -114,7 +112,6 @@ export class LinkManager {
           await symlink(canonAbs, target, 'junction');
         } catch (e: any) {
           if (e.code === 'EPERM' || e.code === 'EEXIST') {
-            console.warn(`[link-manager] junction failed for ${target}, falling back to copy`);
             await this.copyDir(canonical, target);
             return;
           }
@@ -128,13 +125,11 @@ export class LinkManager {
       if (!(await this.isLinkedTo(canonical, target))) {
         // cleanup bad link and fallback
         await rm(target, { recursive: true, force: true }).catch(() => {});
-        console.warn(`[link-manager] link verification failed, falling back to copy for ${target}`);
         await this.copyDir(canonical, target);
       }
     } catch (err: any) {
       // general fallback to copy on error (e.g. EPERM no dev mode)
       if (mode !== 'copy') {
-        console.warn(`[link-manager] link error (${err.code || err.message}), fallback copy: ${target}`);
         await this.copyDir(canonical, target);
       } else {
         throw err;

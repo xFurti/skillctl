@@ -1,3 +1,4 @@
+import { cliLog, cliError } from '../lib/output.js';
 import type { Command } from 'commander';
 import { mkdir, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
@@ -24,14 +25,14 @@ async function resolveMetaSkillSpecifier(cwd: string): Promise<string> {
 
 async function addMetaSkill(cwd: string, registry: RegistryManager, sync: boolean): Promise<void> {
   const spec = await resolveMetaSkillSpecifier(cwd);
-  console.log(`Adding skillctl meta-skill from ${spec}...`);
+  cliLog(`Adding skillctl meta-skill from ${spec}...`);
   await registry.add(spec, { cwd, updateManifest: true });
   if (sync) {
     const lock = (await loadLockfile(cwd)) || createEmptyLockfile();
     const skills = await lockToSkillTargets(lock, { store: getProjectSkillsStore(cwd) });
     const res = await syncSkillsToAgents(skills);
-    console.log(`Synced ${res.synced} agent target(s).`);
-    if (res.notes.length) console.log('Notes:', res.notes.join('; '));
+    cliLog(`Synced ${res.synced} agent target(s).`);
+    if (res.notes.length) cliLog('Notes:', res.notes.join('; '));
   }
 }
 
@@ -54,11 +55,11 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
       );
       await mkdir(join(cwd, '.skillctl', 'skills'), { recursive: true });
       if (!created) {
-        console.log('agent-skills.json already exists');
+        cliLog('agent-skills.json already exists');
         return;
       }
-      console.log('Created agent-skills.json');
-      console.log('Created .skillctl/skills');
+      cliLog('Created agent-skills.json');
+      cliLog('Created .skillctl/skills');
 
       const registry = mgr || new RegistryManager();
 
@@ -70,15 +71,15 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
           try {
             await addMetaSkill(cwd, registry, true);
           } catch (err) {
-            console.error(`Meta-skill add failed: ${(err as Error).message}`);
-            console.log('You can retry with: skillctl add github:xFurti/skillctl#skills/skillctl');
+            cliError(`Meta-skill add failed: ${(err as Error).message}`);
+            cliLog('You can retry with: skillctl add github:xFurti/skillctl#skills/skillctl');
           }
         }
       }
 
       if (options.noPrompt) {
         if (!options.withSkill) {
-          console.log('Run `skillctl add <spec>` or `skillctl import` to populate, then `install` or `sync`.');
+          cliLog('Run `skillctl add <spec>` or `skillctl import` to populate, then `install` or `sync`.');
         }
         return;
       }
@@ -87,25 +88,25 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
       const unmanaged = deduped.length;
       if (!unmanaged || !sources.length) {
         if (!options.withSkill) {
-          console.log('Run `skillctl add <spec>` to populate, then `install` or `sync`.');
+          cliLog('Run `skillctl add <spec>` to populate, then `install` or `sync`.');
         }
         return;
       }
 
-      console.log(`Found ${unmanaged} existing skill(s) in agent directories (${sources.map((s) => s.projectPath).join(', ')}).`);
+      cliLog(`Found ${unmanaged} existing skill(s) in agent directories (${sources.map((s) => s.projectPath).join(', ')}).`);
       const shouldImport = await confirm('Import them into skillctl now?', true);
       if (!shouldImport) {
-        console.log('Run `skillctl import` when ready.');
+        cliLog('Run `skillctl import` when ready.');
         return;
       }
 
       const result = await executeImport({ source: 'project', cwd, sync: true });
-      console.log(`Imported: ${result.imported.join(', ') || '(none)'}`);
+      cliLog(`Imported: ${result.imported.join(', ') || '(none)'}`);
       if (result.errors.length) {
-        console.error('Import errors:', result.errors.join('; '));
+        cliError('Import errors:', result.errors.join('; '));
       }
       if (!result.imported.length) {
-        console.log('Run `skillctl add <spec>` to populate, then `install` or `sync`.');
+        cliLog('Run `skillctl add <spec>` to populate, then `install` or `sync`.');
       }
     });
 }

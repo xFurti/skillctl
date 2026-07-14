@@ -1,3 +1,4 @@
+import { cliLog, cliError } from '../lib/output.js';
 import type { Command } from 'commander';
 import { stat } from 'node:fs/promises';
 import { loadManifest } from '@skillctl/manifest';
@@ -61,8 +62,8 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
             else if (!isImmutableLockEntry(entry)) frozenErrors.push(`${name}: lock resolution is mutable or legacy`);
           }
           if (frozenErrors.length) {
-            console.error('Frozen install failed:');
-            frozenErrors.forEach((error) => console.error(' -', error));
+            cliError('Frozen install failed:');
+            frozenErrors.forEach((error) => cliError(' -', error));
             process.exitCode = 2;
             return;
           }
@@ -74,7 +75,7 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
 
           if (!entry || !lockMatches || !isImmutableLockEntry(entry)) {
             if (options.frozen) continue;
-            console.log(`Resolving ${name} from ${spec}...`);
+            cliLog(`Resolving ${name} from ${spec}...`);
             entry = await registry.add(spec, { cwd, updateManifest: false, name });
             lock = (await loadLockfile(cwd)) || lock;
             summary.installed.push(name);
@@ -82,19 +83,19 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
           }
 
           if (!(await needsInstall(entry, { store }))) {
-            console.log(`Using locked ${name}`);
+            cliLog(`Using locked ${name}`);
             summary.reused.push(name);
             continue;
           }
 
           const canonicalPath = await resolveEntryCanonicalPath(entry, { store });
           const existed = await stat(canonicalPath).then(() => true, () => false);
-          console.log(`${existed ? 'Repairing' : 'Installing'} ${name} from locked resolution...`);
+          cliLog(`${existed ? 'Repairing' : 'Installing'} ${name} from locked resolution...`);
           await registry.installLockedEntry(entry, { cwd, store, name, expectedIntegrity: entry.integrity });
           (existed ? summary.repaired : summary.installed).push(name);
         }
 
-        console.log(
+        cliLog(
           `Install complete. ${summary.installed.length} installed, ${summary.repaired.length} repaired, ${summary.reused.length} reused.`
         );
 
@@ -105,8 +106,8 @@ export function registerInstall(program: Command, mgr?: RegistryManager): void {
             skills = skills.filter((skill) => allowed.has(skill.name));
           }
           const result = await withOperationLocks({ cwd, store }, () => syncSkillsToAgents(skills));
-          console.log(`Synced ${result.synced} links via adapters: ${result.adaptersUsed.join(', ') || 'none'}`);
-          if (result.notes.length) console.log('Notes:', result.notes.join('; '));
+          cliLog(`Synced ${result.synced} links via adapters: ${result.adaptersUsed.join(', ') || 'none'}`);
+          if (result.notes.length) cliLog('Notes:', result.notes.join('; '));
         }
       } catch (err) {
         handleCommandError(err, 'install');
