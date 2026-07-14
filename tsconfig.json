@@ -26,6 +26,7 @@
     { "path": "./packages/security" },
     { "path": "./packages/plugin-system" },
     { "path": "./packages/project-state" }
+    ,{ "path": "./packages/testing" }
   ],
   "include": [],
   "exclude": ["node_modules", "dist", "**/dist"]

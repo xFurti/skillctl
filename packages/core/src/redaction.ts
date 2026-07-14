@@ -31,12 +31,12 @@ export function redactSecrets<T>(value: T, knownSecrets: Record<string, string |
   }
 
   function text(input: string, field?: string): string {
-    if (field && SAFE_FIELD.test(field)) return input;
-    if (field && SENSITIVE_FIELD.test(field) && isUsefulSecret(input)) return record(normalizeType(field));
     let output = input;
     for (const [type, secret] of secrets) {
-      output = replaceBounded(output, secret, () => record(normalizeType(type)));
+      output = replaceExact(output, secret, () => record(normalizeType(type)));
     }
+    if (field && SAFE_FIELD.test(field)) return output;
+    if (field && SENSITIVE_FIELD.test(field) && output === input && isUsefulSecret(input)) return record(normalizeType(field));
     for (const [type, pattern] of TOKEN_PATTERNS) output = output.replace(pattern, () => record(type));
     return output;
   }
@@ -59,8 +59,12 @@ export class StreamingSecretRedactor {
   private pending = '';
   private readonly overlap: number;
 
-  constructor(private readonly knownSecrets: Record<string, string | undefined> = {}) {
+  constructor(
+    private readonly knownSecrets: Record<string, string | undefined> = {},
+    private readonly maxPendingLength = 2 * 1024 * 1024,
+  ) {
     this.overlap = Math.max(96, ...Object.values(knownSecrets).map((value) => value?.length || 0));
+    if (maxPendingLength < this.overlap) throw new Error('Streaming redaction limit must cover the secret overlap');
   }
 
   write(chunk: string): string {
@@ -70,18 +74,21 @@ export class StreamingSecretRedactor {
       return '';
     }
     const boundary = combined.length - this.overlap;
-    let safeBoundary = combined.lastIndexOf('\n', boundary) + 1;
-    if (safeBoundary <= 0) {
-      this.pending = combined;
-      return '';
-    }
+    const newlineBoundary = combined.lastIndexOf('\n', boundary) + 1;
+    let safeBoundary = newlineBoundary > 0 ? newlineBoundary : boundary;
     for (const secret of Object.values(this.knownSecrets).filter(isUsefulSecret)) {
-      const start = combined.lastIndexOf(secret.slice(0, Math.min(secret.length, 8)), safeBoundary);
-      if (start >= 0 && start < safeBoundary && start + secret.length > safeBoundary) safeBoundary = start;
+      let start = combined.indexOf(secret);
+      while (start >= 0) {
+        if (start < safeBoundary && start + secret.length > safeBoundary) safeBoundary = start;
+        start = combined.indexOf(secret, start + 1);
+      }
     }
     const privateKeyStart = combined.lastIndexOf('-----BEGIN ', safeBoundary);
     const privateKeyEnd = combined.lastIndexOf('-----END ', safeBoundary);
     if (privateKeyStart > privateKeyEnd) safeBoundary = privateKeyStart;
+    if (safeBoundary <= 0 && combined.length > this.maxPendingLength) {
+      throw new Error('Streaming redaction buffer exceeded its configured limit');
+    }
     this.pending = combined.slice(safeBoundary);
     return redactSecrets(combined.slice(0, safeBoundary), this.knownSecrets).value;
   }
@@ -97,19 +104,13 @@ function isUsefulSecret(value: string | undefined): value is string {
   return Boolean(value && value.length >= MIN_SECRET_LENGTH && !/^(?:true|false|null|undefined|password|changeme|localhost)$/i.test(value));
 }
 
-function replaceBounded(input: string, secret: string, replacement: () => string): string {
+function replaceExact(input: string, secret: string, replacement: () => string): string {
   let cursor = 0;
   let output = '';
   while (true) {
     const index = input.indexOf(secret, cursor);
     if (index < 0) return output + input.slice(cursor);
-    const before = input[index - 1];
-    const after = input[index + secret.length];
-    if ((before && /[A-Za-z0-9]/.test(before)) || (after && /[A-Za-z0-9]/.test(after))) {
-      output += input.slice(cursor, index + secret.length);
-    } else {
-      output += input.slice(cursor, index) + replacement();
-    }
+    output += input.slice(cursor, index) + replacement();
     cursor = index + secret.length;
   }
 }

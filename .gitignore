@@ -45,6 +45,8 @@ coverage/
 .skillctl/*
 !.skillctl/artifacts/
 .skillctl/artifacts/**
+!.skillctl/tests/
+!.skillctl/tests/**
 !.skillctl/skills/
 .skillctl/skills/*
 !.skillctl/skills/skillctl/

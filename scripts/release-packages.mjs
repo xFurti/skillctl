@@ -9,6 +9,7 @@ export const releasePackages = [
   'security',
   'registry',
   'import',
+  'testing',
   'cli',
 ];
 

@@ -44,6 +44,19 @@ test('short and common environment values do not cause global false positives', 
   assert.equal(result.redactions.total, 0);
 });
 
+test('known secrets are always redacted when concatenated or stored in safe fields', () => {
+  const secret = 'known-secret-abcdefghijklmnop';
+  const result = redactSecrets({
+    text: `prefixABC${secret}XYZsuffix`,
+    integrity: `sha256:${secret}`,
+    id: secret,
+  }, { RELEASE_SECRET: secret });
+  assert.doesNotMatch(JSON.stringify(result.value), new RegExp(secret));
+  assert.match(result.value.text, /prefixABC\[REDACTED:release-secret\]XYZsuffix/);
+  assert.match(result.value.integrity, /^sha256:\[REDACTED:release-secret\]$/);
+  assert.equal(result.value.id, '[REDACTED:release-secret]');
+});
+
 test('streaming redaction catches a secret split across chunks', () => {
   const redactor = new StreamingSecretRedactor();
   const output = redactor.write('prefix sk-abcdefgh') + redactor.write('ijklmnop suffix') + redactor.end();
@@ -60,4 +73,19 @@ test('streaming redaction preserves a token crossing the actual flush frontier',
   assert.ok(output.length > 96);
   assert.doesNotMatch(output, new RegExp(token));
   assert.match(output, /REDACTED:openai-api-key/);
+});
+
+test('streaming redaction emits bounded segments for long lines without newlines', () => {
+  const redactor = new StreamingSecretRedactor();
+  const emitted = redactor.write('x'.repeat(16 * 1024));
+  assert.ok(emitted.length >= 15 * 1024);
+  assert.ok(redactor.end().length <= 96);
+});
+
+test('streaming redaction stops an unterminated sensitive block at its limit', () => {
+  const redactor = new StreamingSecretRedactor({}, 128);
+  assert.throws(
+    () => redactor.write(`-----BEGIN PRIVATE KEY-----${'x'.repeat(256)}`),
+    /configured limit/,
+  );
 });
