@@ -9,3 +9,6 @@ export * from './operations.js';
 export * from './specifiers.js';
 export * from './normalize-specifier.js';
 export * from './portable-lock.js';
+export * from './skill-parser.js';
+export * from './redaction.js';
+export * from './artifacts.js';

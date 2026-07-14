@@ -82,17 +82,23 @@ export interface ResolvedSource {
 export interface CatalogSearchOptions {
   owner?: string;
   limit?: number;
+  provider?: string;
 }
 
 export interface CatalogSearchResult {
   id: string;
+  provider: string;
   name: string;
+  description?: string;
+  owner?: string;
   source: string;
   installs?: number;
+  popularity?: { metric: 'installs'; value: number };
   sourceType: string;
   installSpecifier: string;
+  updatedAt?: string;
   url?: string;
-  stale?: boolean;
+  stale: boolean;
 }
 
 export interface CatalogProvider {

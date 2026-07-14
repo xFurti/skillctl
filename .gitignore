@@ -43,6 +43,8 @@ coverage/
 
 # Project skill store. Ignore local state by default, but dogfood the first-party skill.
 .skillctl/*
+!.skillctl/artifacts/
+.skillctl/artifacts/**
 !.skillctl/skills/
 .skillctl/skills/*
 !.skillctl/skills/skillctl/

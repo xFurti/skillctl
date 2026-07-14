@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { hasSkillMd } from './skill-md.js';
+import { parseSkillDirectory } from '@skillctl/core';
 
 export interface DirSkillEntry {
   name: string;
@@ -14,9 +14,8 @@ export async function scanSkillsDir(dir: string): Promise<DirSkillEntry[]> {
     for (const item of items) {
       if ((!item.isDirectory() && !item.isSymbolicLink()) || item.name.startsWith('.')) continue;
       const localPath = join(dir, item.name);
-      if (await hasSkillMd(localPath)) {
-        entries.push({ name: item.name, localPath });
-      }
+      const parsed = await parseSkillDirectory(localPath, { validation: 'collect' }).catch(() => null);
+      if (parsed) entries.push({ name: parsed.name, localPath });
     }
   } catch {
     // missing dir
