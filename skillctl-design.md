@@ -842,6 +842,12 @@ description: End-to-end testing workflows using Playwright. Use for browser auto
 
 This design establishes `skillctl` as the reliable, extensible standard for Agent Skill management.
 
+## 0.8 architectural baseline
+
+Version 0.8 centralizes `SKILL.md` parsing across inspection, validation, import, and audit while retaining the existing canonical directory hash. Catalog results use provider-namespaced IDs and optional provider selection. Sync backups are addressable through logical IDs but stored in filesystem-safe directories, with integrity checks and rollback on restore.
+
+Plugin installation supports a read-only preflight that exposes code-execution risk before any persistent state changes. Audit remains offline and reports category, remediation, confidence, and non-secret evidence. Versioned artifacts are created only when explicitly requested under the Git-ignored `.skillctl/artifacts/` tree, and output redaction is field-aware and streaming-safe.
+
 ---
 
 *End of design document.*

@@ -3,9 +3,9 @@ skills:
   skillctl:
     specifier: file:./.skillctl/skills/skillctl
     resolved: file:./.skillctl/skills/skillctl
-    integrity: sha256:4ba061eb4247d85def762ff879c59aee7b82ea9b5e4f0eaccf7e23533a975076
+    integrity: sha256:15ebb441f8fbdc8111756cc6f51fff13e5371ee4594e855cd7e377db90453b4b
     name: skillctl
     canonicalPath: .skillctl/skills/skillctl
-    fetchedAt: '2026-07-14T14:27:17.314Z'
+    fetchedAt: '2026-07-14T14:44:31.597Z'
     provenance:
       type: local

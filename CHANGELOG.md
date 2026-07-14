@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-14
+
+### Added
+
+- Added one shared strict `SKILL.md` parser for info, validation, import, and audit, reusing the canonical directory-integrity algorithm for lock compatibility.
+- Added provider-aware, namespaced catalog results and `search --provider` with descriptions, owners, update timestamps, stale state, and popularity metadata.
+- Added `backup list`, `backup info`, `backup restore`, and `backup remove` with JSON, dry-run, integrity verification, confirmation, rollback, and Windows-safe storage IDs.
+- Added `plugin add --dry-run` to report resolved package, publisher, tarball and SRI, entrypoint, API version, capabilities, dependencies, scripts, and trust status without installation.
+- Added versioned, opt-in artifact contracts under `.skillctl/artifacts/` and central field-aware secret redaction, including streaming output.
+
+### Security
+
+- Expanded offline audit categories and remediation for provenance, filesystem, execution, network, secrets, prompt injection, policy, plugins, and managed targets.
+- Added confidence and non-secret evidence to heuristic findings; semantic and prompt-injection heuristics remain informational or warning-level unless deterministic.
+- Preserved hashes, integrity values, versions, and identifiers during redaction and added false-positive and split-stream regression tests.
+
+### Compatibility
+
+- Kept config version `1`, lock schema `1.0`, and the canonical integrity algorithm used by `0.6.x` and `0.7.x` locks.
+
 ## [0.7.4] - 2026-07-14
 
 ### Fixed

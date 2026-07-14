@@ -46,7 +46,7 @@ Global state is machine-specific and is not a replacement for committed project 
 ## CI pipeline
 
 ```bash
-npm install -g @skillctl/cli@0.7.4
+npm install -g @skillctl/cli@0.8.0
 skillctl install --frozen
 skillctl audit --strict --json
 ```

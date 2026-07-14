@@ -1,7 +1,7 @@
 window.TRANSLATIONS = {
   it: {
     nav: {
-      brandSub: 'Documentazione v0.7.4',
+      brandSub: 'Documentazione v0.8.0',
       navSection: 'Guida',
       navOverview: 'Panoramica',
       navConfig: 'Configurazione',
@@ -19,7 +19,7 @@ window.TRANSLATIONS = {
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.7.4 · Agent Skills</p>
+    <p class="hero-badge">v0.8.0 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare skillctl.</p>
     <div class="hero-terminal">
@@ -33,7 +33,7 @@ window.TRANSLATIONS = {
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 0.7.4</strong> — npm <code>@skillctl/cli@0.7.4</code>
+  <strong>Versione 0.8.0</strong> — npm <code>@skillctl/cli@0.8.0</code>
   Discovery skills.sh, piani outdated/update, sync riconciliabile, plugin sperimentali con integrità, audit SARIF e completion shell. Lock schema 1.0 e config version 1 restano compatibili.
 </div>
 
@@ -143,7 +143,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.7.4 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.8.0 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
@@ -312,12 +312,17 @@ progetto/
 </div>
 <pre><code># npm consigliato; locale solo con consenso esplicito
 skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add npm:@example/skillctl-plugin@^1 --dry-run
 skillctl plugin add ./my-skillctl-plugin --allow-local
 skillctl plugin list
 skillctl plugin doctor
 skillctl plugin disable @example/skillctl-plugin
 skillctl plugin remove my-plugin</code></pre>
 <p>Lo stato vive in <code>~/.skillctl/plugins.json</code> e <code>plugins.lock</code>. I plugin possono registrare comandi, adapter, registry, cataloghi e regole audit; eseguono codice Node con i permessi utente e non sono sandboxati.</p>
+<p>Il dry-run verifica versione, publisher, tarball/SRI, entrypoint, API, capability, dipendenze, script e attendibilitÃ  senza installare. Le capability sono dichiarazioni, non permessi.</p>
+
+<h2>Fondamenta 0.8</h2>
+<p>Parser condiviso con hash canonico compatibile con i lock precedenti; ricerca con <code>--provider</code>; backup gestiti tramite <code>backup list/info/restore/remove</code>; audit offline categorizzato; artifact persistenti solo su richiesta sotto <code>.skillctl/artifacts/</code>, escluso da Git, con redazione field-aware dei segreti.</p>
 
 <h2>Primi passi</h2>
 <ol>
@@ -338,7 +343,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Comandi — skillctl',
         html: `
 <h1>Comandi CLI</h1>
-<p class="lead">Riferimento completo ai comandi skillctl v0.7.4. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
+<p class="lead">Riferimento completo ai comandi skillctl v0.8.0. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
 <p>Con <code>--json</code>, ogni comando first-party emette un solo envelope con <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code> ed <code>errors</code>. Exit code: 0 successo, 1 warning/risultato parziale, 2 errore fatale o validazione.</p>
 
 <h2>Workflow principali</h2>
@@ -729,7 +734,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   },
   en: {
     nav: {
-      brandSub: 'Documentation v0.7.4',
+      brandSub: 'Documentation v0.8.0',
       navSection: 'Guide',
       navOverview: 'Overview',
       navConfig: 'Configuration',
@@ -747,7 +752,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.7.4 · Agent Skills</p>
+    <p class="hero-badge">v0.8.0 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use skillctl.</p>
     <div class="hero-terminal">
@@ -761,7 +766,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 0.7.4</strong> — npm <code>@skillctl/cli@0.7.4</code>
+  <strong>Version 0.8.0</strong> — npm <code>@skillctl/cli@0.8.0</code>
   skills.sh discovery, outdated/update plans, reconcilable sync, integrity-locked experimental plugins, SARIF audit, and shell completion. Lock schema 1.0 and config version 1 remain compatible.
 </div>
 
@@ -871,7 +876,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.7.4 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.8.0 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
@@ -1040,12 +1045,17 @@ project/
 </div>
 <pre><code># npm recommended; local only with explicit consent
 skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add npm:@example/skillctl-plugin@^1 --dry-run
 skillctl plugin add ./my-skillctl-plugin --allow-local
 skillctl plugin list
 skillctl plugin doctor
 skillctl plugin disable @example/skillctl-plugin
 skillctl plugin remove my-plugin</code></pre>
 <p>State lives in <code>~/.skillctl/plugins.json</code> and <code>plugins.lock</code>. Plugins can register commands, adapters, registries, catalogs, and audit rules; they execute Node.js with user permissions and are not sandboxed.</p>
+<p>Dry-run verifies version, publisher, tarball/SRI, entrypoint, API, capabilities, dependencies, scripts, and trust without installing. Capabilities are declarations, not permissions.</p>
+
+<h2>0.8 foundations</h2>
+<p>A shared parser preserves the canonical hash used by previous locks; search accepts <code>--provider</code>; managed backups use <code>backup list/info/restore/remove</code>; offline audit is categorized; persistent artifacts are opt-in under Git-ignored <code>.skillctl/artifacts/</code> with field-aware secret redaction.</p>
 
 <h2>First-time setup</h2>
 <ol>
@@ -1066,7 +1076,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Commands — skillctl',
         html: `
 <h1>CLI commands</h1>
-<p class="lead">Complete reference for skillctl v0.7.4 commands. Command blocks remain in English as in the CLI interface.</p>
+<p class="lead">Complete reference for skillctl v0.8.0 commands. Command blocks remain in English as in the CLI interface.</p>
 <p>With <code>--json</code>, every first-party command emits one envelope containing <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code>, and <code>errors</code>. Exit codes: 0 success, 1 warning/partial result, 2 fatal or validation failure.</p>
 
 <h2>Main workflows</h2>

@@ -8,7 +8,7 @@ Universal, package-manager-style CLI for managing **Agent Skills** across AI cod
 
 `skillctl` installs project skills into `.skillctl/skills/` and personal skills into `~/.skillctl/skills/`, then syncs them (symlink, junction on Windows, or copy) into Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, Pi, and other [agentskills.io](https://agentskills.io)-compatible agents.
 
-> **Status**: v0.7.4 — catalog discovery, deterministic maintenance plans, reconcilable sync, experimental plugins, SARIF audit, and shell completion. See [CHANGELOG.md](./CHANGELOG.md).
+> **Status**: v0.8.0 — shared `SKILL.md` parsing, provider-aware discovery, managed backups, plugin inspection, artifact contracts, secret redaction, and advanced offline audit. See [CHANGELOG.md](./CHANGELOG.md).
 
 Machine-readable commands emit one stable JSON envelope with `schemaVersion: 1`; warnings and errors stay on stderr. Official releases smoke-test both packed tarballs and the package fetched back from npm before the tag is created.
 
@@ -43,7 +43,7 @@ skillctl doctor
 Discover a skill before installing it, or inspect a source without changing project state:
 
 ```bash
-skillctl search typescript
+skillctl search typescript --provider skills.sh
 skillctl search typescript --owner vercel-labs --add vercel-labs/skills/find-skills --yes
 skillctl info skills.sh/vercel-labs/skills/find-skills
 ```
@@ -101,6 +101,16 @@ skillctl doctor --json
 ```
 
 Explicit unmanaged replacement first moves the original target to `.skillctl/backups/sync/` (or the global equivalent) and restores it automatically if replacement fails.
+
+Backups have logical IDs independent from their Windows-safe directory names and can be inspected, dry-run restored, restored with rollback, or removed explicitly:
+
+```bash
+skillctl backup list --json
+skillctl backup info <id>
+skillctl backup restore <id> --dry-run
+skillctl backup restore <id> --yes
+skillctl backup remove <id> --yes
+```
 
 Every first-party command supports `--json` and writes one envelope with `schemaVersion`, `ok`, `command`, `data`, `warnings`, and `errors`. Exit codes are 0 for success, 1 for operational warnings/partial results, and 2 for fatal or validation failures.
 
@@ -185,10 +195,19 @@ Plugins can register commands, adapters, registry sources, catalog providers, an
 
 ```bash
 skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add npm:@example/skillctl-plugin@^1 --dry-run
 skillctl plugin list
 skillctl plugin doctor
 skillctl plugin disable @example/skillctl-plugin
 ```
+
+The dry-run resolves and verifies the package without installing it, then reports publisher, tarball integrity, entrypoint, API version, declared capabilities, dependencies, npm scripts, and trust status. Capabilities are declarations rather than permissions; plugins are not sandboxed.
+
+## Parser, audit, and artifacts
+
+`info`, validation, import, and audit share one strict UTF-8/YAML parser. Directory integrity is still computed with the canonical lockfile algorithm, so existing `0.6.x` and `0.7.x` hashes remain compatible. Audit stays offline by default and categorizes findings across integrity, provenance, filesystem, execution, network, secrets, prompt injection, policy, plugins, and managed targets. Heuristic findings include confidence and non-secret evidence.
+
+Persistent artifacts are opt-in and use the versioned `.skillctl/artifacts/{audit,test,reports}/` contract. This directory is ignored by Git. Structured output passes through field-aware secret redaction; hashes, integrity values, versions, and ordinary identifiers are preserved.
 
 See the [docs site](https://xfurti.github.io/skillctl/) for the full command reference, config schema, Windows notes, and coexistence with other tools.
 
