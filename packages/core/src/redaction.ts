@@ -70,7 +70,18 @@ export class StreamingSecretRedactor {
       return '';
     }
     const boundary = combined.length - this.overlap;
-    const safeBoundary = Math.max(0, combined.lastIndexOf('\n', boundary) + 1 || boundary);
+    let safeBoundary = combined.lastIndexOf('\n', boundary) + 1;
+    if (safeBoundary <= 0) {
+      this.pending = combined;
+      return '';
+    }
+    for (const secret of Object.values(this.knownSecrets).filter(isUsefulSecret)) {
+      const start = combined.lastIndexOf(secret.slice(0, Math.min(secret.length, 8)), safeBoundary);
+      if (start >= 0 && start < safeBoundary && start + secret.length > safeBoundary) safeBoundary = start;
+    }
+    const privateKeyStart = combined.lastIndexOf('-----BEGIN ', safeBoundary);
+    const privateKeyEnd = combined.lastIndexOf('-----END ', safeBoundary);
+    if (privateKeyStart > privateKeyEnd) safeBoundary = privateKeyStart;
     this.pending = combined.slice(safeBoundary);
     return redactSecrets(combined.slice(0, safeBoundary), this.knownSecrets).value;
   }

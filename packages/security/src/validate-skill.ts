@@ -1,11 +1,12 @@
 import { stat } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
-import { canonicalizeName } from '@skillctl/core';
+import { canonicalizeName, parseSkillDirectory } from '@skillctl/core';
 import type { AuditFinding, AuditReport } from './types.js';
 import { checkNameDirMatch } from './rules/name-dir-match.js';
 import { checkScriptHeuristics } from './rules/script-heuristics.js';
 import { checkPathTraversal } from './rules/path-traversal.js';
 import { checkSizeLimits } from './rules/size-limits.js';
+import { checkAdvancedContent } from './rules/advanced-content.js';
 
 async function findSkillMarkdown(skillPath: string): Promise<boolean> {
   for (const f of ['SKILL.md', 'skill.md']) {
@@ -73,10 +74,32 @@ export async function validateSkillDir(skillPath: string): Promise<AuditReport> 
     return { status: 'errors', findings, scanned: 0 };
   }
 
+  const parsed = await parseSkillDirectory(abs, { validation: 'collect' }).catch((error) => {
+    findings.push({
+      rule: 'skill-parse', severity: 'error', skill: name,
+      message: (error as Error).message, path: abs,
+    });
+    return null;
+  });
+  if (!parsed) return { status: 'errors', findings, scanned: 1 };
+  for (const diagnostic of parsed.diagnostics) {
+    // A description is recommended metadata, but older valid skills did not
+    // require it. Keep parsing it centrally without changing validation status.
+    if (diagnostic.code === 'MISSING_DESCRIPTION') continue;
+    findings.push({
+      rule: diagnostic.code.toLowerCase().replaceAll('_', '-'),
+      severity: diagnostic.severity,
+      skill: parsed.name,
+      message: diagnostic.message,
+      path: diagnostic.path,
+    });
+  }
+
   findings.push(...(await checkNameDirMatch(name, abs)));
   findings.push(...(await checkScriptHeuristics(name, abs)));
   findings.push(...(await checkPathTraversal(name, abs)));
   findings.push(...(await checkSizeLimits(name, abs)));
+  findings.push(...(await checkAdvancedContent(name, abs)));
 
   const hasError = findings.some((f) => f.severity === 'error');
   const hasWarning = findings.some((f) => f.severity === 'warning');

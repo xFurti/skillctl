@@ -26,6 +26,12 @@ function sarifResult(finding: AuditFinding): Record<string, unknown> {
     ruleId: finding.rule,
     level: finding.severity === 'error' ? 'error' : finding.severity === 'warning' ? 'warning' : 'note',
     message: { text: `${finding.skill}: ${finding.message}` },
+    properties: {
+      category: finding.category,
+      confidence: finding.confidence,
+      remediation: finding.remediation,
+      evidence: finding.evidence,
+    },
     locations: path ? [{ physicalLocation: {
       artifactLocation: { uri: path.replaceAll('\\', '/') },
       region: finding.location?.startLine ? { startLine: finding.location.startLine, endLine: finding.location.endLine || finding.location.startLine } : undefined,

@@ -6,6 +6,7 @@ import { checkScriptHeuristics } from './rules/script-heuristics.js';
 import { checkNameDirMatch } from './rules/name-dir-match.js';
 import { checkPathTraversal } from './rules/path-traversal.js';
 import { checkSizeLimits } from './rules/size-limits.js';
+import { checkAdvancedContent } from './rules/advanced-content.js';
 
 export async function runAudit(cwd = process.cwd(), options?: { store?: string }): Promise<AuditReport> {
   const lock = await loadLockfile(cwd);
@@ -44,6 +45,7 @@ export async function runAudit(cwd = process.cwd(), options?: { store?: string }
     findings.push(...(await checkScriptHeuristics(name, canonicalPath)));
     findings.push(...(await checkPathTraversal(name, canonicalPath)));
     findings.push(...(await checkSizeLimits(name, canonicalPath)));
+    findings.push(...(await checkAdvancedContent(name, canonicalPath)));
   }
 
   const hasError = findings.some((f) => f.severity === 'error');
