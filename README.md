@@ -8,7 +8,7 @@ Universal, package-manager-style CLI for managing **Agent Skills** across AI cod
 
 `skillctl` installs project skills into `.skillctl/skills/` and personal skills into `~/.skillctl/skills/`, then syncs them (symlink, junction on Windows, or copy) into Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, Pi, and other [agentskills.io](https://agentskills.io)-compatible agents.
 
-> **Status**: v0.6.1 — project/global store separation, immutable GitHub/npm resolutions, frozen restore, deduplicating import, transactional state, and uniform JSON output. See [CHANGELOG.md](./CHANGELOG.md).
+> **Status**: v0.7.3 — catalog discovery, deterministic maintenance plans, reconcilable sync, experimental plugins, SARIF audit, and shell completion. See [CHANGELOG.md](./CHANGELOG.md).
 
 **Documentation** (commands, configuration, migration, troubleshooting): **[xfurti.github.io/skillctl](https://xfurti.github.io/skillctl/)** · IT/EN
 
@@ -38,6 +38,14 @@ skillctl list
 skillctl doctor
 ```
 
+Discover a skill before installing it, or inspect a source without changing project state:
+
+```bash
+skillctl search typescript
+skillctl search typescript --owner vercel-labs --add vercel-labs/skills/find-skills --yes
+skillctl info skills.sh/vercel-labs/skills/find-skills
+```
+
 Project files (commit these):
 - `agent-skills.json` — declarative manifest (like `package.json`)
 - `agent-skills.lock` — reproducible YAML lockfile (like `pnpm-lock.yaml`)
@@ -63,7 +71,16 @@ Remote requests remain readable in the manifest, while the lock pins GitHub and 
 skillctl install --frozen
 ```
 
-`update` is the operation that intentionally refreshes a valid remote resolution. Imported and local skills use project-relative `file:./.skillctl/skills/<name>` entries, so committed skills remain available without a registry.
+`outdated` reports current, outdated, modified, legacy, unavailable, and unsupported entries independently. `update --dry-run` emits the same plan without writing. `update --latest --save --yes` may cross an npm constraint and records the chosen version exactly; GitHub and skills.sh retain their declared ref.
+
+```bash
+skillctl outdated
+skillctl update --dry-run
+skillctl update my-skill
+skillctl update npm-skill --latest --save --yes
+```
+
+Imported and local skills use project-relative `file:./.skillctl/skills/<name>` entries, so committed skills remain available without a registry.
 
 ### Migrating local skills from 0.5
 
@@ -77,8 +94,11 @@ Without scope flags, `sync` keeps the compatible default and targets both projec
 skillctl sync --project --agent codex
 skillctl sync --global --agent codex,claude-code
 skillctl sync --project --prune --dry-run
+skillctl sync --project --agent codex --skill my-skill --replace-unmanaged --yes
 skillctl doctor --json
 ```
+
+Explicit unmanaged replacement first moves the original target to `.skillctl/backups/sync/` (or the global equivalent) and restores it automatically if replacement fails.
 
 Every first-party command supports `--json` and writes one envelope with `schemaVersion`, `ok`, `command`, `data`, `warnings`, and `errors`. Exit codes are 0 for success, 1 for operational warnings/partial results, and 2 for fatal or validation failures.
 
@@ -133,9 +153,39 @@ skillctl import from-npx --sync --write-manifest
 
 # Security scan (CI-friendly)
 skillctl audit --json --strict
+skillctl audit --format sarif --output results.sarif
 
 # Re-fetch and re-sync
 skillctl update
+
+# Print shell completion; redirect it using your shell's normal profile setup
+skillctl completion powershell
+```
+
+Completion scripts are printed to stdout and never modify profiles. Typical setup:
+
+```bash
+# Bash
+skillctl completion bash > ~/.local/share/bash-completion/completions/skillctl
+
+# Zsh (ensure ~/.zfunc is in fpath)
+skillctl completion zsh > ~/.zfunc/_skillctl
+```
+
+```powershell
+# Current PowerShell session; add the same expression to $PROFILE if desired
+skillctl completion powershell | Out-String | Invoke-Expression
+```
+
+## Experimental plugins
+
+Plugins can register commands, adapters, registry sources, catalog providers, and audit rules. npm plugins are integrity-locked under `~/.skillctl/plugins/`; local plugins require `--allow-local`. Plugins execute Node.js code with your user permissions and are not sandboxed.
+
+```bash
+skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin list
+skillctl plugin doctor
+skillctl plugin disable @example/skillctl-plugin
 ```
 
 See the [docs site](https://xfurti.github.io/skillctl/) for the full command reference, config schema, Windows notes, and coexistence with other tools.
@@ -155,6 +205,10 @@ pnpm test
 Run the CLI locally: `node packages/cli/bin/skillctl.js --help`
 
 Architecture and design: [skillctl-design.md](./skillctl-design.md) · Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+### Maintainer release setup
+
+Each of the eleven `@skillctl/*` npm packages must configure the repository `xFurti/skillctl`, workflow `release.yml`, environment `npm-production`, and `npm publish` as its Trusted Publisher. The workflow needs no `NPM_TOKEN`: it verifies or publishes every tarball by SRI, waits until all packages are visible, and only then creates the annotated tag and GitHub Release.
 
 ## Authors
 

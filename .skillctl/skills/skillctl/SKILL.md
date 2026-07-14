@@ -1,8 +1,8 @@
 ---
 name: skillctl
 description: >
-  Manage Agent Skills with the skillctl CLI: init, add, install, sync, import,
-  audit, and portable manifest/lock workflows across Claude, Cursor, Codex,
+  Manage Agent Skills with the skillctl CLI: search, info, add, install,
+  outdated, update, sync, import, audit, plugins, completion, and portable manifest/lock workflows across Claude, Cursor, Codex,
   Grok, Gemini, Pi, and OpenCode. Use when the user mentions skillctl,
   agent-skills.json, agent-skills.lock, syncing skills, importing from npx
   skills, or skill portability across machines.
@@ -20,6 +20,8 @@ Operational playbook for managing Agent Skills with the **skillctl** CLI. Run re
 4. **Install before sync** — `install` materializes project dependencies; `sync` only refreshes agent targets.
 5. **Verify after changes** — run `skillctl doctor` and `skillctl audit`; use `audit --strict` in CI.
 6. **Import rather than copy by hand** — plain `skillctl import` discovers agent directories, deduplicates identical skills, and vendors selected content into the project store.
+7. **Plan maintenance before writing** — use `outdated` or `update --dry-run`; use `--latest --save --yes` only when intentionally changing an npm constraint.
+8. **Never replace unmanaged targets implicitly** — replacement requires exact skill, agent, scope, confirmation, and a backup.
 
 ## Decision tree
 
@@ -33,6 +35,8 @@ Operational playbook for managing Agent Skills with the **skillctl** CLI. Run re
 | Re-link project targets | `skillctl sync --project` |
 | Re-link personal targets | `skillctl sync --global` |
 | Re-fetch project dependencies | `skillctl update` or `skillctl update <name>` |
+| Discover or inspect a skill | `skillctl search <query>` / `skillctl info <name-or-specifier>` |
+| Review pending updates | `skillctl outdated` / `skillctl update --dry-run` |
 | CI reproducible install | `skillctl install --frozen` then `skillctl audit --strict` |
 | Diagnose personal installation | `skillctl doctor -g` |
 
@@ -62,6 +66,12 @@ skillctl doctor -g
 skillctl list
 skillctl doctor
 skillctl audit --json
+
+# Discovery and maintenance
+skillctl search typescript
+skillctl info skills.sh/vercel-labs/skills/find-skills
+skillctl outdated
+skillctl update --dry-run
 ```
 
 After a local add/import, expect the manifest and lock to use `file:./.skillctl/skills/<name>` and the lock `canonicalPath` to use `.skillctl/skills/<name>`. A global add uses `~/.skillctl/skills/<name>` and stores its state under `~/.skillctl/`.
@@ -74,13 +84,22 @@ After a local add/import, expect the manifest and lock to use `file:./.skillctl/
 - **Legacy:** `local:imported/<name>`, absolute local paths, and project entries with `canonicalPath: ~/.skillctl/skills/<name>` should be re-imported or re-added, then committed.
 - `install --frozen` restores missing remote content from immutable lock entries without changing the lock.
 - `update` is the normal operation that intentionally changes an existing remote resolution.
+- `skills.sh/<owner>/<repo>/<skill>` locks the repository SHA plus a skill selector; frozen install does not query the catalog.
 
 ## Scoped sync and JSON
 
 - No sync scope flags means project and global targets.
 - Use `--project` or `--global`, plus repeatable/comma-separated `--agent` filters.
 - `--prune` is opt-in and only removes verified skillctl-managed links/copies; combine it with `--dry-run` first.
+- `--replace-unmanaged` requires `--skill`, `--agent`, one scope, and confirmation; it backs up the original content before replacement.
 - First-party commands with `--json` emit one envelope. Exit codes: 0 success, 1 warning/partial result, 2 fatal/validation failure.
+
+## Plugins, SARIF, and completion (0.7+)
+
+- Plugins are experimental, integrity-locked, and execute Node.js with the user's permissions; they are not sandboxed.
+- Prefer npm plugins. Local plugins require `plugin add <path> --allow-local`.
+- `audit --format sarif --output results.sarif` writes GitHub-compatible SARIF while the default audit remains offline.
+- `completion bash|zsh|powershell` prints a script and never edits a shell profile automatically.
 
 ## Failure modes
 

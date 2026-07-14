@@ -11,13 +11,18 @@
 | `remove <name>` | Remove a project entry; `--purge` also deletes its vendored content |
 | `remove -g <name>` | Remove a global entry and personal agent targets |
 | `update [names...]` | Re-fetch project dependencies from their manifest specifiers |
+| `search [query]` | Search skills.sh; optionally add one exact catalog result |
+| `info <name-or-specifier>` | Inspect installed state or a remote source without modifying state |
+| `outdated [names...]` | Produce a deterministic update plan |
 | `doctor` / `doctor -g` | Diagnose project or global state, links, config, coexistence, and audit summary |
-| `audit` | Security scan project skills (`--json`, `--strict`) |
+| `audit` | Offline security scan (`--json`, `--strict`, or SARIF output) |
 | `import` | Discover, deduplicate, select, and vendor skills from project agent directories |
 | `import from-npx` | Migrate from the `npx skills` layout |
 | `import from-skillctl` | Migrate from Python skillctl repositories |
 | `skill validate [path]` | Lint a `SKILL.md` directory |
+| `plugin ...` | Manage experimental npm/local plugins with manifest and lock state |
+| `completion <shell>` | Print Bash, Zsh, or PowerShell completion |
 
-Common flags: `install --frozen`, `install --prod`, `install --no-sync`, `doctor --fix`, `import --dry-run`, `import --select`, `import --interactive`, `sync --project`, `sync --global`, `sync --agent codex`, `sync --prune`, `sync --dry-run`.
+Common flags: `install --frozen`, `update --dry-run`, `update --latest --save --yes`, `doctor --fix`, `sync --project`, `sync --agent codex`, `sync --skill name`, `sync --replace-unmanaged --yes`, `audit --format sarif --output results.sarif`, and `import --dry-run`.
 
 Commands exposing `--json` emit one stable envelope and use exit code 0 for success, 1 for warnings/partial results, and 2 for fatal or validation errors.

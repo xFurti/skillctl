@@ -1,7 +1,7 @@
 window.TRANSLATIONS = {
   it: {
     nav: {
-      brandSub: 'Documentazione v0.6.1',
+      brandSub: 'Documentazione v0.7.3',
       navSection: 'Guida',
       navOverview: 'Panoramica',
       navConfig: 'Configurazione',
@@ -19,7 +19,7 @@ window.TRANSLATIONS = {
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.6.1 · Agent Skills</p>
+    <p class="hero-badge">v0.7.3 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare skillctl.</p>
     <div class="hero-terminal">
@@ -33,8 +33,8 @@ window.TRANSLATIONS = {
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 0.6.1</strong> — npm <code>@skillctl/cli@0.6.1</code>
-  Store di progetto e personale separati, lock remoto immutabile, ripristino frozen, import con deduplicazione e output JSON uniforme. Sync verso Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, Pi e altri agenti <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a>.
+  <strong>Versione 0.7.3</strong> — npm <code>@skillctl/cli@0.7.3</code>
+  Discovery skills.sh, piani outdated/update, sync riconciliabile, plugin sperimentali con integrità, audit SARIF e completion shell. Lock schema 1.0 e config version 1 restano compatibili.
 </div>
 
 <h2>Cos'è skillctl</h2>
@@ -143,7 +143,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.6.1 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.7.3 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
@@ -187,8 +187,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "pi": true
   },
   "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/skillctl/*"],
-  "experimental": { "plugins": false },
-  "plugins": []
+  "security": { "trustedSourcesMode": "warn" }
 }</code></pre>
 
 <table>
@@ -201,9 +200,8 @@ node packages/cli/bin/skillctl.js init</code></pre>
     <tr><td><code>defaultMode</code></td><td>Modalità link: <code>symlink</code> (default), <code>junction</code> o <code>copy</code>. Su Windows i target globali usano junction e ogni errore di link può ripiegare su copy.</td></tr>
     <tr><td><code>agents</code></td><td>Mappa agente → booleano; solo gli agenti abilitati ricevono sync.</td></tr>
     <tr><td><code>trustedSources</code></td><td>Pattern opzionali per fonti considerate attendibili (audit/informazioni).</td></tr>
+    <tr><td><code>security.trustedSourcesMode</code></td><td><code>off</code>, <code>warn</code> (default) o <code>error</code>; l'audit resta offline.</td></tr>
     <tr><td><code>registries</code></td><td>Elenco opzionale di registry custom (estensioni future).</td></tr>
-    <tr><td><code>experimental.plugins</code></td><td>Abilita caricamento plugin al avvio CLI (<code>skillctl plugin enable</code>).</td></tr>
-    <tr><td><code>plugins</code></td><td>Array di plugin registrati: <code>name</code>, <code>path</code>, <code>enabled</code>.</td></tr>
   </tbody>
 </table>
 
@@ -219,7 +217,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   "agentSkills": {
     "dependencies": {
       "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
-      "playwright": "skills.sh/owner/repo#playwright",
+      "playwright": "skills.sh/owner/repo/playwright",
       "local-review": "file:./.skillctl/skills/local-review",
       "my-codex-skill": "file:./.skillctl/skills/my-codex-skill"
     },
@@ -238,7 +236,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   <li><code>adapter</code> — id adapter che ha fornito la skill (es. <code>codex</code>)</li>
 </ul>
 
-<h3>Riproducibilità manifest e lock (0.6)</h3>
+<h3>Riproducibilità manifest e lock (0.7)</h3>
 <p>Lo specifier conserva la richiesta dell'utente; <code>resolved</code> blocca GitHub/skills.sh a un commit completo e npm a una versione esatta. I path committabili restano portabili:</p>
 <ul>
   <li><code>file:./.skillctl/skills/&lt;name&gt;</code> per contenuto locale/importato e specifier remoti per i registry</li>
@@ -262,7 +260,9 @@ node packages/cli/bin/skillctl.js init</code></pre>
 │       └── references/
 ├── cache/               # cache content-addressable
 │   └── downloads/       # tarball scaricati
-└── plugins/             # plugin installati (sperimentale)
+├── plugins.json         # manifest plugin globale (sperimentale)
+├── plugins.lock         # risoluzioni e integrità plugin
+└── plugins/             # pacchetti plugin installati
 
 progetto/
 ├── agent-skills.json
@@ -285,6 +285,8 @@ progetto/
     <tr><td><code>SKILLCTL_PARALLEL</code></td><td>Numero massimo di fetch paralleli verso i registry (default 6, max 16). Esempio: <code>SKILLCTL_PARALLEL=4 skillctl install</code></td></tr>
     <tr><td><code>SKILLCTL_STORE</code></td><td>Sovrascrive lo store globale/fallback; lo store di progetto resta <code>.skillctl/skills</code>.</td></tr>
     <tr><td><code>GITHUB_TOKEN</code> / <code>GH_TOKEN</code></td><td>Token GitHub per tarball API; consigliato con molte dipendenze <code>github:</code> per evitare rate limit 403.</td></tr>
+    <tr><td><code>SKILLCTL_SKILLS_API_URL</code></td><td>Sovrascrive l'endpoint pubblico skills.sh per test o cataloghi compatibili.</td></tr>
+    <tr><td><code>NO_COLOR</code></td><td>Disabilita colori e controlli ANSI nell'output umano.</td></tr>
   </tbody>
 </table>
 
@@ -297,7 +299,7 @@ progetto/
     <tr><td>GitHub (esplicito)</td><td><code>github:owner/repo@main#skill-name</code></td><td>Ref opzionale; il lock salva sempre il commit SHA.</td></tr>
     <tr><td>GitHub (shorthand)</td><td><code>owner/repo#skill-name</code></td><td>Equivalente al prefisso <code>github:</code>.</td></tr>
     <tr><td>npm</td><td><code>npm:package-name</code></td><td>Pacchetto npm che espone una skill.</td></tr>
-    <tr><td>skills.sh</td><td><code>skills.sh/owner/repo</code></td><td>Richiede forma <code>owner/repo</code>; il solo nome skill fallisce.</td></tr>
+    <tr><td>skills.sh</td><td><code>skills.sh/owner/repo/skill</code></td><td>Seleziona una skill e blocca nel lock commit SHA e selettore.</td></tr>
     <tr><td>Locale</td><td><code>file:./path/to/skill</code> o <code>./path</code></td><td>Directory con <code>SKILL.md</code>.</td></tr>
     <tr><td>Importata</td><td><code>file:./.skillctl/skills/my-skill</code></td><td>Skill copiata nello store del progetto da <code>skillctl import</code>.</td></tr>
   </tbody>
@@ -308,14 +310,14 @@ progetto/
   <strong>Sicurezza</strong>
   I plugin eseguono codice arbitrario all'avvio. Abilita solo sorgenti attendibili. Vedi threat model nel design doc del progetto.
 </div>
-<pre><code># Abilita nel config
-skillctl plugin enable
-
-# Registra plugin locale (package.json con entry skillctl.plugin)
-skillctl plugin add ./my-skillctl-plugin
+<pre><code># npm consigliato; locale solo con consenso esplicito
+skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add ./my-skillctl-plugin --allow-local
 skillctl plugin list
+skillctl plugin doctor
+skillctl plugin disable @example/skillctl-plugin
 skillctl plugin remove my-plugin</code></pre>
-<p>I plugin possono registrare comandi CLI, adattatori agente e sorgenti registry aggiuntive.</p>
+<p>Lo stato vive in <code>~/.skillctl/plugins.json</code> e <code>plugins.lock</code>. I plugin possono registrare comandi, adapter, registry, cataloghi e regole audit; eseguono codice Node con i permessi utente e non sono sandboxati.</p>
 
 <h2>Primi passi</h2>
 <ol>
@@ -336,7 +338,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Comandi — skillctl',
         html: `
 <h1>Comandi CLI</h1>
-<p class="lead">Riferimento completo ai comandi skillctl v0.6.1. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
+<p class="lead">Riferimento completo ai comandi skillctl v0.7.3. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
 <p>Con <code>--json</code>, ogni comando first-party emette un solo envelope con <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code> ed <code>errors</code>. Exit code: 0 successo, 1 warning/risultato parziale, 2 errore fatale o validazione.</p>
 
 <h2>Workflow principali</h2>
@@ -394,12 +396,29 @@ SKILLCTL_PARALLEL=4 skillctl install</code></pre>
 </div>
 
 <div class="cmd-block">
+  <div class="cmd-name">skillctl search [query] | info &lt;name-or-specifier&gt;</div>
+  <p class="cmd-desc">Cerca nel catalogo skills.sh o ispeziona una skill installata/remota senza modificare lo stato. La cache locale dura 15 minuti e supporta fallback stale.</p>
+  <pre><code>skillctl search typescript --owner vercel-labs
+skillctl search typescript --add vercel-labs/skills/find-skills --yes
+skillctl info skills.sh/vercel-labs/skills/find-skills</code></pre>
+</div>
+
+<div class="cmd-block">
+  <div class="cmd-name">skillctl outdated [names...]</div>
+  <p class="cmd-desc">Mostra un piano deterministico con stato e tipo di aggiornamento, senza scrivere.</p>
+  <pre><code>skillctl outdated
+skillctl outdated --latest --json</code></pre>
+</div>
+
+<div class="cmd-block">
   <div class="cmd-name">skillctl update [names...]</div>
-  <p class="cmd-desc">Ri-scarica le skill indicate (o tutte se omesso) dai specifier nel manifest e re-sincronizza.</p>
+  <p class="cmd-desc">Calcola prima un piano deterministico e applica il batch con rollback di store, manifest e lock in caso di errore.</p>
   <pre><code>skillctl update
 skillctl update web-design-guidelines playwright
+skillctl update --dry-run
+skillctl update npm-skill --latest --save --yes
 skillctl update --no-sync</code></pre>
-  <p>Flag: <code>--no-sync</code> — aggiorna store/lock senza ricollegare gli agenti.</p>
+  <p><code>--latest</code> può superare un vincolo npm; <code>--save</code> salva una versione exact e in non-TTY richiede <code>--yes</code>.</p>
 </div>
 
 <div class="cmd-block">
@@ -408,8 +427,9 @@ skillctl update --no-sync</code></pre>
   <pre><code>skillctl sync
 skillctl sync --project --agent codex
 skillctl sync --global --agent codex,claude-code
-skillctl sync --project --prune --dry-run</code></pre>
-  <p>Senza scope sincronizza progetto e globale. <code>--project</code> e <code>--global</code> sono alternativi; <code>--agent</code> è ripetibile o accetta valori separati da virgola. <code>--prune</code> rimuove solo target con ownership skillctl verificata.</p>
+skillctl sync --project --prune --dry-run
+skillctl sync --project --agent codex --skill demo --replace-unmanaged --yes</code></pre>
+  <p><code>--replace-unmanaged</code> richiede skill, agent, uno scope e conferma; crea sempre un backup ripristinabile. È incompatibile con <code>--prune</code>.</p>
 </div>
 
 <div class="cmd-block">
@@ -444,7 +464,7 @@ skillctl doctor --json</code></pre>
   <pre><code>skillctl audit
 skillctl audit --json
 skillctl audit --strict
-skillctl audit --json --strict</code></pre>
+skillctl audit --format sarif --output results.sarif</code></pre>
   <p>Exit code: 0 ok, 1 warning o risultato parziale, 2 errore audit/validazione o warning con <code>--strict</code>.</p>
 </div>
 
@@ -491,14 +511,20 @@ skillctl import from-skillctl --write-manifest</code></pre>
 <h2>Plugin (sperimentale)</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl plugin list | enable | add | remove</div>
-  <p class="cmd-desc">Gestione plugin locali. Richiede <code>experimental.plugins: true</code> in config.</p>
-  <pre><code>skillctl plugin enable
-skillctl plugin add ./my-skillctl-plugin
+  <div class="cmd-name">skillctl plugin add | install | update | enable | disable | info | doctor | remove | list</div>
+  <p class="cmd-desc">Gestione sperimentale di plugin npm e locali con manifest, lock e verifica integrità separati.</p>
+  <pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add ./my-skillctl-plugin --allow-local
 skillctl plugin list
-skillctl plugin list --json
+skillctl plugin doctor
+skillctl plugin disable @example/skillctl-plugin
 skillctl plugin remove my-plugin</code></pre>
 </div>
+
+<p><strong>0.7:</strong> i plugin npm/locali usano manifest, lock e verifica integrità separati. Le sorgenti locali richiedono <code>--allow-local</code>. I plugin eseguono codice Node con i permessi utente e non sono sandboxati.</p>
+<pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin doctor
+skillctl completion powershell</code></pre>
 
 <h2>Opzioni globali</h2>
 <pre><code>skillctl --version
@@ -667,10 +693,10 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 
 <h2>Plugin non caricato</h2>
 <ul>
-  <li><code>experimental.plugins</code> deve essere <code>true</code> (<code>skillctl plugin enable</code>)</li>
-  <li>Riavvia la CLI dopo abilitazione</li>
-  <li><code>plugin add</code> richiede <code>skillctl.plugin</code> in <code>package.json</code> del plugin</li>
-  <li><code>skillctl plugin list</code> mostra stato abilitato (✓) o disabilitato (○)</li>
+  <li>Esegui <code>skillctl plugin doctor</code> per controllare lock, versione API e integrità installata</li>
+  <li>Usa <code>skillctl plugin enable &lt;name&gt;</code> o <code>disable &lt;name&gt;</code>, poi riavvia la CLI</li>
+  <li>Le sorgenti locali richiedono <code>--allow-local</code> e un package con entry <code>skillctl.plugin</code></li>
+  <li>Reinstalla un plugin attendibile se l'integrità non corrisponde più al lock</li>
 </ul>
 
 <h2>Diagnosi rapida</h2>
@@ -703,7 +729,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   },
   en: {
     nav: {
-      brandSub: 'Documentation v0.6.1',
+      brandSub: 'Documentation v0.7.3',
       navSection: 'Guide',
       navOverview: 'Overview',
       navConfig: 'Configuration',
@@ -721,7 +747,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v0.6.1 · Agent Skills</p>
+    <p class="hero-badge">v0.7.3 · Agent Skills</p>
     <h1 class="hero-title">skillctl</h1>
     <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use skillctl.</p>
     <div class="hero-terminal">
@@ -735,8 +761,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 0.6.1</strong> — npm <code>@skillctl/cli@0.6.1</code>
-  Separate project and personal stores, immutable remote locks, frozen restore, deduplicating import, and uniform JSON output. Sync to Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, Pi, and other <a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a> agents.
+  <strong>Version 0.7.3</strong> — npm <code>@skillctl/cli@0.7.3</code>
+  skills.sh discovery, outdated/update plans, reconcilable sync, integrity-locked experimental plugins, SARIF audit, and shell completion. Lock schema 1.0 and config version 1 remain compatible.
 </div>
 
 <h2>What is skillctl</h2>
@@ -845,7 +871,7 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.6.1 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  skillctl v0.7.3 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
@@ -889,8 +915,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "pi": true
   },
   "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/skillctl/*"],
-  "experimental": { "plugins": false },
-  "plugins": []
+  "security": { "trustedSourcesMode": "warn" }
 }</code></pre>
 
 <table>
@@ -903,9 +928,8 @@ node packages/cli/bin/skillctl.js init</code></pre>
     <tr><td><code>defaultMode</code></td><td>Link mode: <code>symlink</code> (default), <code>junction</code>, or <code>copy</code>. Windows global targets use junctions and link failures can fall back to copy.</td></tr>
     <tr><td><code>agents</code></td><td>Agent ID → boolean map; only enabled agents receive sync.</td></tr>
     <tr><td><code>trustedSources</code></td><td>Optional patterns for sources considered trusted (audit/info).</td></tr>
+    <tr><td><code>security.trustedSourcesMode</code></td><td><code>off</code>, <code>warn</code> (default), or <code>error</code>; audit remains offline.</td></tr>
     <tr><td><code>registries</code></td><td>Optional list of custom registries (future extensions).</td></tr>
-    <tr><td><code>experimental.plugins</code></td><td>Enable plugin loading at CLI startup (<code>skillctl plugin enable</code>).</td></tr>
-    <tr><td><code>plugins</code></td><td>Array of registered plugins: <code>name</code>, <code>path</code>, <code>enabled</code>.</td></tr>
   </tbody>
 </table>
 
@@ -921,7 +945,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   "agentSkills": {
     "dependencies": {
       "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
-      "playwright": "skills.sh/owner/repo#playwright",
+      "playwright": "skills.sh/owner/repo/playwright",
       "local-review": "file:./.skillctl/skills/local-review",
       "my-codex-skill": "file:./.skillctl/skills/my-codex-skill"
     },
@@ -940,7 +964,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   <li><code>adapter</code> — adapter id that supplied the skill (e.g. <code>codex</code>)</li>
 </ul>
 
-<h3>Manifest and lock reproducibility (0.6)</h3>
+<h3>Manifest and lock reproducibility (0.7)</h3>
 <p>The specifier preserves the user's request; <code>resolved</code> pins GitHub/skills.sh to a full commit and npm to an exact version. Committed paths remain portable:</p>
 <ul>
   <li><code>file:./.skillctl/skills/&lt;name&gt;</code> for local/imported content and remote registry specifiers</li>
@@ -964,7 +988,9 @@ node packages/cli/bin/skillctl.js init</code></pre>
 │       └── references/
 ├── cache/               # content-addressable cache
 │   └── downloads/       # downloaded tarballs
-└── plugins/             # installed plugins (experimental)
+├── plugins.json         # global plugin manifest (experimental)
+├── plugins.lock         # plugin resolutions and integrity
+└── plugins/             # installed plugin packages
 
 project/
 ├── agent-skills.json
@@ -987,6 +1013,8 @@ project/
     <tr><td><code>SKILLCTL_PARALLEL</code></td><td>Max parallel registry fetches (default 6, max 16). Example: <code>SKILLCTL_PARALLEL=4 skillctl install</code></td></tr>
     <tr><td><code>SKILLCTL_STORE</code></td><td>Overrides the global/fallback store; the project store remains <code>.skillctl/skills</code>.</td></tr>
     <tr><td><code>GITHUB_TOKEN</code> / <code>GH_TOKEN</code></td><td>GitHub token for tarball API; recommended with many <code>github:</code> deps to avoid 403 rate limits.</td></tr>
+    <tr><td><code>SKILLCTL_SKILLS_API_URL</code></td><td>Overrides the public skills.sh endpoint for tests or compatible catalogs.</td></tr>
+    <tr><td><code>NO_COLOR</code></td><td>Disables colors and ANSI controls in human output.</td></tr>
   </tbody>
 </table>
 
@@ -999,7 +1027,7 @@ project/
     <tr><td>GitHub (explicit)</td><td><code>github:owner/repo@main#skill-name</code></td><td>Optional ref; the lock always records the commit SHA.</td></tr>
     <tr><td>GitHub (shorthand)</td><td><code>owner/repo#skill-name</code></td><td>Equivalent to <code>github:</code> prefix.</td></tr>
     <tr><td>npm</td><td><code>npm:package-name</code></td><td>npm package exposing a skill.</td></tr>
-    <tr><td>skills.sh</td><td><code>skills.sh/owner/repo</code></td><td>Requires <code>owner/repo</code> form; name-only specs fail.</td></tr>
+    <tr><td>skills.sh</td><td><code>skills.sh/owner/repo/skill</code></td><td>Selects one skill and locks its commit SHA and selector.</td></tr>
     <tr><td>Local</td><td><code>file:./path/to/skill</code> or <code>./path</code></td><td>Directory containing <code>SKILL.md</code>.</td></tr>
     <tr><td>Imported</td><td><code>file:./.skillctl/skills/my-skill</code></td><td>Skill copied into the project store by <code>skillctl import</code>.</td></tr>
   </tbody>
@@ -1010,14 +1038,14 @@ project/
   <strong>Security</strong>
   Plugins execute arbitrary code at startup. Enable only trusted sources. See the project design doc threat model.
 </div>
-<pre><code># Enable in config
-skillctl plugin enable
-
-# Register local plugin (package.json with skillctl.plugin entry)
-skillctl plugin add ./my-skillctl-plugin
+<pre><code># npm recommended; local only with explicit consent
+skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add ./my-skillctl-plugin --allow-local
 skillctl plugin list
+skillctl plugin doctor
+skillctl plugin disable @example/skillctl-plugin
 skillctl plugin remove my-plugin</code></pre>
-<p>Plugins can register CLI commands, agent adapters, and additional registry sources.</p>
+<p>State lives in <code>~/.skillctl/plugins.json</code> and <code>plugins.lock</code>. Plugins can register commands, adapters, registries, catalogs, and audit rules; they execute Node.js with user permissions and are not sandboxed.</p>
 
 <h2>First-time setup</h2>
 <ol>
@@ -1038,7 +1066,7 @@ skillctl plugin remove my-plugin</code></pre>
         title: 'Commands — skillctl',
         html: `
 <h1>CLI commands</h1>
-<p class="lead">Complete reference for skillctl v0.6.1 commands. Command blocks remain in English as in the CLI interface.</p>
+<p class="lead">Complete reference for skillctl v0.7.3 commands. Command blocks remain in English as in the CLI interface.</p>
 <p>With <code>--json</code>, every first-party command emits one envelope containing <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code>, and <code>errors</code>. Exit codes: 0 success, 1 warning/partial result, 2 fatal or validation failure.</p>
 
 <h2>Main workflows</h2>
@@ -1096,12 +1124,29 @@ SKILLCTL_PARALLEL=4 skillctl install</code></pre>
 </div>
 
 <div class="cmd-block">
+  <div class="cmd-name">skillctl search [query] | info &lt;name-or-specifier&gt;</div>
+  <p class="cmd-desc">Searches skills.sh or inspects an installed/remote skill without changing state. The local cache lasts 15 minutes and supports stale fallback.</p>
+  <pre><code>skillctl search typescript --owner vercel-labs
+skillctl search typescript --add vercel-labs/skills/find-skills --yes
+skillctl info skills.sh/vercel-labs/skills/find-skills</code></pre>
+</div>
+
+<div class="cmd-block">
+  <div class="cmd-name">skillctl outdated [names...]</div>
+  <p class="cmd-desc">Prints a deterministic status/update-kind plan without writing.</p>
+  <pre><code>skillctl outdated
+skillctl outdated --latest --json</code></pre>
+</div>
+
+<div class="cmd-block">
   <div class="cmd-name">skillctl update [names...]</div>
-  <p class="cmd-desc">Re-fetches named skills (or all if omitted) from manifest specifiers and re-syncs.</p>
+  <p class="cmd-desc">Builds a deterministic plan first and applies the batch with store, manifest, and lock rollback on failure.</p>
   <pre><code>skillctl update
 skillctl update web-design-guidelines playwright
+skillctl update --dry-run
+skillctl update npm-skill --latest --save --yes
 skillctl update --no-sync</code></pre>
-  <p>Flag: <code>--no-sync</code> — update store/lock without re-linking agents.</p>
+  <p><code>--latest</code> may cross an npm constraint; <code>--save</code> records an exact version and non-TTY use requires <code>--yes</code>.</p>
 </div>
 
 <div class="cmd-block">
@@ -1110,8 +1155,9 @@ skillctl update --no-sync</code></pre>
   <pre><code>skillctl sync
 skillctl sync --project --agent codex
 skillctl sync --global --agent codex,claude-code
-skillctl sync --project --prune --dry-run</code></pre>
-  <p>Without scope flags, project and global targets are synced. <code>--project</code> and <code>--global</code> are alternatives; <code>--agent</code> is repeatable or accepts comma-separated values. <code>--prune</code> removes only targets with verified skillctl ownership.</p>
+skillctl sync --project --prune --dry-run
+skillctl sync --project --agent codex --skill demo --replace-unmanaged --yes</code></pre>
+  <p><code>--replace-unmanaged</code> requires a skill, agent, one scope, and confirmation; it always creates a restorable backup and cannot be combined with <code>--prune</code>.</p>
 </div>
 
 <div class="cmd-block">
@@ -1146,7 +1192,7 @@ skillctl doctor --json</code></pre>
   <pre><code>skillctl audit
 skillctl audit --json
 skillctl audit --strict
-skillctl audit --json --strict</code></pre>
+skillctl audit --format sarif --output results.sarif</code></pre>
   <p>Exit codes: 0 ok, 1 warning or partial result, 2 audit/validation error or warning under <code>--strict</code>.</p>
 </div>
 
@@ -1193,14 +1239,20 @@ skillctl import from-skillctl --write-manifest</code></pre>
 <h2>Plugin (experimental)</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl plugin list | enable | add | remove</div>
-  <p class="cmd-desc">Manage local plugins. Requires <code>experimental.plugins: true</code> in config.</p>
-  <pre><code>skillctl plugin enable
-skillctl plugin add ./my-skillctl-plugin
+  <div class="cmd-name">skillctl plugin add | install | update | enable | disable | info | doctor | remove | list</div>
+  <p class="cmd-desc">Experimental npm/local plugin management with separate manifest, lock, and integrity verification.</p>
+  <pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin add ./my-skillctl-plugin --allow-local
 skillctl plugin list
-skillctl plugin list --json
+skillctl plugin doctor
+skillctl plugin disable @example/skillctl-plugin
 skillctl plugin remove my-plugin</code></pre>
 </div>
+
+<p><strong>0.7:</strong> npm/local plugins use separate manifest, lock, and integrity verification. Local sources require <code>--allow-local</code>. Plugins execute Node.js with user permissions and are not sandboxed.</p>
+<pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
+skillctl plugin doctor
+skillctl completion powershell</code></pre>
 
 <h2>Global options</h2>
 <pre><code>skillctl --version
@@ -1369,10 +1421,10 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 
 <h2>Plugin not loaded</h2>
 <ul>
-  <li><code>experimental.plugins</code> must be <code>true</code> (<code>skillctl plugin enable</code>)</li>
-  <li>Restart the CLI after enabling</li>
-  <li><code>plugin add</code> requires <code>skillctl.plugin</code> in the plugin's <code>package.json</code></li>
-  <li><code>skillctl plugin list</code> shows enabled (✓) or disabled (○) status</li>
+  <li>Run <code>skillctl plugin doctor</code> to check lock, API version, and installed integrity</li>
+  <li>Use <code>skillctl plugin enable &lt;name&gt;</code> or <code>disable &lt;name&gt;</code>, then restart the CLI</li>
+  <li>Local sources require <code>--allow-local</code> and a package with a <code>skillctl.plugin</code> entry</li>
+  <li>Reinstall a trusted plugin if its integrity no longer matches the lock</li>
 </ul>
 
 <h2>Quick diagnosis</h2>

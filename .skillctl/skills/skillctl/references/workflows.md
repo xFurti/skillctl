@@ -46,12 +46,39 @@ Global state is machine-specific and is not a replacement for committed project 
 ## CI pipeline
 
 ```bash
-npm install -g @skillctl/cli@0.6.1
+npm install -g @skillctl/cli@0.7.3
 skillctl install --frozen
 skillctl audit --strict --json
 ```
 
 Exit codes are 0 for success, 1 for warnings/partial results, and 2 for fatal or validation failures.
+
+For GitHub code scanning, emit pure SARIF:
+
+```bash
+skillctl audit --format sarif --output results.sarif
+```
+
+## Discover and update
+
+```bash
+skillctl search typescript
+skillctl info skills.sh/vercel-labs/skills/find-skills
+skillctl outdated
+skillctl update --dry-run
+skillctl update selected-skill
+```
+
+Crossing an npm constraint is explicit: `skillctl update name --latest --save --yes`.
+
+## Replace one unmanaged target
+
+```bash
+skillctl sync --project --agent codex --skill selected-skill --replace-unmanaged --dry-run
+skillctl sync --project --agent codex --skill selected-skill --replace-unmanaged --yes
+```
+
+The original target is backed up under `.skillctl/backups/sync/` and restored automatically if replacement fails.
 
 ## Remove stale managed targets
 

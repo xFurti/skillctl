@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-07-14
+
+### Added
+
+- Added Bash, Zsh, and PowerShell completion scripts with dynamic installed-skill and plugin candidates.
+
+### Changed
+
+- Centralized deterministic human/JSON rendering behavior, TTY detection, Unicode fallback, and machine-safe output conventions.
+
+### Documentation
+
+- Updated the root and CLI READMEs, design baseline, bilingual documentation site, and first-party skill for discovery, maintenance, plugins, SARIF, completion, and Trusted Publishing.
+
+## [0.7.2] - 2026-07-14
+
+### Added
+
+- Added offline SARIF 2.1.0 audit output, configurable trusted-source policy, plugin audit rules, and stable finding locations/fingerprints.
+
+### Security
+
+- Audit reports incomplete provenance, mutable legacy resolutions, suspicious scripts, path/symlink escapes, size limits, plugin failures, and canonical-target drift without requiring network access.
+
+## [0.7.1] - 2026-07-14
+
+### Added
+
+- Added the experimental plugin lifecycle (`add`, `install`, `update`, `enable`, `disable`, `info`, `doctor`, `remove`, and `list`) with separate manifest/lock files, npm SRI verification, API/capability checks, and isolated load failures.
+
+### Security
+
+- Plugin downloads require HTTPS, enforce time and size limits, validate tarball integrity, reject escaping entrypoints and symlinks, and verify installed content before every load.
+- Plugins execute Node.js with user permissions and are explicitly not described as sandboxed.
+
+## [0.7.0] - 2026-07-14
+
+### Added
+
+- Added catalog discovery through `skillctl search` and read-only source inspection through `skillctl info`, backed by the public skills.sh API with strict response validation, timeout/retry behavior, a 15-minute cache, and stale offline fallback.
+- Added selected `skills.sh/<owner>/<repo>/<skill>` specifiers. Locks pin the repository commit and selector so frozen installs repeat selection without consulting the catalog.
+- Added deterministic `outdated` plans and expanded `update` with `--dry-run`, `--latest`, `--save`, confirmation rules, partial network reporting, and rollback of multi-skill updates.
+- Added target reconciliation states to `doctor`, explicit `sync --replace-unmanaged` with narrow skill/agent/scope selectors, and automatic backups plus restoration on failure.
+
+### Changed
+
+- Release workflows now use current Node 24 action runtimes and npm Trusted Publishing instead of `NPM_TOKEN`.
+- Official publication is idempotent: already-published package versions are accepted only when their SRI matches the prepared tarball, and tag/release creation happens after all eleven packages are verified.
+- GitHub Releases use curated changelog notes, an annotated tag, and attach all eleven package tarballs.
+- All eleven packages remain version-aligned; manifest version `1` and lock schema `1.0` remain compatible with 0.6 projects.
+
+### Security
+
+- Unmanaged agent content is never replaced implicitly; explicit replacement requires confirmation and creates a restorable metadata-bearing backup.
+
 ## [0.6.1] - 2026-07-13
 
 ### Fixed
