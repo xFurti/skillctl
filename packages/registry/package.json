@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/registry",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "description": "Registry manager, sources (github, local, skills.sh, basic npm) + resolution + materialize + integrity for skillctl",
   "license": "MIT",
   "author": "xFurti & Gabry848",
@@ -24,11 +24,13 @@
     "@skillctl/lockfile": "workspace:*",
     "@skillctl/manifest": "workspace:*",
     "@skillctl/project-state": "workspace:*",
+    "js-yaml": "^4.1.0",
     "semver": "^7.6.3",
     "tar": "^7.5.16"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/semver": "^7.5.8",
     "@types/tar": "^6.1.13",
     "rimraf": "^5.0.7",

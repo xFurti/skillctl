@@ -1,93 +1,89 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { loadConfig, registerAdapter, resolvePathInside } from '@skillctl/core';
-import type { RegistrySource } from '@skillctl/core';
-import type { SkillctlPlugin, PluginAPI, PluginProgram } from './types.js';
+import { computeDirIntegrity, registerAdapter, resolvePathInside } from '@skillctl/core';
+import type { CatalogProvider, RegistrySource } from '@skillctl/core';
+import type { PluginAPI, PluginAuditRule, PluginProgram, SkillctlPlugin } from './types.js';
+import {
+  addPlugin,
+  getPluginsDir,
+  loadPluginLock,
+  loadPluginManifest,
+  removePlugin,
+} from './store.js';
 
-const PLUGINS_DIR = join(homedir(), '.skillctl', 'plugins');
-
-export function getPluginsDir(): string {
-  return PLUGINS_DIR;
-}
+const auditRules: PluginAuditRule[] = [];
 
 export async function listInstalledPlugins(): Promise<Array<{ name: string; path: string; enabled: boolean }>> {
-  const config = await loadConfig();
-  return config.plugins || [];
+  const [manifest, lock] = await Promise.all([loadPluginManifest({ migrateLegacy: true }), loadPluginLock()]);
+  return Object.entries(manifest.plugins).map(([name, requested]) => ({
+    name,
+    path: lock.plugins[name]?.entrypoint || requested.specifier,
+    enabled: requested.enabled,
+  }));
 }
 
 export async function loadPlugins(
   program: PluginProgram,
-  registryManager?: { register: (s: RegistrySource) => void }
+  registryManager?: { register: (source: RegistrySource) => void },
+  catalogManager?: { register: (provider: CatalogProvider) => void },
 ): Promise<string[]> {
-  const config = await loadConfig();
-  if (!config.experimental?.plugins) return [];
-
+  const [manifest, lock] = await Promise.all([loadPluginManifest(), loadPluginLock()]);
   const loaded: string[] = [];
-  const plugins = (config.plugins || []).filter((p) => p.enabled);
-
   const api: PluginAPI = {
-    registerCommand(cmd) {
-      program.addCommand(cmd);
-    },
-    registerAdapter(adapter) {
-      registerAdapter(adapter);
-    },
-    registerRegistrySource(source) {
-      registryManager?.register(source);
-    },
+    apiVersion: 1,
+    registerCommand(command) { program.addCommand(command); },
+    registerAdapter(adapter) { registerAdapter(adapter); },
+    registerRegistrySource(source) { registryManager?.register(source); },
+    registerCatalogProvider(provider) { catalogManager?.register(provider); },
+    registerAuditRule(rule) { auditRules.push(rule); },
   };
 
-  for (const plugin of plugins) {
+  for (const [name, requested] of Object.entries(manifest.plugins)) {
+    if (!requested.enabled) continue;
     try {
-      const mod = await import(pathToFileURL(plugin.path).href);
-      const pluginExport: SkillctlPlugin = mod.default || mod;
-      if (typeof pluginExport.register === 'function') {
-        await pluginExport.register(api);
-        loaded.push(plugin.name);
-      }
-    } catch (e) {
-      console.warn(`[plugin] failed to load ${plugin.name}: ${(e as Error).message}`);
+      const entry = lock.plugins[name];
+      if (!entry) throw new Error('missing lock entry; run skillctl plugin install');
+      if (entry.apiVersion !== 1) throw new Error(`unsupported plugin API ${entry.apiVersion}`);
+      if (await computeDirIntegrity(entry.path) !== entry.integrity) throw new Error('plugin integrity mismatch');
+      const entrypoint = entry.entrypoint.startsWith(entry.path)
+        ? entry.entrypoint
+        : resolvePathInside(entry.path, entry.entrypoint, 'plugin entry');
+      const module = await import(pathToFileURL(entrypoint).href);
+      const plugin: SkillctlPlugin = module.default || module;
+      if (typeof plugin.register !== 'function') throw new Error('plugin does not export register(api)');
+      await plugin.register(api);
+      loaded.push(name);
+    } catch (err) {
+      console.warn(`[plugin] failed to load ${name}: ${(err as Error).message}`);
     }
   }
-
   return loaded;
 }
 
-export async function addPluginRecord(name: string, pluginPath: string): Promise<void> {
-  const { loadConfig, saveConfig } = await import('@skillctl/core');
-  const config = await loadConfig();
-  const plugins = config.plugins || [];
-  const existing = plugins.findIndex((p) => p.name === name);
-  const record = { name, path: pluginPath, enabled: true };
-  if (existing >= 0) plugins[existing] = record;
-  else plugins.push(record);
-  config.plugins = plugins;
-  config.experimental = { ...config.experimental, plugins: true };
-  await saveConfig(config);
+export function getPluginAuditRules(): PluginAuditRule[] {
+  return [...auditRules];
 }
 
-export async function removePluginRecord(name: string): Promise<boolean> {
-  const { loadConfig, saveConfig } = await import('@skillctl/core');
-  const config = await loadConfig();
-  const plugins = config.plugins || [];
-  const next = plugins.filter((p) => p.name !== name);
-  if (next.length === plugins.length) return false;
-  config.plugins = next;
-  await saveConfig(config);
-  return true;
+/** @deprecated Use addPlugin(). */
+export async function addPluginRecord(_name: string, pluginPath: string): Promise<void> {
+  await addPlugin(`file:${dirname(pluginPath)}`, { allowLocal: true });
+}
+
+/** @deprecated Use removePlugin(). */
+export function removePluginRecord(name: string): Promise<boolean> {
+  return removePlugin(name);
 }
 
 export async function discoverPluginEntry(pluginDir: string): Promise<string | null> {
   try {
-    const pkgRaw = await readFile(join(pluginDir, 'package.json'), 'utf8');
-    const pkg = JSON.parse(pkgRaw);
+    const pkg = JSON.parse(await readFile(join(pluginDir, 'package.json'), 'utf8'));
     const entry = pkg.skillctl?.plugin || pkg.main;
-    if (entry) return resolvePathInside(pluginDir, entry, 'plugin entry');
+    return entry ? resolvePathInside(pluginDir, entry, 'plugin entry') : null;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw err;
   }
-  return null;
 }
+
+export { getPluginsDir };

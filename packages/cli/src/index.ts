@@ -18,12 +18,17 @@ import { registerAudit } from './commands/audit.js';
 import { registerUpdate } from './commands/update.js';
 import { registerPlugin } from './commands/plugin.js';
 import { registerSkill } from './commands/skill.js';
+import { registerSearch } from './commands/search.js';
+import { registerInfo } from './commands/info.js';
+import { registerOutdated } from './commands/outdated.js';
+import { registerCompletion } from './commands/completion.js';
+import { CatalogManager } from '@skillctl/registry';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const pkgPath = join(__dirname, '..', 'package.json');
-let version = '0.6.1';
+let version = '0.7.3';
 try {
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
   version = pkg.version || version;
@@ -33,6 +38,7 @@ try {
 
 const program = new Command();
 const registryManager = new RegistryManager();
+const catalogManager = new CatalogManager();
 
 program
   .name('skillctl')
@@ -52,9 +58,13 @@ registerAudit(program);
 registerUpdate(program, registryManager);
 registerPlugin(program);
 registerSkill(program);
+registerSearch(program, catalogManager, registryManager);
+registerInfo(program, registryManager);
+registerOutdated(program);
+registerCompletion(program);
 
 export async function prepareProgram(): Promise<Command> {
-  await loadPlugins(program as import('@skillctl/plugin-system').PluginProgram, registryManager);
+  await loadPlugins(program as import('@skillctl/plugin-system').PluginProgram, registryManager, catalogManager);
   return program;
 }
 

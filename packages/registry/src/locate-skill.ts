@@ -1,6 +1,8 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { resolvePathInside } from '@skillctl/core';
+import { canonicalizeName } from './names.js';
+import { parseSkillFrontmatterAsync } from './frontmatter.js';
 
 export async function hasSkillMd(d: string): Promise<boolean> {
   for (const name of ['SKILL.md', 'skill.md']) {
@@ -81,6 +83,30 @@ export async function locateSkillDir(
   if (found) return dirname(found);
 
   return root;
+}
+
+export async function locateSkillDirByName(root: string, selector: string): Promise<string> {
+  const wanted = canonicalizeName(selector);
+  const matches: string[] = [];
+  await walk(root, 0, async (dir) => {
+    if (!(await hasSkillMd(dir))) return;
+    const metadata = await parseSkillFrontmatterAsync(dir);
+    const candidates = [metadata.name, dir.split(/[/\\]/).pop()].filter(Boolean).map((value) => canonicalizeName(value!));
+    if (candidates.includes(wanted)) matches.push(dir);
+  });
+  if (matches.length === 0) throw new Error(`Skill selector not found: ${selector}`);
+  if (matches.length > 1) throw new Error(`Skill selector is ambiguous: ${selector} (${matches.length} matches)`);
+  return matches[0];
+}
+
+async function walk(dir: string, depth: number, visit: (dir: string) => Promise<void>): Promise<void> {
+  if (depth > 4) return;
+  await visit(dir);
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+    await walk(join(dir, entry.name), depth + 1, visit);
+  }
 }
 
 export async function packageJsonSkillHints(extractedRoot: string): Promise<string[]> {

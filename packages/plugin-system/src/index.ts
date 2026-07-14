@@ -4,6 +4,16 @@ export {
   addPluginRecord,
   removePluginRecord,
   discoverPluginEntry,
+  getPluginAuditRules,
   getPluginsDir,
 } from './loader.js';
-export type { SkillctlPlugin, PluginAPI, PluginProgram, PluginCommand } from './types.js';
+export * from './store.js';
+export type {
+  SkillctlPlugin,
+  PluginAPI,
+  PluginProgram,
+  PluginCommand,
+  PluginAuditRule,
+  PluginManifestEntry,
+  PluginLockEntry,
+} from './types.js';

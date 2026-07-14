@@ -1,95 +1,83 @@
 import type { Command } from 'commander';
-import { mkdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
 import {
+  addPlugin,
+  installPlugins,
   listInstalledPlugins,
-  addPluginRecord,
-  removePluginRecord,
-  discoverPluginEntry,
-  getPluginsDir,
+  loadPluginLock,
+  loadPluginManifest,
+  pluginDiagnostics,
+  removePlugin,
+  setPluginEnabled,
 } from '@skillctl/plugin-system';
-import { loadConfig, saveConfig } from '@skillctl/core';
 import { handleCommandError } from '../lib/errors.js';
-import { withOperationLocks } from '@skillctl/project-state';
 
 export function registerPlugin(program: Command): void {
-  const pluginCmd = program.command('plugin').description('Manage skillctl plugins');
+  const plugin = program.command('plugin').description('Manage experimental skillctl plugins');
 
-  pluginCmd
-    .command('list')
-    .description('List installed plugins')
-    .option('--json', 'JSON output')
-    .action(async (options) => {
-      const plugins = await listInstalledPlugins();
-      const config = await loadConfig();
-      if (options.json) {
-        console.log(JSON.stringify({ plugins, experimental: config.experimental?.plugins }, null, 2));
-        return;
-      }
-      if (plugins.length === 0) {
-        console.log('No plugins installed.');
-        console.log('Enable with: set experimental.plugins=true in ~/.skillctl/config.json');
-        return;
-      }
-      for (const p of plugins) {
-        console.log(`${p.enabled ? '✓' : '○'} ${p.name} → ${p.path}`);
-      }
-    });
+  plugin.command('list').option('--json', 'machine-readable output').action(async (options) => {
+    const plugins = await listInstalledPlugins();
+    if (options.json) console.log(JSON.stringify({ experimental: true, plugins }, null, 2));
+    else if (!plugins.length) console.log('No plugins installed.');
+    else for (const item of plugins) console.log(`${item.enabled ? 'enabled' : 'disabled'} ${item.name} -> ${item.path}`);
+  });
 
-  pluginCmd
-    .command('enable')
-    .description('Enable plugin loading (experimental)')
+  plugin
+    .command('add <specifier>')
+    .description('Install an npm plugin or explicitly allow a local development plugin')
+    .option('--allow-local', 'allow a local plugin that executes arbitrary code')
     .option('--json', 'machine-readable output')
-    .action(async () => {
-      const config = await loadConfig();
-      await withOperationLocks({ cwd: process.cwd(), store: config.store }, async () => {
-        const current = await loadConfig();
-        current.experimental = { ...current.experimental, plugins: true };
-        await saveConfig(current);
-      });
-      console.log('Plugins enabled. Restart skillctl to load plugins.');
-    });
-
-  pluginCmd
-    .command('add <path>')
-    .description('Register a local plugin (directory with package.json skillctl.plugin entry)')
-    .option('--json', 'machine-readable output')
-    .action(async (pluginPath) => {
+    .action(async (specifier, options) => {
       try {
-        const abs = resolve(process.cwd(), pluginPath);
-        const entry = await discoverPluginEntry(abs);
-        if (!entry) {
-          console.error('No skillctl.plugin entry found in package.json');
-          process.exitCode = 1;
-          return;
-        }
-        const pkg = JSON.parse(await (await import('node:fs/promises')).readFile(join(abs, 'package.json'), 'utf8'));
-        const name = pkg.name || abs.split(/[/\\]/).pop()!;
-        await mkdir(getPluginsDir(), { recursive: true });
-        const config = await loadConfig();
-        await withOperationLocks({ cwd: process.cwd(), store: config.store }, () => addPluginRecord(name, entry));
-        console.log(`Registered plugin ${name} at ${entry}`);
-        console.log('Run `skillctl plugin enable` if not already enabled.');
-      } catch (err) {
-        handleCommandError(err, 'plugin add');
-      }
+        const entry = await addPlugin(specifier, { allowLocal: options.allowLocal });
+        if (options.json) console.log(JSON.stringify(entry, null, 2));
+        else console.log(`Installed experimental plugin ${entry.name} (${entry.resolved}).`);
+      } catch (err) { handleCommandError(err, 'plugin add'); }
     });
 
-  pluginCmd
-    .command('remove <name>')
-    .description('Unregister a plugin')
-    .option('--json', 'machine-readable output')
-    .action(async (name) => {
-      const config = await loadConfig();
-      const ok = await withOperationLocks(
-        { cwd: process.cwd(), store: config.store },
-        () => removePluginRecord(name)
-      );
-      if (!ok) {
-        console.log(`Plugin not found: ${name}`);
-        process.exitCode = 1;
-      } else {
-        console.log(`Removed plugin ${name}`);
+  plugin.command('install').description('Restore all plugins from the plugin manifest').action(async () => {
+    try { console.log(`Installed ${await installPlugins().then((entries) => entries.length)} plugin(s).`); }
+    catch (err) { handleCommandError(err, 'plugin install'); }
+  });
+
+  plugin.command('update [names...]').description('Re-resolve selected plugin specifiers').action(async (names) => {
+    try {
+      const manifest = await loadPluginManifest({ migrateLegacy: true });
+      const selected = names.length ? names : Object.keys(manifest.plugins);
+      for (const name of selected) {
+        const requested = manifest.plugins[name];
+        if (!requested) throw new Error(`Plugin not found: ${name}`);
+        await addPlugin(requested.specifier, { allowLocal: requested.allowLocal });
       }
+      console.log(`Updated ${selected.length} plugin(s).`);
+    } catch (err) { handleCommandError(err, 'plugin update'); }
+  });
+
+  for (const enabled of [true, false]) {
+    plugin.command(`${enabled ? 'enable' : 'disable'} <name>`).action(async (name) => {
+      const ok = await setPluginEnabled(name, enabled);
+      if (!ok) { console.error(`Plugin not found: ${name}`); process.exitCode = 1; return; }
+      console.log(`${enabled ? 'Enabled' : 'Disabled'} ${name}. Restart skillctl to apply.`);
     });
+  }
+
+  plugin.command('info <name>').option('--json', 'machine-readable output').action(async (name, options) => {
+    const [manifest, lock] = await Promise.all([loadPluginManifest({ migrateLegacy: true }), loadPluginLock()]);
+    const report = { requested: manifest.plugins[name], locked: lock.plugins[name] };
+    if (!report.requested) { console.error(`Plugin not found: ${name}`); process.exitCode = 1; return; }
+    if (options.json) console.log(JSON.stringify(report, null, 2));
+    else console.log(JSON.stringify(report, null, 2));
+  });
+
+  plugin.command('doctor').option('--json', 'machine-readable output').action(async (options) => {
+    const diagnostics = await pluginDiagnostics();
+    if (options.json) console.log(JSON.stringify({ diagnostics }, null, 2));
+    else for (const item of diagnostics) console.log(`${item.ok ? 'ok' : 'error'} ${item.name}: ${item.message}`);
+    if (diagnostics.some((item) => !item.ok)) process.exitCode = 1;
+  });
+
+  plugin.command('remove <name>').action(async (name) => {
+    const ok = await removePlugin(name);
+    if (!ok) { console.error(`Plugin not found: ${name}`); process.exitCode = 1; return; }
+    console.log(`Removed ${name}.`);
+  });
 }

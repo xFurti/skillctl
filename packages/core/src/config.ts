@@ -21,7 +21,13 @@ const DEFAULT_CONFIG: SkillctlConfig = {
     pi: true,
   },
   registries: [],
-  trustedSources: ['github:vercel-labs/*', 'skills.sh/*', 'github:xFurti/skillctl/*'],
+  trustedSources: [
+    'github:vercel-labs/*',
+    'skills.sh/*',
+    'github:xFurti/skillctl/*',
+    'file:./.skillctl/skills/*',
+    'file:./skills/*',
+  ],
 };
 
 export async function loadConfig(customPath?: string): Promise<SkillctlConfig> {
@@ -37,6 +43,7 @@ export async function loadConfig(customPath?: string): Promise<SkillctlConfig> {
       agents: { ...DEFAULT_CONFIG.agents, ...parsed.agents },
       trustedSources: parsed.trustedSources ?? DEFAULT_CONFIG.trustedSources,
       registries: parsed.registries ?? DEFAULT_CONFIG.registries,
+      security: { trustedSourcesMode: 'warn', ...parsed.security },
     } as SkillctlConfig;
     if (process.env.SKILLCTL_STORE) config.store = process.env.SKILLCTL_STORE;
     return config;
@@ -100,5 +107,8 @@ function validateConfig(config: Partial<SkillctlConfig>): void {
     (!Array.isArray(config.trustedSources) || config.trustedSources.some((v) => typeof v !== 'string'))
   ) {
     throw new Error('trustedSources must be an array');
+  }
+  if (config.security?.trustedSourcesMode && !['off', 'warn', 'error'].includes(config.security.trustedSourcesMode)) {
+    throw new Error('security.trustedSourcesMode must be off, warn, or error');
   }
 }

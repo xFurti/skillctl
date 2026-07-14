@@ -6,6 +6,10 @@ export interface AuditFinding {
   skill: string;
   message: string;
   path?: string;
+  description?: string;
+  helpUri?: string;
+  location?: { path: string; startLine?: number; endLine?: number };
+  fingerprint?: string;
 }
 
 export interface AuditReport {

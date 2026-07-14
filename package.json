@@ -1,6 +1,6 @@
 {
   "name": "skillctl",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "private": true,
   "description": "Universal package-manager-like CLI for Agent Skills",
   "license": "MIT",
@@ -19,7 +19,8 @@
     "dev": "pnpm --filter @skillctl/cli dev",
     "clean": "pnpm -r clean",
     "lint": "pnpm -r lint",
-    "test": "pnpm -r --workspace-concurrency=1 test",
+    "test": "pnpm run test:scripts && pnpm -r --workspace-concurrency=1 test",
+    "test:scripts": "node --test scripts/test/*.test.mjs",
     "test:coverage": "c8 --all --include=\"packages/*/dist/**/*.js\" --exclude=\"packages/*/dist/test/**\" --check-coverage --lines 60 --functions 60 --statements 60 --branches 50 --reporter=text --reporter=lcov pnpm -r --workspace-concurrency=1 test",
     "version:set": "node scripts/set-version.mjs",
     "release:check": "node scripts/release-check.mjs",

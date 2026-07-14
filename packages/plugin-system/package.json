@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/plugin-system",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "description": "Experimental plugin loader for skillctl (commands, adapters, registries)",
   "license": "MIT",
   "author": "xFurti & Gabry848",
@@ -19,10 +19,13 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@skillctl/core": "workspace:*"
+    "@skillctl/core": "workspace:*",
+    "semver": "^7.6.3",
+    "tar": "^7.5.16"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/semver": "^7.5.8",
     "rimraf": "^5.0.7",
     "typescript": "^5.6.3"
   },

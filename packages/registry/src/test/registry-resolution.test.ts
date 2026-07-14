@@ -90,9 +90,10 @@ async function runTests() {
 
   // frontmatter parse
   const tmpSkill = await mkdtemp(join(tmpdir(), 'skill-test-'));
-  await writeFile(join(tmpSkill, 'SKILL.md'), '---\nname: Test-Skill\n description: demo\n---\n# body\n');
+  await writeFile(join(tmpSkill, 'SKILL.md'), '---\nname: Test-Skill\ndescription: >\n  A folded\n  description.\n---\n# body\n');
   const fm = await parseSkillFrontmatterAsync(tmpSkill);
   assert.equal(fm.name, 'Test-Skill');
+  assert.equal(fm.description, 'A folded description.');
   await rm(tmpSkill, { recursive: true, force: true });
   console.log('✓ parseSkillFrontmatterAsync');
 

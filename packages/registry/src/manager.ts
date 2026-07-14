@@ -29,6 +29,7 @@ import { NpmSource } from './sources/npm.js';
 import { SkillsShSource } from './sources/skills-sh.js';
 import type { RegistrySource } from '@skillctl/core';
 import { defaultHttpClient, type HttpClient } from './fetch/https.js';
+import { parseSkillFrontmatterAsync } from './frontmatter.js';
 
 export class RegistryManager {
   private sources: RegistrySource[] = [];
@@ -47,6 +48,25 @@ export class RegistryManager {
 
   getSources(): RegistrySource[] {
     return [...this.sources];
+  }
+
+  async inspect(spec: string, options?: { cwd?: string }): Promise<{
+    resolved: ResolvedSource;
+    integrity: string;
+    metadata: { name?: string; description?: string };
+  }> {
+    const resolved = await this.resolve(spec, { cwd: options?.cwd || process.cwd() });
+    const source = this.sources.find((candidate) => candidate.id === resolved.sourceId);
+    if (!source) throw new Error(`No source registered for ${resolved.sourceId}`);
+    const temporary = join(tmpdir(), `skillctl-inspect-${randomUUID()}`);
+    await ensureDir(temporary);
+    try {
+      const fetched = await source.fetch(resolved, temporary);
+      await assertTreeContained(temporary);
+      return { resolved, integrity: fetched.integrity, metadata: await parseSkillFrontmatterAsync(temporary) };
+    } finally {
+      await rm(temporary, { recursive: true, force: true }).catch(() => {});
+    }
   }
 
   async resolve(spec: string, options?: { ref?: string; cwd?: string }): Promise<ResolvedSource> {

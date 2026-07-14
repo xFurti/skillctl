@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import type { RegistrySource, ResolvedSource } from '@skillctl/core';
 import { ensureDir, computeDirIntegrity, resolvePathInside } from '@skillctl/core';
 import { canonicalizeName } from '../names.js';
-import { locateSkillDir } from '../locate-skill.js';
+import { locateSkillDir, locateSkillDirByName } from '../locate-skill.js';
 import { fetchCachedBuffer, extractTarball } from '../fetch/tarball.js';
 import { defaultHttpClient, type HttpClient } from '../fetch/https.js';
 
@@ -97,7 +97,9 @@ export class GitHubSource implements RegistrySource {
           throw new Error(`GitHub skill subpath not found: ${resolved.subpath}`, { cause: err });
         }
       }
-      const located = await locateSkillDir(sourceDir);
+      const located = resolved.skillSelector
+        ? await locateSkillDirByName(sourceDir, resolved.skillSelector)
+        : await locateSkillDir(sourceDir);
       await ensureDir(dest);
       await cp(located, dest, { recursive: true, force: true });
     } finally {

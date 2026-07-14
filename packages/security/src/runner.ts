@@ -16,16 +16,28 @@ export async function runAudit(cwd = process.cwd(), options?: { store?: string }
   const findings: AuditFinding[] = [];
   const config = await loadConfig();
   const trustedSources = config.trustedSources || [];
+  const trustedSourcesMode = config.security?.trustedSourcesMode || 'warn';
   findings.push(...(await checkIntegrityDrift(lock, options)));
 
   for (const [name, entry] of Object.entries(lock.skills)) {
-    if (trustedSources.length && !trustedSources.some((pattern) => matchesSource(pattern, entry.specifier))) {
+    if (trustedSourcesMode !== 'off' && trustedSources.length && !trustedSources.some((pattern) => matchesSource(pattern, entry.specifier))) {
       findings.push({
         rule: 'source-trust',
-        severity: 'info',
+        severity: trustedSourcesMode === 'error' ? 'error' : 'warning',
         skill: name,
         message: `Source is not covered by trustedSources: ${entry.specifier}`,
+        description: 'Restrict project dependencies to reviewed source patterns.',
+        helpUri: 'https://xfurti.github.io/skillctl/#security',
       });
+    }
+    if (!entry.integrity || !entry.provenance?.type) {
+      findings.push({ rule: 'provenance-completeness', severity: 'error', skill: name, message: 'Lock entry is missing integrity or provenance metadata.' });
+    }
+    if ((entry.provenance.type === 'github' || entry.provenance.type === 'skills.sh') && !entry.provenance.commit) {
+      findings.push({ rule: 'mutable-resolution', severity: 'warning', skill: name, message: 'Remote Git source is not pinned to a commit; run skillctl update.' });
+    }
+    if (entry.provenance.type === 'npm' && (!entry.provenance.version || !entry.provenance.tarballHash)) {
+      findings.push({ rule: 'mutable-resolution', severity: 'warning', skill: name, message: 'npm source lacks an exact version or tarball integrity; run skillctl update.' });
     }
     const canonicalPath = await resolveEntryCanonicalPath(entry, options);
     findings.push(...(await checkNameDirMatch(name, canonicalPath)));

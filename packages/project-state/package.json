@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/project-state",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "description": "Cross-process locks and transactional project state updates for skillctl",
   "license": "MIT",
   "author": "xFurti & Gabry848",

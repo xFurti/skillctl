@@ -14,7 +14,7 @@ import {
 } from '@skillctl/core';
 import { loadManifest } from '@skillctl/manifest';
 import { loadLockfile } from '@skillctl/lockfile';
-import { scanCoexistence, getEnabledAdapters, syncSkillsToAgents } from '@skillctl/adapters';
+import { scanCoexistence, getEnabledAdapters, inspectSkillTargets, syncSkillsToAgents } from '@skillctl/adapters';
 import { runAudit, auditExitCode } from '@skillctl/security';
 import { withOperationLocks } from '@skillctl/project-state';
 
@@ -51,6 +51,16 @@ export function registerDoctor(program: Command): void {
       }
       warnings.push(...await findStateWarnings(cwd, store));
 
+      const targetInspection = lock
+        ? await inspectSkillTargets(await lockToSkillTargets(lock, { store }), {
+            scope: options.global ? 'global' : 'project',
+            cwd,
+          })
+        : null;
+      if (targetInspection?.counts.failed) {
+        warnings.push(`${targetInspection.counts.failed} unmanaged or failed agent target(s); run skillctl sync --dry-run for details`);
+      }
+
       for (const f of audit.findings.filter((x) => x.severity === 'error')) {
         issues.push(`[audit] ${f.skill}: ${f.message}`);
       }
@@ -59,7 +69,8 @@ export function registerDoctor(program: Command): void {
         const res = await withOperationLocks(
           { cwd, store },
           async () => syncSkillsToAgents(await lockToSkillTargets(lock, { store }), {
-            scope: options.global ? 'global' : 'both',
+            scope: options.global ? 'global' : 'project',
+            cwd,
           })
         );
         info.push(`--fix: re-synced ${res.synced} targets`);
@@ -83,6 +94,7 @@ export function registerDoctor(program: Command): void {
         },
         coexistence: coexist,
         auditSummary: { scanned: audit.scanned, findings: audit.findings.length },
+        targets: targetInspection ? { counts: targetInspection.counts, actions: targetInspection.actions } : null,
       };
 
       if (options.json) {

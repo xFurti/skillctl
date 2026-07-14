@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/import",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "description": "Import and migrate skills from npx skills and Python skillctl",
   "license": "MIT",
   "author": "xFurti & Gabry848",

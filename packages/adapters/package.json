@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/adapters",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "description": "Agent adapters for Claude Code, Cursor, OpenCode, Codex, Gemini CLI + sync and coexistence detection",
   "license": "MIT",
   "author": "xFurti & Gabry848",

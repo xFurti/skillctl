@@ -1,6 +1,6 @@
 {
   "name": "@skillctl/cli",
-  "version": "0.6.1",
+  "version": "0.7.3",
   "description": "skillctl CLI - universal manager for Agent Skills",
   "license": "MIT",
   "author": "xFurti & Gabry848",
@@ -41,6 +41,7 @@
     "@skillctl/security": "workspace:*",
     "@skillctl/plugin-system": "workspace:*",
     "@skillctl/project-state": "workspace:*",
+    "@clack/prompts": "^0.11.0",
     "commander": "^12.1.0"
   },
   "devDependencies": {

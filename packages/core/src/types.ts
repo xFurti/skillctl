@@ -75,7 +75,46 @@ export interface ResolvedSource {
   ref?: string;
   requestedRef?: string;
   subpath?: string;
+  skillSelector?: string;
   localPath?: string;
+}
+
+export interface CatalogSearchOptions {
+  owner?: string;
+  limit?: number;
+}
+
+export interface CatalogSearchResult {
+  id: string;
+  name: string;
+  source: string;
+  installs?: number;
+  sourceType: string;
+  installSpecifier: string;
+  url?: string;
+  stale?: boolean;
+}
+
+export interface CatalogProvider {
+  readonly id: string;
+  search(query: string, options?: CatalogSearchOptions): Promise<CatalogSearchResult[]>;
+}
+
+export type UpdateStatus = 'current' | 'outdated' | 'modified' | 'legacy' | 'unavailable' | 'unsupported';
+export type UpdateKind = 'none' | 'patch' | 'minor' | 'major' | 'commit' | 'content';
+
+export interface UpdateCandidate {
+  name: string;
+  sourceType: string;
+  specifier: string;
+  currentResolved: string;
+  candidateResolved?: string;
+  currentVersion?: string;
+  candidateVersion?: string;
+  status: UpdateStatus;
+  kind: UpdateKind;
+  manifestChange?: { before: string; after: string };
+  warning?: string;
 }
 
 // Skill manifest (project level agent-skills.json)
@@ -121,6 +160,9 @@ export interface SkillctlConfig {
     plugins?: boolean;
   };
   plugins?: Array<{ name: string; path: string; enabled: boolean }>;
+  security?: {
+    trustedSourcesMode?: 'off' | 'warn' | 'error';
+  };
 }
 
 export type LinkMode = 'symlink' | 'copy' | 'junction';
