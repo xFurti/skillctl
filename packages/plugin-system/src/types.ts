@@ -57,3 +57,20 @@ export interface PluginLockEntry {
   tarballIntegrity?: string;
   fetchedAt: string;
 }
+
+export interface PluginInspection {
+  name: string;
+  requested: string;
+  resolvedVersion: string;
+  publisher?: { name: string; email?: string };
+  tarballUrl?: string;
+  tarballIntegrity?: string;
+  entrypoint: string;
+  apiVersion: number;
+  capabilities: string[];
+  dependencies: Record<string, string>;
+  scripts: Record<string, string>;
+  trusted: boolean;
+  trustReason: string;
+  warnings: string[];
+}

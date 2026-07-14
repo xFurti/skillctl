@@ -6,7 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import semver from 'semver';
 import * as tar from 'tar';
 import { computeDirIntegrity, loadConfig, resolvePathInside, writeFileAtomic } from '@skillctl/core';
-import type { PluginLockEntry, PluginManifestEntry } from './types.js';
+import type { PluginInspection, PluginLockEntry, PluginManifestEntry } from './types.js';
 
 interface PluginManifestFile { version: 1; plugins: Record<string, PluginManifestEntry> }
 interface PluginLockFile { version: 1; plugins: Record<string, PluginLockEntry> }
@@ -41,6 +41,45 @@ export async function addPlugin(specifier: string, options: { allowLocal?: boole
   await saveJson(manifestPath, manifest);
   await saveJson(lockPath, lock);
   return prepared;
+}
+
+export async function inspectPluginSpecifier(specifier: string, options: { allowLocal?: boolean } = {}): Promise<PluginInspection> {
+  if (!specifier.startsWith('npm:')) {
+    if (!options.allowLocal) throw new Error('Local plugins require --allow-local because they execute arbitrary code');
+    const path = resolve(process.cwd(), specifier.replace(/^file:/, ''));
+    const pkg = JSON.parse(await readFile(join(path, 'package.json'), 'utf8'));
+    const lock = await inspectPlugin(path, specifier, `file:${path}`);
+    return inspectionFromPackage(lock, pkg, { requested: specifier, trusted: false, trustReason: 'local plugins are untrusted by default' });
+  }
+  const { packageName, range } = parseNpmSpecifier(specifier);
+  const metadata = JSON.parse((await download(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`, 5, 10 * 1024 * 1024)).toString('utf8'));
+  const version = metadata['dist-tags']?.[range] || semver.maxSatisfying(Object.keys(metadata.versions || {}), range);
+  if (!version || !metadata.versions?.[version]) throw new Error(`No npm plugin version satisfies ${range}`);
+  const info = metadata.versions[version];
+  const buffer = await download(info.dist.tarball);
+  verifySri(buffer, info.dist.integrity || info.dist.shasum);
+  const temporary = join(tmpdir(), `skillctl-plugin-inspect-${randomUUID()}`);
+  const archive = `${temporary}.tgz`;
+  try {
+    await mkdir(temporary, { recursive: true });
+    await writeFile(archive, buffer);
+    await tar.x({ cwd: temporary, file: archive, strip: 1, preservePaths: false });
+    await assertPluginTreeContained(temporary);
+    const lock = await inspectPlugin(temporary, specifier, `npm:${packageName}@${version}`);
+    const config = await loadConfig();
+    const trusted = (config.trustedSources || []).some((pattern) => globMatch(pattern, specifier) || globMatch(pattern, `npm:${packageName}@${version}`));
+    return inspectionFromPackage(lock, info, {
+      requested: specifier,
+      trusted,
+      trustReason: trusted ? 'matched trustedSources' : 'source does not match trustedSources',
+      publisher: info._npmUser,
+      tarballUrl: info.dist.tarball,
+      tarballIntegrity: info.dist.integrity || info.dist.shasum,
+    });
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+    await rm(archive, { force: true });
+  }
 }
 
 export async function installPlugins(): Promise<PluginLockEntry[]> {
@@ -154,6 +193,42 @@ async function inspectPlugin(path: string, specifier: string, resolvedSpecifier:
     capabilities: Array.isArray(config.capabilities) ? config.capabilities.filter((value: unknown) => typeof value === 'string') : [],
     fetchedAt: new Date().toISOString(),
   };
+}
+
+function inspectionFromPackage(
+  lock: PluginLockEntry,
+  pkg: Record<string, any>,
+  options: { requested: string; trusted: boolean; trustReason: string; publisher?: { name?: string; email?: string }; tarballUrl?: string; tarballIntegrity?: string },
+): PluginInspection {
+  return {
+    name: lock.name,
+    requested: options.requested,
+    resolvedVersion: String(pkg.version || lock.resolved),
+    publisher: options.publisher?.name ? { name: options.publisher.name, email: options.publisher.email } : undefined,
+    tarballUrl: options.tarballUrl,
+    tarballIntegrity: options.tarballIntegrity,
+    entrypoint: lock.entrypoint,
+    apiVersion: lock.apiVersion,
+    capabilities: lock.capabilities,
+    dependencies: objectStrings(pkg.dependencies),
+    scripts: objectStrings(pkg.scripts),
+    trusted: options.trusted,
+    trustReason: options.trustReason,
+    warnings: [
+      'Plugin capabilities are declarations, not permissions.',
+      'Plugins execute Node.js with your user permissions and are not sandboxed.',
+    ],
+  };
+}
+
+function objectStrings(value: unknown): Record<string, string> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string'));
+}
+
+function globMatch(pattern: string, value: string): boolean {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replaceAll('*', '.*');
+  return new RegExp(`^${escaped}$`, 'i').test(value);
 }
 
 async function migrateLegacy(manifest: PluginManifestFile): Promise<void> {

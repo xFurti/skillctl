@@ -2,6 +2,7 @@ import { cliLog, cliError } from '../lib/output.js';
 import type { Command } from 'commander';
 import {
   addPlugin,
+  inspectPluginSpecifier,
   installPlugins,
   listInstalledPlugins,
   loadPluginLock,
@@ -26,9 +27,16 @@ export function registerPlugin(program: Command): void {
     .command('add <specifier>')
     .description('Install an npm plugin or explicitly allow a local development plugin')
     .option('--allow-local', 'allow a local plugin that executes arbitrary code')
+    .option('--dry-run', 'inspect without changing plugin state')
     .option('--json', 'machine-readable output')
     .action(async (specifier, options) => {
       try {
+        if (options.dryRun) {
+          const inspection = await inspectPluginSpecifier(specifier, { allowLocal: options.allowLocal });
+          if (options.json) cliLog(JSON.stringify({ dryRun: true, inspection }, null, 2));
+          else cliLog(JSON.stringify(inspection, null, 2));
+          return;
+        }
         const entry = await addPlugin(specifier, { allowLocal: options.allowLocal });
         if (options.json) cliLog(JSON.stringify(entry, null, 2));
         else cliLog(`Installed experimental plugin ${entry.name} (${entry.resolved}).`);

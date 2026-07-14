@@ -16,4 +16,5 @@ export type {
   PluginAuditRule,
   PluginManifestEntry,
   PluginLockEntry,
+  PluginInspection,
 } from './types.js';
