@@ -24,7 +24,6 @@ const DEFAULT_CONFIG: LeogrielConfig = {
     grok: true,
     pi: true,
   },
-  registries: [],
   trustedSources: [
     'github:vercel-labs/*',
     'skills.sh/*',
@@ -54,15 +53,18 @@ export async function loadConfig(customPath?: string): Promise<LeogrielConfig> {
         throw err;
       }
     }
-    const parsed = JSON.parse(raw) as Partial<LeogrielConfig>;
+    const parsed = JSON.parse(raw) as Partial<LeogrielConfig> & {
+      registries?: unknown;
+      experimental?: unknown;
+    };
     validateConfig(parsed);
+    const { registries: _legacyRegistries, experimental: _legacyExperimental, ...supported } = parsed;
     // merge with defaults for forward compat / missing keys
     const config = {
       ...DEFAULT_CONFIG,
-      ...parsed,
+      ...supported,
       agents: { ...DEFAULT_CONFIG.agents, ...parsed.agents },
       trustedSources: parsed.trustedSources ?? DEFAULT_CONFIG.trustedSources,
-      registries: parsed.registries ?? DEFAULT_CONFIG.registries,
       security: { trustedSourcesMode: 'warn', ...parsed.security },
     } as LeogrielConfig;
     const storeOverride = process.env.LEOGRIEL_STORE ?? process.env.SKILLCTL_STORE;
@@ -98,7 +100,6 @@ function cloneDefaultConfig(): LeogrielConfig {
   const config: LeogrielConfig = {
     ...DEFAULT_CONFIG,
     agents: { ...DEFAULT_CONFIG.agents },
-    registries: [...(DEFAULT_CONFIG.registries || [])],
     trustedSources: [...(DEFAULT_CONFIG.trustedSources || [])],
   };
   const storeOverride = process.env.LEOGRIEL_STORE ?? process.env.SKILLCTL_STORE;
@@ -121,12 +122,6 @@ function validateConfig(config: Partial<LeogrielConfig>): void {
     (typeof config.agents !== 'object' || Object.values(config.agents).some((v) => typeof v !== 'boolean'))
   ) {
     throw new Error('agents must map agent ids to booleans');
-  }
-  if (
-    config.registries !== undefined &&
-    (!Array.isArray(config.registries) || config.registries.some((v) => typeof v !== 'string'))
-  ) {
-    throw new Error('registries must be an array');
   }
   if (
     config.trustedSources !== undefined &&

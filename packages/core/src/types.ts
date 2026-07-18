@@ -160,11 +160,7 @@ export interface LeogrielConfig {
   store: string; // path to canonical, defaults to ~/.leogriel/skills
   defaultMode: 'symlink' | 'copy' | 'junction';
   agents: Record<string, boolean>; // enabled agents e.g. { 'claude-code': true }
-  registries?: string[];
   trustedSources?: string[];
-  experimental?: {
-    plugins?: boolean;
-  };
   plugins?: Array<{ name: string; path: string; enabled: boolean }>;
   security?: {
     trustedSourcesMode?: 'off' | 'warn' | 'error';

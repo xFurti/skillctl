@@ -57,6 +57,19 @@ test('project lock paths resolve inside the supplied project store', () => {
   );
 });
 
+test('loadConfig ignores removed no-op registry and experimental plugin fields', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'leogriel-config-legacy-fields-'));
+  const path = join(root, 'config.json');
+  await writeFile(path, JSON.stringify({
+    version: 1,
+    registries: ['https://unused.example'],
+    experimental: { plugins: true },
+  }));
+  const config = await loadConfig(path);
+  assert.equal('registries' in config, false);
+  assert.equal('experimental' in config, false);
+});
+
 test('new environment variables take precedence while legacy overrides remain readable', async () => {
   const current = process.env.LEOGRIEL_STORE;
   const legacy = process.env.SKILLCTL_STORE;
