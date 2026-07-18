@@ -2,7 +2,7 @@
 
 See the [root README](../../README.md) and [docs site](https://xfurti.github.io/leogriel/) for full documentation.
 
-Leogriel weaves [Agent Skills](https://agentskills.io) into every workflow with reproducible discovery, installation, synchronization, audit, and testing. v1.0.0-beta.1 adds experimental paired behavioral testing with an isolated Codex runner while retaining the 0.8 lock-compatible parser, backup, audit, artifact, and redaction foundations.
+Leogriel weaves [Agent Skills](https://agentskills.io) into every workflow with reproducible discovery, installation, synchronization, audit, and testing. v1.0.0-beta.2 adds experimental paired behavioral testing with an isolated Codex runner while retaining the 0.8 lock-compatible parser, backup, audit, artifact, and redaction foundations.
 
 All first-party `--json` commands use the schema-1 leogriel envelope. Release candidates are tested from their packed tarballs and again from npm on Windows, macOS, and Linux.
 

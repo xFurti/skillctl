@@ -1,6 +1,6 @@
 {
   "name": "@leogriel/testing",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Experimental behavioral testing primitives for Leogriel; API unstable until 1.0",
   "license": "MIT",
   "author": "xFurti & Gabry848",
@@ -14,11 +14,11 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
     "lint": "tsc --noEmit",
     "test": "node --test ./dist/test/*.test.js",
     "test:live": "pnpm run build && node --test ./dist/live/*.test.js",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run clean && pnpm run build"
   },
   "dependencies": {
     "@leogriel/core": "workspace:*",

@@ -1,6 +1,6 @@
 {
   "name": "leogriel",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "agentSkills": {
     "dependencies": {
       "leogriel": "file:./.leogriel/skills/leogriel"

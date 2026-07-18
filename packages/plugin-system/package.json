@@ -1,6 +1,6 @@
 {
   "name": "@leogriel/plugin-system",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Experimental plugin system for Leogriel commands, adapters, registries, catalogs, and audit rules",
   "license": "MIT",
   "author": "xFurti & Gabry848",
@@ -13,10 +13,10 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
     "lint": "tsc --noEmit",
     "test": "node --test ./dist/test/*.test.js",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run clean && pnpm run build"
   },
   "dependencies": {
     "@leogriel/core": "workspace:*",

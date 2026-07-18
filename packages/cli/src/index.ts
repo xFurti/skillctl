@@ -30,7 +30,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const pkgPath = join(__dirname, '..', 'package.json');
-let version = '1.0.0-beta.1';
+let version = '1.0.0-beta.2';
 try {
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
   version = pkg.version || version;

@@ -1,6 +1,6 @@
 {
   "name": "@leogriel/manifest",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "agent-skills.json parsing, generation, and validation for Leogriel",
   "license": "MIT",
   "author": "xFurti & Gabry848",
@@ -14,10 +14,10 @@
   "scripts": {
     "build": "tsc -b",
     "dev": "tsc -b --watch",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
     "lint": "tsc --noEmit",
     "test": "node --test ./dist/test/*.test.js",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run clean && pnpm run build"
   },
   "dependencies": {
     "@leogriel/core": "workspace:*",

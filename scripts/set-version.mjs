@@ -58,6 +58,7 @@ const textFiles = [
   join(root, 'packages', 'cli', 'README.md'),
   ...await collectTextFiles(join(root, 'docs')),
   ...await collectTextFiles(join(root, 'skills', 'leogriel')),
+  ...await collectTextFiles(join(root, '.leogriel', 'skills', 'leogriel')),
   ...await collectTextFiles(join(root, 'packages', 'cli', 'src'))
 ];
 

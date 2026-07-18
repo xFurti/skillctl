@@ -46,7 +46,12 @@ Global state is machine-specific and is not a replacement for committed project 
 ## CI pipeline
 
 ```bash
-npm install -g @leogriel/cli@1.0.0-beta.1
+npm install -g @leogriel/cli@1.0.0-beta.2
+leogriel install --frozen
+leogriel audit --strict --json
+```
+
+Exit codes are 0 for success, 1 for warnings/partial results, and 2 for fatal or validation failures.
 
 ## Behavioral test workflow (experimental)
 
@@ -57,11 +62,6 @@ leogriel test my-skill --runs 3 --model <model> --json
 ```
 
 Tests are sequential and pair a clean baseline with the skill variant. Network and web search are denied by default. Command assertions require an interactive confirmation or `--trust-tests` in non-interactive use; that flag does not sandbox commands or enable network access. Keep-workspace output may contain sensitive generated files.
-leogriel install --frozen
-leogriel audit --strict --json
-```
-
-Exit codes are 0 for success, 1 for warnings/partial results, and 2 for fatal or validation failures.
 
 For GitHub code scanning, emit pure SARIF:
 

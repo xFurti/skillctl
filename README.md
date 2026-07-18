@@ -8,7 +8,7 @@ Universal, package-manager-style CLI for managing **Agent Skills** across AI cod
 
 **Leogriel** installs project skills into `.leogriel/skills/` and personal skills into `~/.leogriel/skills/`, then syncs them (symlink, junction on Windows, or copy) into Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Grok, Pi, and other [agentskills.io](https://agentskills.io)-compatible agents.
 
-> **Status**: v1.0.0-beta.1 — the first Leogriel-branded prerelease, with experimental paired behavioral testing on top of the 0.8 parser, audit, backup, plugin-inspection, artifact, and redaction foundations. See [CHANGELOG.md](./CHANGELOG.md).
+> **Status**: v1.0.0-beta.2 — the first Leogriel-branded prerelease, with experimental paired behavioral testing on top of the 0.8 parser, audit, backup, plugin-inspection, artifact, and redaction foundations. See [CHANGELOG.md](./CHANGELOG.md).
 
 Machine-readable commands emit one stable JSON envelope with `schemaVersion: 1`; warnings and errors stay on stderr. Official releases smoke-test both packed tarballs and the package fetched back from npm before the tag is created.
 
@@ -17,14 +17,14 @@ Machine-readable commands emit one stable JSON envelope with `schemaVersion: 1`;
 ## Installation
 
 ```bash
-npm install -g @leogriel/cli
+npm install -g @leogriel/cli@next
 # or
-pnpm add -g @leogriel/cli
+pnpm add -g @leogriel/cli@next
 # or without global install
-npx @leogriel/cli --help
+npx @leogriel/cli@next --help
 ```
 
-The public package is `@leogriel/cli`; installing it provides the `leogriel` command.
+The public package is `@leogriel/cli`; installing it provides the `leogriel` command. Use the `next` dist-tag during the beta series; untagged installs are reserved for the stable channel.
 
 ## Migrating from skillctl
 
@@ -32,7 +32,7 @@ Leogriel is the new name of the project previously published as `skillctl`. npm 
 
 ```bash
 npm uninstall -g @skillctl/cli
-npm install -g @leogriel/cli
+npm install -g @leogriel/cli@next
 leogriel --version
 ```
 

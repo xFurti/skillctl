@@ -1,7 +1,7 @@
 window.TRANSLATIONS = {
   it: {
     nav: {
-      brandSub: 'Documentazione v1.0.0-beta.1',
+      brandSub: 'Documentazione v1.0.0-beta.2',
       navSection: 'Guida',
       navOverview: 'Panoramica',
       navConfig: 'Configurazione',
@@ -19,7 +19,7 @@ window.TRANSLATIONS = {
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v1.0.0-beta.1 · Agent Skills</p>
+    <p class="hero-badge">v1.0.0-beta.2 · Agent Skills</p>
     <h1 class="hero-title">Leogriel</h1>
     <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare leogriel.</p>
     <div class="hero-terminal">
@@ -33,7 +33,7 @@ window.TRANSLATIONS = {
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 1.0.0-beta.1</strong> — npm <code>@leogriel/cli@1.0.0-beta.1</code>
+  <strong>Versione 1.0.0-beta.2</strong> — npm <code>@leogriel/cli@1.0.0-beta.2</code>
   Discovery skills.sh, piani outdated/update, sync riconciliabile, plugin sperimentali con integrità, audit SARIF e completion shell. Lock schema 1.0 e config version 1 restano compatibili.
 </div>
 
@@ -55,12 +55,12 @@ leogriel install</code></pre>
 <p>Nel monorepo leogriel: <code>file:./skills/leogriel</code>. Valida con <code>leogriel skill validate skills/leogriel</code>.</p>
 
 <h2>Installazione rapida</h2>
-<pre><code>npm install -g @leogriel/cli
+<pre><code>npm install -g @leogriel/cli@next
 # oppure
-pnpm add -g @leogriel/cli
+pnpm add -g @leogriel/cli@next
 # oppure senza installazione globale
-npx @leogriel/cli --help</code></pre>
-<p>Il pacchetto pubblicato è <code>@leogriel/cli</code> (scoped). Il comando in PATH resta <code>leogriel</code>. Il nome non scoped su npm è lasciato libero per evitare collisioni con il vecchio leogriel Python.</p>
+npx @leogriel/cli@next --help</code></pre>
+<p>Il pacchetto pubblicato è <code>@leogriel/cli</code> (scoped). Il comando in PATH resta <code>leogriel</code>. Durante la beta usa il dist-tag <code>next</code>; il vecchio progetto Python resta identificato come skillctl.</p>
 
 <h2>Flusso tipico</h2>
 <div class="card-grid">
@@ -143,7 +143,7 @@ node packages/cli/bin/leogriel.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  leogriel v1.0.0-beta.1 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  leogriel v1.0.0-beta.2 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
@@ -155,13 +155,13 @@ node packages/cli/bin/leogriel.js doctor</code></pre>
 <p class="lead">Installazione del pacchetto, file di configurazione globale, manifest di progetto e convenzioni per specifier e plugin.</p>
 
 <h2>Installazione npm</h2>
-<pre><code>npm install -g @leogriel/cli
+<pre><code>npm install -g @leogriel/cli@next
 # verifica
 leogriel --version
 leogriel doctor</code></pre>
 <div class="alert alert-warn">
   <strong>Nota sul nome</strong>
-  Usa sempre <code>@leogriel/cli</code>. Esiste un altro progetto Python omonimo che condivide il path <code>~/.leogriel/</code>; controlla l'output di <code>doctor</code> dopo l'installazione.
+  Le installazioni legacy del progetto Python skillctl possono usare <code>~/.skillctl/</code>; Leogriel riconosce quei dati per la migrazione. Controlla l'output di <code>doctor</code> dopo l'installazione.
 </div>
 
 <h2>Setup sviluppo (pnpm)</h2>
@@ -231,7 +231,7 @@ node packages/cli/bin/leogriel.js init</code></pre>
 <ul>
   <li><code>commit</code> e <code>requestedRef</code> — SHA GitHub immutabile e branch/tag richiesto</li>
   <li><code>version</code>, <code>tarballUrl</code>, <code>tarballHash</code> — versione npm esatta e integrità SRI</li>
-  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code> o <code>python-leogriel</code></li>
+  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code> o <code>python-skillctl</code></li>
   <li><code>originalPath</code> — percorso sorgente al momento dell'import (es. <code>.codex/skills/demo</code>)</li>
   <li><code>adapter</code> — id adapter che ha fornito la skill (es. <code>codex</code>)</li>
 </ul>
@@ -350,7 +350,7 @@ leogriel test my-skill --runs 3 --model MODEL --json</code></pre>
         title: 'Comandi — leogriel',
         html: `
 <h1>Comandi CLI</h1>
-<p class="lead">Riferimento completo ai comandi leogriel v1.0.0-beta.1. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
+<p class="lead">Riferimento completo ai comandi leogriel v1.0.0-beta.2. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
 <p>Con <code>--json</code>, ogni comando first-party emette un solo envelope con <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code> ed <code>errors</code>. Exit code: 0 successo, 1 warning/risultato parziale, 2 errore fatale o validazione.</p>
 
 <h2>Workflow principali</h2>
@@ -565,7 +565,7 @@ leogriel &lt;comando&gt; --help</code></pre>
 <ul>
   <li>Verifica installazione: <code>npm list -g @leogriel/cli</code></li>
   <li>Controlla che la directory bin globale npm sia nel <code>PATH</code></li>
-  <li>Alternativa immediata: <code>npx @leogriel/cli doctor</code></li>
+  <li>Alternativa immediata: <code>npx @leogriel/cli@next doctor</code></li>
   <li>In sviluppo: <code>node packages/cli/bin/leogriel.js doctor</code></li>
 </ul>
 
@@ -687,13 +687,13 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li>Skill già in directory agente? Prova <code>leogriel import --dry-run</code></li>
   <li>Migra da npx con <code>import from-npx --dry-run</code> prima di sincronizzare</li>
   <li>Lo store del progetto è <code>.leogriel/skills/</code>; quello personale è <code>~/.leogriel/skills/</code>; <code>.agents/skills</code> è un target agente</li>
-  <li>Installa via <code>@leogriel/cli</code> per distinguere dal CLI Python</li>
+  <li>Installa via <code>@leogriel/cli</code> per distinguere dal precedente CLI Python skillctl</li>
 </ul>
 
 <h2>Problemi import</h2>
 <ul>
   <li><strong>Piano vuoto:</strong> nessuna directory agente con skill — verifica <code>.codex/skills</code>, <code>.claude/skills</code>, ecc.</li>
-  <li><strong>Piano vuoto (from-npx/leogriel):</strong> nessun marker npx/Python — verifica <code>skills-lock.json</code> o repos Python</li>
+  <li><strong>Piano vuoto (from-npx/from-skillctl):</strong> nessun marker npx/Python — verifica <code>skills-lock.json</code> o repos Python</li>
   <li><strong>Skill già nel lock:</strong> vengono saltate (<code>skip-existing</code> nel piano dry-run)</li>
   <li><strong>Errori parziali:</strong> controlla l'envelope JSON; exit 1 per warning/parziali, exit 2 per errori fatali</li>
   <li>Usa sempre <code>--dry-run</code> prima di import definitivi</li>
@@ -741,7 +741,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   },
   en: {
     nav: {
-      brandSub: 'Documentation v1.0.0-beta.1',
+      brandSub: 'Documentation v1.0.0-beta.2',
       navSection: 'Guide',
       navOverview: 'Overview',
       navConfig: 'Configuration',
@@ -759,7 +759,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
-    <p class="hero-badge">v1.0.0-beta.1 · Agent Skills</p>
+    <p class="hero-badge">v1.0.0-beta.2 · Agent Skills</p>
     <h1 class="hero-title">Leogriel</h1>
     <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use leogriel.</p>
     <div class="hero-terminal">
@@ -773,7 +773,7 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 1.0.0-beta.1</strong> — npm <code>@leogriel/cli@1.0.0-beta.1</code>
+  <strong>Version 1.0.0-beta.2</strong> — npm <code>@leogriel/cli@1.0.0-beta.2</code>
   skills.sh discovery, outdated/update plans, reconcilable sync, integrity-locked experimental plugins, SARIF audit, and shell completion. Lock schema 1.0 and config version 1 remain compatible.
 </div>
 
@@ -795,12 +795,12 @@ leogriel install</code></pre>
 <p>In the leogriel monorepo: <code>file:./skills/leogriel</code>. Validate with <code>leogriel skill validate skills/leogriel</code>.</p>
 
 <h2>Quick install</h2>
-<pre><code>npm install -g @leogriel/cli
+<pre><code>npm install -g @leogriel/cli@next
 # or
-pnpm add -g @leogriel/cli
+pnpm add -g @leogriel/cli@next
 # or without global install
-npx @leogriel/cli --help</code></pre>
-<p>The published package is <code>@leogriel/cli</code> (scoped). The command on PATH remains <code>leogriel</code>. Leogriel replaces the former @skillctl/cli package; portable manifest and lock filenames remain unchanged.</p>
+npx @leogriel/cli@next --help</code></pre>
+<p>The published package is <code>@leogriel/cli</code> (scoped). The command on PATH remains <code>leogriel</code>. Use the <code>next</code> dist-tag during the beta series. Leogriel replaces the former @skillctl/cli package; portable manifest and lock filenames remain unchanged.</p>
 
 <h2>Typical flow</h2>
 <div class="card-grid">
@@ -883,7 +883,7 @@ node packages/cli/bin/leogriel.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  leogriel v1.0.0-beta.1 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  leogriel v1.0.0-beta.2 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
@@ -895,13 +895,13 @@ node packages/cli/bin/leogriel.js doctor</code></pre>
 <p class="lead">Package installation, global configuration, project manifest, and conventions for specifiers and plugins.</p>
 
 <h2>npm install</h2>
-<pre><code>npm install -g @leogriel/cli
+<pre><code>npm install -g @leogriel/cli@next
 # verify
 leogriel --version
 leogriel doctor</code></pre>
 <div class="alert alert-warn">
   <strong>Name collision note</strong>
-  Always use <code>@leogriel/cli</code>. A separate Python project shares the <code>~/.leogriel/</code> path; review <code>doctor</code> output after install.
+  Legacy installations of the Python skillctl project may use <code>~/.skillctl/</code>; Leogriel recognizes that data for migration. Review <code>doctor</code> output after install.
 </div>
 
 <h2>Development setup (pnpm)</h2>
@@ -971,7 +971,7 @@ node packages/cli/bin/leogriel.js init</code></pre>
 <ul>
   <li><code>commit</code> and <code>requestedRef</code> — immutable GitHub SHA and requested branch/tag</li>
   <li><code>version</code>, <code>tarballUrl</code>, <code>tarballHash</code> — exact npm version and SRI integrity</li>
-  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code>, or <code>python-leogriel</code></li>
+  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code>, or <code>python-skillctl</code></li>
   <li><code>originalPath</code> — source path at import time (e.g. <code>.codex/skills/demo</code>)</li>
   <li><code>adapter</code> — adapter id that supplied the skill (e.g. <code>codex</code>)</li>
 </ul>
@@ -1090,7 +1090,7 @@ leogriel test my-skill --runs 3 --model MODEL --json</code></pre>
         title: 'Commands — leogriel',
         html: `
 <h1>CLI commands</h1>
-<p class="lead">Complete reference for leogriel v1.0.0-beta.1 commands. Command blocks remain in English as in the CLI interface.</p>
+<p class="lead">Complete reference for leogriel v1.0.0-beta.2 commands. Command blocks remain in English as in the CLI interface.</p>
 <p>With <code>--json</code>, every first-party command emits one envelope containing <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code>, and <code>errors</code>. Exit codes: 0 success, 1 warning/partial result, 2 fatal or validation failure.</p>
 
 <h2>Main workflows</h2>
@@ -1305,7 +1305,7 @@ leogriel &lt;command&gt; --help</code></pre>
 <ul>
   <li>Verify install: <code>npm list -g @leogriel/cli</code></li>
   <li>Ensure the global npm bin directory is on <code>PATH</code></li>
-  <li>Immediate alternative: <code>npx @leogriel/cli doctor</code></li>
+  <li>Immediate alternative: <code>npx @leogriel/cli@next doctor</code></li>
   <li>From source: <code>node packages/cli/bin/leogriel.js doctor</code></li>
 </ul>
 
@@ -1427,13 +1427,13 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li>Skills already in agent dirs? Try <code>leogriel import --dry-run</code></li>
   <li>Migrate from npx with <code>import from-npx --dry-run</code> before syncing</li>
   <li>The project store is <code>.leogriel/skills/</code>; the personal store is <code>~/.leogriel/skills/</code>; <code>.agents/skills</code> is an agent target</li>
-  <li>Install via <code>@leogriel/cli</code> to distinguish from the Python CLI</li>
+  <li>Install via <code>@leogriel/cli</code> to distinguish it from the former Python skillctl CLI</li>
 </ul>
 
 <h2>Import issues</h2>
 <ul>
   <li><strong>Empty plan:</strong> no agent directories with skills — check <code>.codex/skills</code>, <code>.claude/skills</code>, etc.</li>
-  <li><strong>Empty plan (from-npx/leogriel):</strong> no npx/Python markers — check <code>skills-lock.json</code> or Python repos</li>
+  <li><strong>Empty plan (from-npx/from-skillctl):</strong> no npx/Python markers — check <code>skills-lock.json</code> or Python repos</li>
   <li><strong>Skill already in lock:</strong> skipped (<code>skip-existing</code> in dry-run plan)</li>
   <li><strong>Partial errors:</strong> inspect the JSON envelope; exit 1 is warning/partial, exit 2 is fatal</li>
   <li>Always use <code>--dry-run</code> before final imports</li>

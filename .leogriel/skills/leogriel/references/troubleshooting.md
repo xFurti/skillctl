@@ -32,6 +32,6 @@ Symlinks may require Developer Mode or administrator privileges. Set `defaultMod
 
 ## Version compatibility
 
-This skill targets **leogriel 1.0.0-beta.1**. Lock schema remains 1.0 and config remains version 1. Older locks remain readable, but legacy mutable remote entries require `update`, and pre-0.6 local/global project paths should be re-added or re-imported into the project store.
+This skill targets **leogriel 1.0.0-beta.2**. Lock schema remains 1.0 and config remains version 1. Older locks remain readable, but legacy mutable remote entries require `update`, and pre-0.6 local/global project paths should be re-added or re-imported into the project store.
 
 Catalog network failures use a cached result when available and mark it stale. Without cache, retry later or verify `LEOGRIEL_SKILLS_API_URL`. Plugin integrity/API failures appear in `leogriel plugin doctor`; reinstall the trusted package rather than editing its locked store.

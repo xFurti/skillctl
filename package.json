@@ -1,6 +1,6 @@
 {
   "name": "leogriel",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "private": true,
   "description": "Leogriel — weave Agent Skills into every workflow",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "build": "pnpm -r build",
     "build:cli": "pnpm --filter @leogriel/cli build",
     "dev": "pnpm --filter @leogriel/cli dev",
-    "clean": "pnpm -r clean",
+    "clean": "pnpm -r run clean",
     "lint": "pnpm -r lint",
     "test": "pnpm run test:scripts && pnpm -r --workspace-concurrency=1 test",
     "test:scripts": "node --test scripts/test/*.test.mjs",

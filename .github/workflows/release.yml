@@ -130,6 +130,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
           name: leogriel-${{ inputs.version }}-packages
@@ -142,11 +144,12 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git tag -a "v$VERSION" -m "leogriel v$VERSION"
+          previous_tag="$(git describe --tags --abbrev=0)"
+          node scripts/extract-release-notes.mjs "$VERSION" "${previous_tag#v}" > release-notes.md
+          git tag -a "v$VERSION" -m "Leogriel v$VERSION"
           git push origin "v$VERSION"
-          node scripts/extract-release-notes.mjs "$VERSION" > release-notes.md
           release_flags=()
           if [[ "$VERSION" == *-* ]]; then
             release_flags+=(--prerelease)
           fi
-          gh release create "v$VERSION" "artifacts/$VERSION"/*.tgz --title "leogriel v$VERSION" --notes-file release-notes.md --verify-tag "${release_flags[@]}"
+          gh release create "v$VERSION" "artifacts/$VERSION"/*.tgz --title "Leogriel v$VERSION" --notes-file release-notes.md --verify-tag "${release_flags[@]}"

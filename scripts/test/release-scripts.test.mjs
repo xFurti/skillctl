@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { extractReleaseNotes } from '../extract-release-notes.mjs';
+import { extractReleaseNotes, releaseComparison } from '../extract-release-notes.mjs';
 import { canonicalPackageJson, npmInvocation, publicationDecision, resolveDistTag, tarballIntegrity } from '../publish-release.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -11,6 +11,11 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 test('extracts one changelog release section', () => {
   const changelog = '# Changelog\n\n## [0.7.0] - 2026-07-14\n\n### Added\n\n- Search.\n\n## [0.6.1] - 2026-07-13\n\n- Fix.';
   assert.equal(extractReleaseNotes(changelog, '0.7.0'), '### Added\n\n- Search.');
+  assert.equal(
+    releaseComparison('0.7.3', '1.0.0-beta.2'),
+    '[Compare v0.7.3...v1.0.0-beta.2](https://github.com/xFurti/leogriel/compare/v0.7.3...v1.0.0-beta.2)',
+  );
+  assert.equal(releaseComparison(undefined, '1.0.0-beta.2'), '');
 });
 
 test('publication decisions are idempotent and reject conflicts', () => {
@@ -54,6 +59,18 @@ test('workspace packages do not force provenance outside trusted publishing', as
   assert.equal(testingPackage.publishConfig.provenance, undefined);
 });
 
+test('every publishable workspace package cleans stale output before packing', async () => {
+  const packageNames = [
+    'core', 'manifest', 'lockfile', 'link-manager', 'plugin-system', 'project-state',
+    'adapters', 'security', 'registry', 'import', 'testing', 'cli',
+  ];
+  for (const packageName of packageNames) {
+    const packageJson = JSON.parse(await readFile(join(root, 'packages', packageName, 'package.json'), 'utf8'));
+    assert.equal(packageJson.scripts.clean, 'rimraf dist tsconfig.tsbuildinfo', packageJson.name);
+    assert.equal(packageJson.scripts.prepack, 'pnpm run clean && pnpm run build', packageJson.name);
+  }
+});
+
 test('release packing removes stale build output before rebuilding', async () => {
   const script = await readFile(join(root, 'scripts', 'pack-all.mjs'), 'utf8');
   const clean = script.indexOf("runPnpm(['-r', 'run', 'clean']);");
@@ -64,4 +81,10 @@ test('release packing removes stale build output before rebuilding', async () =>
   assert.notEqual(build, -1);
   assert.ok(clean < buildInfo);
   assert.ok(buildInfo < build);
+});
+
+test('version preparation updates the canonical and distributable Leogriel skills', async () => {
+  const script = await readFile(join(root, 'scripts', 'set-version.mjs'), 'utf8');
+  assert.match(script, /join\(root, 'skills', 'leogriel'\)/);
+  assert.match(script, /join\(root, '\.leogriel', 'skills', 'leogriel'\)/);
 });

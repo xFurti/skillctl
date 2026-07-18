@@ -21,7 +21,7 @@ export function registerTest(program: Command, version: string): void {
     .action(async (skill, options) => {
       if (!skill) return;
       try {
-        if (options.agent !== 'codex') throw new LeogrielError('Only the codex runner is available in 1.0.0-beta.1', 'UNSUPPORTED_RUNNER', 2);
+        if (options.agent !== 'codex') throw new LeogrielError('Only the codex runner is available in 1.0.0-beta.2', 'UNSUPPORTED_RUNNER', 2);
         const cwd = await requireLeogrielProject();
         const testPath = await findTestFile(cwd, skill);
         const testFile = await loadTestFile(testPath);

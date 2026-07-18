@@ -15,16 +15,17 @@ export function extractReleaseNotes(changelog, version) {
   return rest.slice(0, next?.index ?? rest.length).trim();
 }
 
+export function releaseComparison(previousVersion, version) {
+  if (!previousVersion) return '';
+  return `[Compare v${previousVersion}...v${version}](https://github.com/xFurti/leogriel/compare/v${previousVersion}...v${version})`;
+}
+
 async function main() {
   const version = process.argv[2];
   if (!version) throw new Error('Usage: node scripts/extract-release-notes.mjs <version>');
   const changelog = await readFile(join(root, 'CHANGELOG.md'), 'utf8');
-  const versions = [...changelog.matchAll(/^## \[([^\]]+)\](?: - .+)?$/gm)].map((match) => match[1]);
-  const index = versions.indexOf(version);
-  const previous = versions.slice(index + 1).find((candidate) => /^\d+\.\d+\.\d+/.test(candidate));
-  const comparison = previous
-    ? `\n\n[Compare v${previous}...v${version}](https://github.com/xFurti/leogriel/compare/v${previous}...v${version})`
-    : '';
+  const comparisonLink = releaseComparison(process.argv[3], version);
+  const comparison = comparisonLink ? `\n\n${comparisonLink}` : '';
   process.stdout.write(`${extractReleaseNotes(changelog, version)}${comparison}\n`);
 }
 

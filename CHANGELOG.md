@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-07-18
+
+### Leogriel beta
+
+- Published the first reproducible Leogriel-branded prerelease across all twelve coordinated `@leogriel/*` packages with the npm `next` dist-tag.
+- Carries forward the complete rebrand from skillctl: the `leogriel` command, `@leogriel/*` package scope, `.leogriel/` state paths, repository and documentation URLs, first-party skill, and woven-thread visual identity.
+- Preserves `agent-skills.json`, `agent-skills.lock`, lock schema `1.0`, config schema `1`, the canonical integrity algorithm, and read compatibility for documented legacy skillctl state.
+
+### Capabilities included
+
+- Includes discovery and provider-aware search, immutable GitHub/npm/skills.sh resolution, `info`, deterministic `outdated` and atomic `update` planning.
+- Includes reconciliable `doctor`/`sync`, explicit unmanaged-target replacement with verified backups, full backup lifecycle commands, plugin inspection and lifecycle management, offline audit with SARIF, and shell completions.
+- Includes the shared strict `SKILL.md` parser, field-aware streaming secret redaction, opt-in versioned artifacts, and advanced audit categories with remediation and confidence.
+- Includes experimental paired behavioral testing through `@leogriel/testing`, with an isolated Codex runner, deterministic assertions and verdicts, default-deny networking, API-key or explicit ChatGPT-profile authentication, and opt-in live smoke diagnostics.
+
+### Fixed
+
+- Clean every package `dist` directory and remove TypeScript incremental build metadata before release builds, preventing stale Windows output from leaking into npm tarballs.
+- Rebuild packages topologically from a clean state before `npm pack`, then install and smoke-test all twelve generated archives.
+- Mark semantic prerelease versions as GitHub prereleases instead of stable releases.
+- Keep release publication idempotent: verify existing npm SRI or canonical archive content, run registry smoke tests on Windows, macOS, and Linux, and create the tag and GitHub prerelease only after every gate succeeds.
+
+### Publishing and migration
+
+- Uses npm Trusted Publishing for all twelve packages from `.github/workflows/release.yml` in the `npm-production` environment, without a long-lived `NPM_TOKEN`; npm generates provenance automatically.
+- New installations use `npm install -g @leogriel/cli@1.0.0-beta.2`. Existing users should uninstall `@skillctl/cli` and install `@leogriel/cli`.
+- The historical `@skillctl/*` packages remain separate and receive no new code. They can be deprecated with a migration notice after this prerelease passes registry verification.
+
 ## [1.0.0-beta.1] - 2026-07-18
 
 ### Beta status
@@ -363,11 +391,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Canonical + cache dirs created on demand.
 - Recommend re-running `doctor` after upgrade.
 
-[0.6.1]: https://github.com/xFurti/skillctl/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/xFurti/skillctl/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/xFurti/skillctl/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/xFurti/skillctl/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/xFurti/skillctl/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/xFurti/skillctl/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/xFurti/skillctl/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/xFurti/skillctl/releases/tag/v0.1.0
+[0.6.1]: https://github.com/xFurti/leogriel/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/xFurti/leogriel/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/xFurti/leogriel/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/xFurti/leogriel/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/xFurti/leogriel/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/xFurti/leogriel/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/xFurti/leogriel/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/xFurti/leogriel/releases/tag/v0.1.0
