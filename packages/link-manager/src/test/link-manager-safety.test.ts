@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cp, mkdir, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, realpath, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdtemp } from 'node:fs/promises';
@@ -45,7 +45,7 @@ test('legacy skillctl managed-copy markers remain recognized', async () => {
   await cp(canonical, target, { recursive: true });
   await writeFile(join(target, '.skillctl-managed.json'), JSON.stringify({
     version: 1,
-    canonical,
+    canonical: await realpath(canonical),
     integrity: await computeDirIntegrity(canonical),
   }));
 
