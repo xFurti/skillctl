@@ -214,6 +214,17 @@ test('Codex JSONL failures, missing completion, truncation, and nonzero exit are
   } finally { await destroyIsolation(isolation); await fixture.cleanup(); }
 });
 
+test('Codex Windows sandbox launch failures remain incomplete even after a completed turn', async () => {
+  const fixture = await fakeCodex('sandbox-launch-failed');
+  const isolation = await createIsolation();
+  try {
+    const result = await fixture.runner.run(request(isolation, 'prompt', 2_000));
+    assert.equal(result.ok, false);
+    assert.equal(result.incomplete, true);
+    assert.match(result.error || '', /Codex Windows sandbox:.*CreateProcessWithLogonW failed/);
+  } finally { await destroyIsolation(isolation); await fixture.cleanup(); }
+});
+
 test('Codex timeout terminates the complete process tree', async () => {
   const fixture = await fakeCodex('timeout-tree');
   const isolation = await createIsolation();
@@ -345,6 +356,7 @@ if (mode === 'leak-split') {
   process.stdout.write(secret.slice(12) + '\\n');
 }
 if (mode === 'leak-exit') { console.error('failed: ' + secret); process.exit(9); }
+if (mode === 'sandbox-launch-failed') console.error('ERROR windows sandbox: CreateProcessWithLogonW failed: 2');
 if (mode === 'timeout-tree') {
   spawn(process.execPath, ['-e', ${JSON.stringify(`setTimeout(() => require('node:fs').writeFileSync(${JSON.stringify(join(root, 'child-survived.txt'))}, 'yes'), 500); setInterval(() => {}, 1000);`)}], { stdio: 'ignore' });
   setInterval(() => {}, 1000);

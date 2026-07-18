@@ -15,7 +15,7 @@ export function registerAudit(program: Command): void {
     .option('--json', 'machine-readable envelope output')
     .option('--format <format>', 'output format: table or sarif', 'table')
     .option('--output <path>', 'write SARIF to a file')
-    .option('--strict', 'treat warnings as errors (exit 2)')
+    .option('--strict', 'fail the audit policy when warnings are present (exit 1)')
     .action(async (options) => {
       try {
         if (!['table', 'sarif'].includes(options.format)) throw new LeogrielError('--format must be table or sarif', 'INVALID_OPTIONS', 2);

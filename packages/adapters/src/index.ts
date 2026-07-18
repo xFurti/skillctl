@@ -1,5 +1,12 @@
 import type { AgentAdapter, LeogrielConfig } from '@leogriel/core';
-import { loadConfig, registerAdapter, getRegisteredAdapters } from '@leogriel/core';
+import {
+  getGlobalSkillsStore,
+  getProjectSkillsStore,
+  loadConfig,
+  registerAdapter,
+  getRegisteredAdapters,
+} from '@leogriel/core';
+import { LinkManager } from '@leogriel/link-manager';
 import { claudeAdapter } from './claude/index.js';
 import { cursorAdapter } from './cursor/index.js';
 import { opencodeAdapter } from './opencode/index.js';
@@ -45,17 +52,20 @@ export interface CoexistenceReport {
   recommendations: string[];
 }
 
-async function countSkillsInDir(dir: string): Promise<number> {
+async function countUnmanagedSkillsInDir(dir: string, stores: string[]): Promise<number> {
   let count = 0;
+  const manager = new LinkManager();
   try {
     const items = await readdir(dir, { withFileTypes: true });
     for (const item of items) {
       if ((!item.isDirectory() && !item.isSymbolicLink()) || item.name.startsWith('.')) continue;
+      const skillPath = join(dir, item.name);
       for (const name of ['SKILL.md', 'skill.md']) {
         try {
-          const st = await stat(join(dir, item.name, name));
+          const st = await stat(join(skillPath, name));
           if (st.isFile()) {
-            count++;
+            const inspections = await Promise.all(stores.map((store) => manager.inspectManagedTarget(skillPath, store)));
+            if (inspections.every((inspection) => inspection.kind === 'unmanaged')) count++;
             break;
           }
         } catch {
@@ -74,12 +84,13 @@ export async function scanCoexistence(cwd = process.cwd()): Promise<CoexistenceR
   const paths: string[] = [];
   const recs: string[] = [];
   let projectSkillDirs = 0;
+  const managedStores = [getProjectSkillsStore(cwd), getGlobalSkillsStore()];
 
   for (const adapter of BUILTIN_ADAPTERS) {
     for (const projectPath of adapter.projectPaths) {
       const abs = join(cwd, projectPath);
       if (!(await pathExists(abs))) continue;
-      const count = await countSkillsInDir(abs);
+      const count = await countUnmanagedSkillsInDir(abs, managedStores);
       if (count > 0) {
         projectSkillDirs++;
         details.push(`Found ${projectPath} with ${count} skill(s) (${adapter.name})`);
@@ -93,8 +104,12 @@ export async function scanCoexistence(cwd = process.cwd()): Promise<CoexistenceR
   }
 
   const agentsSkills = join(cwd, '.agents', 'skills');
-  if (await pathExists(agentsSkills) && !paths.includes(agentsSkills)) {
-    details.push('Found .agents/skills (common universal layout used by npx skills and many agents)');
+  const unmanagedAgentsSkills = await countUnmanagedSkillsInDir(agentsSkills, managedStores);
+  if (unmanagedAgentsSkills > 0 && !paths.includes(agentsSkills)) {
+    details.push(
+      `Found .agents/skills with ${unmanagedAgentsSkills} unmanaged skill(s) ` +
+        '(common universal layout used by npx skills and many agents)',
+    );
     paths.push(agentsSkills);
     recs.push('Run `leogriel import from-npx --dry-run` to migrate into the project store');
   }

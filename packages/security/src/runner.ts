@@ -65,7 +65,7 @@ function matchesSource(pattern: string, source: string): boolean {
 
 export function auditExitCode(report: AuditReport, strict = false): number {
   if (report.status === 'errors') return 2;
-  if (strict && report.status === 'warnings') return 2;
+  if (strict && report.status === 'warnings') return 1;
   if (report.status === 'warnings') return 1;
   return 0;
 }

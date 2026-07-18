@@ -33,7 +33,16 @@ export async function fetchCachedBuffer(
   return buf;
 }
 
-export async function extractTarball(buf: Buffer, dest: string, strip = 1): Promise<void> {
+export interface ExtractTarballOptions {
+  includePath?: string;
+}
+
+export async function extractTarball(
+  buf: Buffer,
+  dest: string,
+  strip = 1,
+  options: ExtractTarballOptions = {},
+): Promise<void> {
   const tarTmp = `${dest}.tar.gz`;
   try {
     await writeFile(tarTmp, buf);
@@ -54,8 +63,24 @@ export async function extractTarball(buf: Buffer, dest: string, strip = 1): Prom
         }
       },
     });
-    await tar.extract({ file: tarTmp, cwd: dest, strip, preservePaths: false, strict: true });
+    await tar.extract({
+      file: tarTmp,
+      cwd: dest,
+      strip,
+      preservePaths: false,
+      strict: true,
+      filter: (path) => tarEntryMatchesIncludePath(path, strip, options.includePath),
+    });
   } finally {
     await rm(tarTmp, { force: true }).catch(() => {});
   }
+}
+
+export function tarEntryMatchesIncludePath(path: string, strip: number, includePath?: string): boolean {
+  if (!includePath) return true;
+  const entryParts = path.replace(/\\/g, '/').split('/').filter(Boolean).slice(strip);
+  const includeParts = includePath.replace(/\\/g, '/').split('/').filter(Boolean);
+  if (!includeParts.length || includeParts.includes('..')) return false;
+  if (entryParts.length < includeParts.length) return false;
+  return includeParts.every((part, index) => entryParts[index] === part);
 }

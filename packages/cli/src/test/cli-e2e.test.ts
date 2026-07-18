@@ -103,6 +103,25 @@ test('plain import copies discovered skills into the project store', async () =>
   assert.match(await readFile(join(cwd, 'agent-skills.json'), 'utf8'), /file:\.\/\.leogriel\/skills\/review/);
 });
 
+test('non-interactive init with skill honors the explicit request', async () => {
+  const cwd = await mkdtemp(join(tmpdir(), 'leogriel-init-with-skill-'));
+  const source = join(cwd, 'skills', 'leogriel');
+  const home = join(cwd, 'home');
+  await mkdir(source, { recursive: true });
+  await mkdir(home, { recursive: true });
+  await writeFile(join(source, 'SKILL.md'), '---\nname: leogriel\ndescription: bundled meta skill\n---\nMeta\n');
+
+  const result = await execFileAsync(
+    process.execPath,
+    [cli, 'init', '--with-skill', '--no-prompt', '--json'],
+    { cwd, env: { ...process.env, HOME: home, USERPROFILE: home } },
+  );
+  const envelope = JSON.parse(result.stdout);
+  assert.equal(envelope.ok, true);
+  assert.match(await readFile(join(cwd, 'agent-skills.json'), 'utf8'), /"leogriel": "file:\.\/\.leogriel\/skills\/leogriel"/);
+  assert.match(await readFile(join(cwd, 'agent-skills.lock'), 'utf8'), /leogriel:/);
+});
+
 test('plain import emits structured JSON without human output', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'leogriel-import-json-'));
   const source = join(cwd, '.codex', 'skills', 'review');

@@ -44,6 +44,7 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
     .option('--no-prompt', 'skip post-init import wizard')
     .option('--with-skill', 'add the leogriel meta-skill and sync to agents')
     .action(async (options) => {
+      const nonInteractive = options.prompt === false || options.json || !process.stdin.isTTY;
       const cwd = process.cwd();
       const store = getProjectSkillsStore(cwd);
       const sample = createDefaultManifest(basename(cwd));
@@ -64,7 +65,7 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
       const registry = mgr || new RegistryManager();
 
       if (options.withSkill) {
-        const shouldAdd = options.noPrompt
+        const shouldAdd = nonInteractive
           ? true
           : await confirm('Add the leogriel meta-skill to this project?', true);
         if (shouldAdd) {
@@ -77,7 +78,7 @@ export function registerInit(program: Command, mgr?: RegistryManager): void {
         }
       }
 
-      if (options.noPrompt) {
+      if (nonInteractive) {
         if (!options.withSkill) {
           cliLog('Run `leogriel add <spec>` or `leogriel import` to populate, then `install` or `sync`.');
         }

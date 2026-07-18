@@ -65,7 +65,9 @@ export function registerInfo(program: Command, registry = new RegistryManager())
             integrity: inspected.integrity,
             provenance: {
               type: inspected.resolved.sourceType,
-              commit: inspected.resolved.ref,
+              commit: inspected.resolved.sourceType === 'github' || inspected.resolved.sourceType === 'skills.sh'
+                ? inspected.resolved.ref
+                : undefined,
               version: inspected.resolved.sourceType === 'npm' ? inspected.resolved.ref : undefined,
               skillSelector: inspected.resolved.skillSelector,
             },

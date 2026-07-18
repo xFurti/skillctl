@@ -84,7 +84,12 @@ export class GitHubSource implements RegistrySource {
     const tmpExtract = join(tmpdir(), `leogriel-gh-${randomUUID()}`);
     await ensureDir(tmpExtract);
     try {
-      await extractTarball(buf, tmpExtract, 1);
+      await extractTarball(
+        buf,
+        tmpExtract,
+        1,
+        resolved.subpath ? { includePath: resolved.subpath } : undefined,
+      );
       let sourceDir = tmpExtract;
       if (resolved.subpath) {
         const candidate = resolvePathInside(tmpExtract, resolved.subpath, 'GitHub skill subpath');

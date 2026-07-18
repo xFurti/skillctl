@@ -97,11 +97,12 @@ export class CodexRunner implements AgentRunner {
     });
     const parsed = parseCodexJsonl(processResult.stdout, processResult.truncated);
     const exitError = processResult.code === 0 ? undefined : processResult.stderr.trim() || `Codex exited with code ${processResult.code}`;
+    const sandboxError = codexSandboxError(processResult.stderr);
     const error = processResult.timedOut
       ? 'Codex execution timed out'
       : processResult.truncated
         ? parsed.error
-        : exitError || parsed.error;
+        : exitError || parsed.error || sandboxError;
     return {
       ok: !error && parsed.completed,
       exitCode: processResult.code,
@@ -141,6 +142,14 @@ export class CodexRunner implements AgentRunner {
       },
     });
   }
+}
+
+function codexSandboxError(stderr: string): string | undefined {
+  const line = stderr.split(/\r?\n/).find((value) =>
+    /windows sandbox: (?:orchestrator_helper_launch_failed|CreateProcessWithLogonW failed)/i.test(value),
+  );
+  if (!line) return undefined;
+  return line.replace(/^.*?windows sandbox:/i, 'Codex Windows sandbox:').trim();
 }
 
 function incompleteAuthResult(request: AgentRunRequest, started: number, error: string): AgentRunResult {
