@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Rebranded
+
+- Renamed the project and command from `skillctl` to **Leogriel** and moved the coordinated npm package set from `@skillctl/*` to `@leogriel/*`.
+- Renamed the repository, documentation URLs, first-party skill, canonical `.leogriel/` state directories, environment variables, release tooling, and package metadata for the new identity.
+- Added a woven-thread visual identity with new vector and raster logo, banner, favicon, and social-preview assets.
+
+### Compatibility
+
+- Kept `agent-skills.json`, `agent-skills.lock`, lock schema `1.0`, config schema `1`, and the canonical integrity algorithm unchanged.
+- Added read compatibility for legacy `.skillctl/` stores, configuration, canonical lock paths, managed-copy markers, transaction journals, plugin metadata, and `SKILLCTL_*` environment variables.
+- Preserved `leogriel import from-skillctl` for migration from the historical Python skillctl layout.
+
+### Migration
+
+- Existing npm packages are not renamed in place. Users migrate from `@skillctl/cli` to `@leogriel/cli`; maintainers publish all twelve coordinated packages under the new scope and configure new npm Trusted Publishers.
+
 ## [0.9.0] - 2026-07-14
 
 ### Added

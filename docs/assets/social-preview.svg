@@ -1,0 +1,35 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="18" x2="1197" y2="706" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10263D"/>
+      <stop offset=".55" stop-color="#071522"/>
+      <stop offset="1" stop-color="#090D19"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="137" y1="238" x2="420" y2="508" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79F2C0"/>
+      <stop offset="1" stop-color="#20C7B5"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="140" y1="508" x2="423" y2="238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D7CFF"/>
+      <stop offset="1" stop-color="#B794F6"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#75DCC5" stroke-opacity=".07"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect width="1280" height="720" fill="url(#grid)"/>
+  <circle cx="177" cy="140" r="290" fill="#20C7B5" fill-opacity=".08"/>
+  <circle cx="1190" cy="40" r="330" fill="#796BFF" fill-opacity=".08"/>
+  <rect x="76" y="116" width="430" height="430" rx="100" fill="#091827" stroke="#1C3C50" stroke-width="4"/>
+  <path d="M291 148L436 232V430L291 514L146 430V232L291 148Z" stroke="#1C3C50" stroke-width="5"/>
+  <g stroke-linecap="round">
+    <path d="M164 232L235 273L291 376L347 273L418 232" stroke="url(#mint)" stroke-width="32"/>
+    <path d="M164 430L235 389L291 286L347 389L418 430" stroke="url(#violet)" stroke-width="32"/>
+  </g>
+  <text x="570" y="304" fill="#F4FCFF" font-family="Plus Jakarta Sans, Segoe UI, Arial, sans-serif" font-size="112" font-weight="750" letter-spacing="-5">Leogriel</text>
+  <text x="578" y="373" fill="#A9C3CF" font-family="IBM Plex Mono, Consolas, monospace" font-size="28">Agent Skills, woven into your workflow.</text>
+  <text x="578" y="437" fill="#7393A2" font-family="IBM Plex Mono, Consolas, monospace" font-size="21">discover · lock · sync · audit · test</text>
+  <rect x="578" y="475" width="570" height="3" rx="2" fill="#1D3B50"/>
+  <rect x="578" y="475" width="310" height="3" rx="2" fill="url(#mint)"/>
+</svg>

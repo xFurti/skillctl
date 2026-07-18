@@ -1,0 +1,46 @@
+<svg width="1024" height="1024" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="28" y1="18" x2="226" y2="238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10263D"/>
+      <stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="42" y1="52" x2="205" y2="207" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79F2C0"/>
+      <stop offset="1" stop-color="#20C7B5"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="44" y1="207" x2="210" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D7CFF"/>
+      <stop offset="1" stop-color="#B794F6"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="256" height="256" fill="#07111F"/>
+  <rect x="8" y="8" width="240" height="240" rx="58" fill="url(#bg)"/>
+  <path d="M128 29L210 76V180L128 227L46 180V76L128 29Z" stroke="#1C3C50" stroke-width="4"/>
+  <g stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M55 76L95 99L128 157L161 99L201 76" stroke="url(#mint)" stroke-width="19"/>
+    <path d="M55 180L95 157L128 99L161 157L201 180" stroke="url(#violet)" stroke-width="19"/>
+  </g>
+  <g stroke="#07111F" stroke-width="25" stroke-linecap="round">
+    <path d="M82 92L100 103"/>
+    <path d="M117 119L128 99"/>
+    <path d="M145 128L161 157"/>
+    <path d="M177 166L195 177"/>
+  </g>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M82 92L95 99L103 113" stroke="url(#mint)" stroke-width="19"/>
+    <path d="M117 119L128 99L136 113" stroke="url(#violet)" stroke-width="19"/>
+    <path d="M145 128L161 157L170 162" stroke="url(#mint)" stroke-width="19"/>
+    <path d="M177 166L201 180" stroke="url(#violet)" stroke-width="19"/>
+  </g>
+  <circle cx="55" cy="76" r="7" fill="#79F2C0"/>
+  <circle cx="201" cy="76" r="7" fill="#20C7B5"/>
+  <circle cx="55" cy="180" r="7" fill="#6D7CFF"/>
+  <circle cx="201" cy="180" r="7" fill="#B794F6"/>
+</svg>

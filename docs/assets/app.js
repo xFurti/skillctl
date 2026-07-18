@@ -1,16 +1,16 @@
 (function () {
-  const STORAGE_KEY = 'skillctl-docs-lang';
+  const STORAGE_KEY = 'leogriel-docs-lang';
   const DEFAULT_LANG = 'en';
   const PAGES = ['index', 'config', 'commands', 'problems'];
   const HERO_COMMANDS = [
-    'skillctl init --with-skill',
-    'skillctl add github:xFurti/skillctl@main#skills/skillctl',
-    'skillctl import --dry-run',
-    'skillctl install',
-    'skillctl sync',
-    'skillctl skill validate skills/skillctl',
-    'skillctl doctor',
-    'skillctl audit --strict',
+    'leogriel init --with-skill',
+    'leogriel add github:xFurti/leogriel@main#skills/leogriel',
+    'leogriel import --dry-run',
+    'leogriel install',
+    'leogriel sync',
+    'leogriel skill validate skills/leogriel',
+    'leogriel doctor',
+    'leogriel audit --strict',
   ];
 
   let currentLang = DEFAULT_LANG;
@@ -116,7 +116,7 @@
 
     const doRender = () => {
       if (pageData.title) document.title = pageData.title;
-      if (topbarTitle) topbarTitle.textContent = pageData.title?.split('—')[0]?.trim() || 'skillctl';
+      if (topbarTitle) topbarTitle.textContent = pageData.title?.split('—')[0]?.trim() || 'leogriel';
       if (pageData.html) main.innerHTML = pageData.html;
 
       document.querySelectorAll('.nav-link').forEach((a) => {

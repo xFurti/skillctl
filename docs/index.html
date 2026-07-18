@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>skillctl — Universal package manager for Agent Skills</title>
-  <meta name="description" content="Discover, install, update, audit, test, and synchronize Agent Skills reproducibly with skillctl.">
+  <title>Leogriel — Weave Agent Skills into every workflow</title>
+  <meta name="description" content="Discover, install, update, audit, test, and synchronize Agent Skills reproducibly with Leogriel.">
   <meta name="theme-color" content="#0f172a">
-  <link rel="canonical" href="https://xfurti.github.io/skillctl/">
+  <link rel="canonical" href="https://xfurti.github.io/leogriel/">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="skillctl">
-  <meta property="og:title" content="skillctl — Universal package manager for Agent Skills">
+  <meta property="og:site_name" content="Leogriel">
+  <meta property="og:title" content="Leogriel — Weave Agent Skills into every workflow">
   <meta property="og:description" content="Discover, install, update, audit, test, and synchronize Agent Skills reproducibly.">
-  <meta property="og:url" content="https://xfurti.github.io/skillctl/">
-  <meta property="og:image" content="https://xfurti.github.io/skillctl/assets/social-preview.png">
+  <meta property="og:url" content="https://xfurti.github.io/leogriel/">
+  <meta property="og:image" content="https://xfurti.github.io/leogriel/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="720">
-  <meta property="og:image:alt" content="skillctl — portable Agent Skills across tools and machines">
+  <meta property="og:image:alt" content="Leogriel — weave Agent Skills into every workflow">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="skillctl — Universal package manager for Agent Skills">
+  <meta name="twitter:title" content="Leogriel — Weave Agent Skills into every workflow">
   <meta name="twitter:description" content="Discover, install, update, audit, test, and synchronize Agent Skills reproducibly.">
-  <meta name="twitter:image" content="https://xfurti.github.io/skillctl/assets/social-preview.png">
-  <meta name="twitter:image:alt" content="skillctl — portable Agent Skills across tools and machines">
+  <meta name="twitter:image" content="https://xfurti.github.io/leogriel/assets/social-preview.png">
+  <meta name="twitter:image:alt" content="Leogriel — weave Agent Skills into every workflow">
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,41 +41,10 @@
 
       <a href="#index" class="brand-link" data-nav="index">
         <div class="brand-logo-wrap" aria-hidden="true">
-          <svg class="logo-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="boxTop" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#e8fff6"/>
-                <stop offset="100%" stop-color="#a7f3d0"/>
-              </linearGradient>
-              <linearGradient id="boxSide" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#6ee7b7"/>
-                <stop offset="100%" stop-color="#34d399"/>
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="1.5" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <path class="logo-face logo-face-top" d="M18 28 L32 18 L46 28 L32 38 Z" fill="url(#boxTop)" stroke="#6ee7b7" stroke-width="1.2"/>
-            <path class="logo-face logo-face-left" d="M18 28 L18 44 L32 54 L32 38 Z" fill="rgba(110,231,183,0.25)" stroke="#6ee7b7" stroke-width="1.2"/>
-            <path class="logo-face logo-face-right" d="M46 28 L46 44 L32 54 L32 38 Z" fill="url(#boxSide)" stroke="#6ee7b7" stroke-width="1.2"/>
-            <line x1="22" y1="30" x2="42" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-            <line x1="24" y1="33" x2="40" y2="33" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-            <circle class="logo-node" cx="46" cy="28" r="2.5" fill="#0f172a" stroke="#6ee7b7" stroke-width="1.2"/>
-            <circle class="logo-node" cx="46" cy="36" r="2.5" fill="#0f172a" stroke="#6ee7b7" stroke-width="1.2"/>
-            <circle class="logo-node" cx="46" cy="44" r="2.5" fill="#0f172a" stroke="#6ee7b7" stroke-width="1.2"/>
-            <path class="logo-arrow logo-arrow-1" d="M49 28 L58 22" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowhead)"/>
-            <path class="logo-arrow logo-arrow-2" d="M49 36 L60 36" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowhead)"/>
-            <path class="logo-arrow logo-arrow-3" d="M49 44 L58 50" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowhead)"/>
-            <defs>
-              <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="#6ee7b7"/>
-              </marker>
-            </defs>
-          </svg>
+          <img class="logo-svg" src="assets/logo.svg" alt="">
         </div>
         <div class="brand-text">
-          <div class="brand">skillctl</div>
+          <div class="brand">Leogriel</div>
           <div class="brand-sub" data-i18n="brandSub">Documentation v0.9.0</div>
         </div>
       </a>
@@ -107,7 +76,7 @@
       </nav>
 
       <div class="sidebar-footer">
-        <a href="https://github.com/xFurti/skillctl" target="_blank" rel="noopener" class="sidebar-gh">
+        <a href="https://github.com/xFurti/leogriel" target="_blank" rel="noopener" class="sidebar-gh">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
           GitHub
         </a>
@@ -119,7 +88,7 @@
         <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
-        <div class="topbar-title" id="topbar-title">skillctl</div>
+        <div class="topbar-title" id="topbar-title">Leogriel</div>
         <div class="topbar-actions">
           <button type="button" class="theme-hint" id="scroll-top" aria-label="Back to top" title="Back to top">↑</button>
         </div>

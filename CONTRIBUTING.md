@@ -1,4 +1,4 @@
-# Contributing to skillctl
+# Contributing to Leogriel
 
 Thank you for your interest in contributing. This project is an open-source monorepo for managing [Agent Skills](https://agentskills.io) across AI coding agents.
 
@@ -6,17 +6,17 @@ Thank you for your interest in contributing. This project is an open-source mono
 
 ## Before you start
 
-- Read [README.md](./README.md) for usage, [docs site](https://xfurti.github.io/skillctl/) for CLI reference, and [skillctl-design.md](./skillctl-design.md) for architecture.
+- Read [README.md](./README.md) for usage, [docs site](https://xfurti.github.io/leogriel/) for CLI reference, and [leogriel-design.md](./leogriel-design.md) for architecture.
 - Check [CHANGELOG.md](./CHANGELOG.md) for recent changes.
-- **Name collision**: This project shares the CLI name `skillctl` and path `~/.skillctl/` with an existing [Python skillctl](https://skillctl.xyz/). We publish as `@skillctl/cli` on npm.
+- The project was previously named `skillctl`. Preserve compatibility with the documented legacy `.skillctl/` paths and `SKILLCTL_*` variables when changing storage or configuration behavior.
 
 ## Development setup
 
 **Requirements:** Node.js >= 22.13, pnpm 11.x
 
 ```bash
-git clone https://github.com/xFurti/skillctl.git
-cd skillctl
+git clone https://github.com/xFurti/leogriel.git
+cd leogriel
 pnpm install
 pnpm build
 pnpm test
@@ -26,42 +26,42 @@ pnpm -r lint
 Run the CLI locally:
 
 ```bash
-node packages/cli/bin/skillctl.js --help
+node packages/cli/bin/leogriel.js --help
 # or link globally for development
 cd packages/cli && pnpm link --global
 ```
 
 ## First-party meta-skill
 
-Agent-facing instructions live in `skills/skillctl/`. After editing `SKILL.md` or `references/`:
+Agent-facing instructions live in `skills/leogriel/`. After editing `SKILL.md` or `references/`:
 
 ```bash
 pnpm build
-node packages/cli/bin/skillctl.js skill validate skills/skillctl
-skillctl install   # refresh canonical copy if lock already tracks file:./skills/skillctl
+node packages/cli/bin/leogriel.js skill validate skills/leogriel
+leogriel install   # refresh canonical copy if lock already tracks file:./skills/leogriel
 ```
 
-Commit changes to `skills/skillctl/`, `agent-skills.json`, and `agent-skills.lock` when the skill content or integrity hash changes.
+Commit changes to `skills/leogriel/`, `agent-skills.json`, and `agent-skills.lock` when the skill content or integrity hash changes.
 
 ## Project structure
 
 ```
-skills/skillctl/    First-party meta-skill (SKILL.md + references)
+skills/leogriel/    First-party meta-skill (SKILL.md + references)
 packages/
-├── cli/            Public npm package (@skillctl/cli)
+├── cli/            Public npm package (@leogriel/cli)
 ├── core/           Shared types, config, fs, cache
 ├── manifest/       agent-skills.json
 ├── lockfile/       agent-skills.lock (YAML)
 ├── registry/       GitHub, npm, local, skills.sh sources
 ├── link-manager/   Symlink / junction / copy
 ├── adapters/       Agent target directories
-├── import/         Migration from npx skills / Python skillctl
+├── import/         Migration from npx skills / legacy Python skillctl
 ├── security/       Audit scanner
 ├── plugin-system/  Experimental plugins
 └── project-state/  Cross-process locks and transactional manifest/lock writes
 ```
 
-All eleven workspace packages are versioned together and publishable. The CLI depends on the other scoped packages.
+All twelve workspace packages are versioned together and publishable. The CLI depends on the other scoped packages; `@leogriel/testing` remains explicitly experimental until 1.0.
 
 ## Making changes
 
@@ -85,7 +85,7 @@ High-value areas:
 
 - **Adapters** for new AI agents (see `packages/adapters/src/`)
 - **Registry sources** (new install backends)
-- **Audit rules** in `@skillctl/security`
+- **Audit rules** in `@leogriel/security`
 - **Import parsers** for other skill managers
 - **Tests** — especially registry, adapters, import, security
 - **Windows** link edge cases and CI scenarios
@@ -114,7 +114,7 @@ Release preparation is local and does not publish by itself:
 
 The manual `Release` workflow always checks and packs. Publication is disabled by default and requires `publish=true` plus approval through the protected `npm-production` environment. It publishes in dependency order and only then creates the tag and GitHub Release.
 
-For the first 0.5 publication, configure an environment secret named `NPM_TOKEN` because `@skillctl/project-state` does not exist on npm yet and therefore has no package settings page for Trusted Publishing. Use a granular token limited to the `@skillctl` packages and revoke it after the release. Then configure each package's npm Trusted Publisher for repository `xFurti/skillctl`, workflow `release.yml`, environment `npm-production`; subsequent releases use short-lived OIDC credentials.
+Before the first Leogriel publication, create or obtain access to the `@leogriel` npm scope and configure each package's Trusted Publisher for repository `xFurti/leogriel`, workflow `release.yml`, and environment `npm-production`. The release workflow uses short-lived OIDC credentials and does not require `NPM_TOKEN`.
 
 ## Code of conduct
 
@@ -122,7 +122,7 @@ Be respectful and constructive. We welcome beginners and experienced contributor
 
 ## Questions
 
-Open a [GitHub issue](https://github.com/xFurti/skillctl/issues) for bugs, feature requests, or design discussions.
+Open a [GitHub issue](https://github.com/xFurti/leogriel/issues) for bugs, feature requests, or design discussions.
 
 ## License
 

@@ -1,27 +1,25 @@
 <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="boxTop" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#e8fff6"/>
-      <stop offset="100%" stop-color="#a7f3d0"/>
+    <linearGradient id="bg" x1="7" y1="5" x2="57" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10263D"/>
+      <stop offset="1" stop-color="#07111F"/>
     </linearGradient>
-    <linearGradient id="boxSide" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#6ee7b7"/>
-      <stop offset="100%" stop-color="#34d399"/>
+    <linearGradient id="mint" x1="11" y1="13" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79F2C0"/>
+      <stop offset="1" stop-color="#20C7B5"/>
     </linearGradient>
-    <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L6,3 L0,6 Z" fill="#6ee7b7"/>
-    </marker>
+    <linearGradient id="violet" x1="11" y1="52" x2="53" y2="13" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D7CFF"/>
+      <stop offset="1" stop-color="#B794F6"/>
+    </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="#0a1628"/>
-  <path d="M18 28 L32 18 L46 28 L32 38 Z" fill="url(#boxTop)" stroke="#6ee7b7" stroke-width="1.2"/>
-  <path d="M18 28 L18 44 L32 54 L32 38 Z" fill="rgba(110,231,183,0.25)" stroke="#6ee7b7" stroke-width="1.2"/>
-  <path d="M46 28 L46 44 L32 54 L32 38 Z" fill="url(#boxSide)" stroke="#6ee7b7" stroke-width="1.2"/>
-  <line x1="22" y1="30" x2="42" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-  <line x1="24" y1="33" x2="40" y2="33" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-  <circle cx="46" cy="28" r="2.5" fill="#0f172a" stroke="#6ee7b7" stroke-width="1.2"/>
-  <circle cx="46" cy="36" r="2.5" fill="#0f172a" stroke="#6ee7b7" stroke-width="1.2"/>
-  <circle cx="46" cy="44" r="2.5" fill="#0f172a" stroke="#6ee7b7" stroke-width="1.2"/>
-  <path d="M49 28 L58 22" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowhead)"/>
-  <path d="M49 36 L60 36" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowhead)"/>
-  <path d="M49 44 L58 50" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowhead)"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)"/>
+  <path d="M32 7L53 19V45L32 57L11 45V19L32 7Z" stroke="#1C3C50"/>
+  <path d="M13 19L24 25L32 40L40 25L51 19" stroke="url(#mint)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M13 45L24 39L32 24L40 39L51 45" stroke="url(#violet)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 23L25 26M29 30L32 24M36 32L40 39M45 42L50 45" stroke="#07111F" stroke-width="7" stroke-linecap="round"/>
+  <path d="M20 23L24 25L26 29" stroke="url(#mint)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M29 30L32 24L34 28" stroke="url(#violet)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M36 32L40 39L43 40" stroke="url(#mint)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M45 42L51 45" stroke="url(#violet)" stroke-width="5" stroke-linecap="round"/>
 </svg>

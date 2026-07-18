@@ -14,53 +14,53 @@ window.TRANSLATIONS = {
     },
     pages: {
       index: {
-        title: 'skillctl — Documentazione',
+        title: 'leogriel — Documentazione',
         html: `
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
     <p class="hero-badge">v0.9.0 · Agent Skills</p>
-    <h1 class="hero-title">skillctl</h1>
-    <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare skillctl.</p>
+    <h1 class="hero-title">Leogriel</h1>
+    <p class="hero-lead">CLI universale in stile package manager per gestire <strong>Agent Skills</strong> su più agenti di coding AI — con meta-skill first-party per insegnare agli agenti come usare leogriel.</p>
     <div class="hero-terminal">
       <div class="terminal-bar">
         <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
         <span class="terminal-label">~/my-project</span>
       </div>
-      <pre class="terminal-body"><code id="hero-cmd">skillctl init</code><span class="terminal-cursor"></span></pre>
+      <pre class="terminal-body"><code id="hero-cmd">leogriel init</code><span class="terminal-cursor"></span></pre>
     </div>
   </div>
 </section>
 
 <div class="alert alert-info">
-  <strong>Versione 0.9.0</strong> — npm <code>@skillctl/cli@0.9.0</code>
+  <strong>Versione 0.9.0</strong> — npm <code>@leogriel/cli@0.9.0</code>
   Discovery skills.sh, piani outdated/update, sync riconciliabile, plugin sperimentali con integrità, audit SARIF e completion shell. Lock schema 1.0 e config version 1 restano compatibili.
 </div>
 
-<h2>Cos'è skillctl</h2>
-<p>skillctl separa le dipendenze del progetto dalle skill personali e le materializza negli agenti tramite symlink, junction (Windows) o copia. Il progetto mantiene <code>agent-skills.json</code> (come <code>package.json</code>) e <code>agent-skills.lock</code> (lockfile YAML riproducibile, in stile pnpm).</p>
+<h2>Cos'è leogriel</h2>
+<p>leogriel separa le dipendenze del progetto dalle skill personali e le materializza negli agenti tramite symlink, junction (Windows) o copia. Il progetto mantiene <code>agent-skills.json</code> (come <code>package.json</code>) e <code>agent-skills.lock</code> (lockfile YAML riproducibile, in stile pnpm).</p>
 <ul>
-  <li><strong>Scope espliciti</strong> — progetto in <code>.skillctl/skills/</code>, personale in <code>~/.skillctl/skills/</code> con <code>-g</code></li>
+  <li><strong>Scope espliciti</strong> — progetto in <code>.leogriel/skills/</code>, personale in <code>~/.leogriel/skills/</code> con <code>-g</code></li>
   <li><strong>Provenienza e audit</strong> — integrità, sicurezza statica, import da altri tool</li>
   <li><strong>Adattatori built-in</strong> — link automatici verso le directory skill di ogni agente</li>
-  <li><strong>Meta-skill</strong> — <code>skills/skillctl/</code> insegna agli agenti workflow, manifest e lock</li>
+  <li><strong>Meta-skill</strong> — <code>skills/leogriel/</code> insegna agli agenti workflow, manifest e lock</li>
 </ul>
 
-<h2>skillctl come skill</h2>
+<h2>leogriel come skill</h2>
 <p>Il repository include una skill first-party che gli agenti possono caricare automaticamente. Per nuovi progetti:</p>
-<pre><code>skillctl init --with-skill
+<pre><code>leogriel init --with-skill
 # oppure
-skillctl add github:xFurti/skillctl#skills/skillctl
-skillctl install</code></pre>
-<p>Nel monorepo skillctl: <code>file:./skills/skillctl</code>. Valida con <code>skillctl skill validate skills/skillctl</code>.</p>
+leogriel add github:xFurti/leogriel#skills/leogriel
+leogriel install</code></pre>
+<p>Nel monorepo leogriel: <code>file:./skills/leogriel</code>. Valida con <code>leogriel skill validate skills/leogriel</code>.</p>
 
 <h2>Installazione rapida</h2>
-<pre><code>npm install -g @skillctl/cli
+<pre><code>npm install -g @leogriel/cli
 # oppure
-pnpm add -g @skillctl/cli
+pnpm add -g @leogriel/cli
 # oppure senza installazione globale
-npx @skillctl/cli --help</code></pre>
-<p>Il pacchetto pubblicato è <code>@skillctl/cli</code> (scoped). Il comando in PATH resta <code>skillctl</code>. Il nome non scoped su npm è lasciato libero per evitare collisioni con il vecchio skillctl Python.</p>
+npx @leogriel/cli --help</code></pre>
+<p>Il pacchetto pubblicato è <code>@leogriel/cli</code> (scoped). Il comando in PATH resta <code>leogriel</code>. Il nome non scoped su npm è lasciato libero per evitare collisioni con il vecchio leogriel Python.</p>
 
 <h2>Flusso tipico</h2>
 <div class="card-grid">
@@ -77,7 +77,7 @@ npx @skillctl/cli --help</code></pre>
   <div class="card workflow-card">
     <span class="workflow-step">3</span>
     <h3>install</h3>
-    <p>Scarica e verifica le dipendenze in <code>.skillctl/skills</code>, poi sincronizza gli agenti.</p>
+    <p>Scarica e verifica le dipendenze in <code>.leogriel/skills</code>, poi sincronizza gli agenti.</p>
   </div>
   <div class="card workflow-card">
     <span class="workflow-step">4</span>
@@ -86,14 +86,14 @@ npx @skillctl/cli --help</code></pre>
   </div>
 </div>
 
-<pre><code>skillctl init
-skillctl import --dry-run                # se hai già skill in .codex/.claude/...
-skillctl add github:vercel-labs/agent-skills@main#web-design-guidelines
-skillctl add npm:some-skill-pkg@^2
-skillctl install
+<pre><code>leogriel init
+leogriel import --dry-run                # se hai già skill in .codex/.claude/...
+leogriel add github:vercel-labs/agent-skills@main#web-design-guidelines
+leogriel add npm:some-skill-pkg@^2
+leogriel install
 # oppure, passo per passo:
-skillctl add owner/repo
-skillctl sync</code></pre>
+leogriel add owner/repo
+leogriel sync</code></pre>
 
 <h2>Agenti supportati</h2>
 <table>
@@ -110,7 +110,7 @@ skillctl sync</code></pre>
     <tr><td>Pi</td><td><code>.pi/skills</code></td><td><code>~/.pi/agent/skills</code></td></tr>
   </tbody>
 </table>
-<p>Altri agenti tramite plugin (sperimentale) o futuri adattatori. Abilita/disabilita ogni agente in <code>~/.skillctl/config.json</code>.</p>
+<p>Altri agenti tramite plugin (sperimentale) o futuri adattatori. Abilita/disabilita ogni agente in <code>~/.leogriel/config.json</code>.</p>
 
 <h2>Sviluppo da sorgente</h2>
 <pre><code>pnpm install
@@ -119,8 +119,8 @@ pnpm test
 pnpm -r lint
 
 # CLI locale
-node packages/cli/bin/skillctl.js --help
-node packages/cli/bin/skillctl.js doctor</code></pre>
+node packages/cli/bin/leogriel.js --help
+node packages/cli/bin/leogriel.js doctor</code></pre>
 <p>Monorepo: <code>cli</code>, <code>core</code>, <code>manifest</code>, <code>lockfile</code>, <code>registry</code>, <code>link-manager</code>, <code>adapters</code>, <code>import</code>, <code>security</code>, <code>plugin-system</code>, <code>project-state</code>.</p>
 
 <h2>Navigazione</h2>
@@ -143,39 +143,39 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.9.0 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  leogriel v0.9.0 — creato da <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> e <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configurazione</a> · <a href="#commands">Comandi</a> · <a href="#problems">Problemi</a>
 </footer>
 `,
       },
       config: {
-        title: 'Configurazione — skillctl',
+        title: 'Configurazione — leogriel',
         html: `
 <h1>Configurazione</h1>
 <p class="lead">Installazione del pacchetto, file di configurazione globale, manifest di progetto e convenzioni per specifier e plugin.</p>
 
 <h2>Installazione npm</h2>
-<pre><code>npm install -g @skillctl/cli
+<pre><code>npm install -g @leogriel/cli
 # verifica
-skillctl --version
-skillctl doctor</code></pre>
+leogriel --version
+leogriel doctor</code></pre>
 <div class="alert alert-warn">
   <strong>Nota sul nome</strong>
-  Usa sempre <code>@skillctl/cli</code>. Esiste un altro progetto Python omonimo che condivide il path <code>~/.skillctl/</code>; controlla l'output di <code>doctor</code> dopo l'installazione.
+  Usa sempre <code>@leogriel/cli</code>. Esiste un altro progetto Python omonimo che condivide il path <code>~/.leogriel/</code>; controlla l'output di <code>doctor</code> dopo l'installazione.
 </div>
 
 <h2>Setup sviluppo (pnpm)</h2>
-<pre><code>git clone https://github.com/xFurti/skillctl.git
-cd skillctl
+<pre><code>git clone https://github.com/xFurti/leogriel.git
+cd leogriel
 pnpm install
 pnpm build
-node packages/cli/bin/skillctl.js init</code></pre>
+node packages/cli/bin/leogriel.js init</code></pre>
 
-<h2>~/.skillctl/config.json</h2>
+<h2>~/.leogriel/config.json</h2>
 <p>Configurazione globale letta da tutti i comandi. Creata automaticamente al primo utilizzo se assente.</p>
 <pre><code>{
   "version": 1,
-  "store": "~/.skillctl/skills",
+  "store": "~/.leogriel/skills",
   "defaultMode": "symlink",
   "agents": {
     "claude-code": true,
@@ -186,7 +186,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "grok": true,
     "pi": true
   },
-  "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/skillctl/*"],
+  "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/leogriel/*"],
   "security": { "trustedSourcesMode": "warn" }
 }</code></pre>
 
@@ -196,7 +196,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   </thead>
   <tbody>
     <tr><td><code>version</code></td><td>Versione schema config (attualmente <code>1</code>).</td></tr>
-    <tr><td><code>store</code></td><td>Percorso dello store personale/globale (default <code>~/.skillctl/skills</code>). I progetti usano sempre <code>.skillctl/skills</code>.</td></tr>
+    <tr><td><code>store</code></td><td>Percorso dello store personale/globale (default <code>~/.leogriel/skills</code>). I progetti usano sempre <code>.leogriel/skills</code>.</td></tr>
     <tr><td><code>defaultMode</code></td><td>Modalità link: <code>symlink</code> (default), <code>junction</code> o <code>copy</code>. Su Windows i target globali usano junction e ogni errore di link può ripiegare su copy.</td></tr>
     <tr><td><code>agents</code></td><td>Mappa agente → booleano; solo gli agenti abilitati ricevono sync.</td></tr>
     <tr><td><code>trustedSources</code></td><td>Pattern opzionali per fonti considerate attendibili (audit/informazioni).</td></tr>
@@ -218,20 +218,20 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "dependencies": {
       "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
       "playwright": "skills.sh/owner/repo/playwright",
-      "local-review": "file:./.skillctl/skills/local-review",
-      "my-codex-skill": "file:./.skillctl/skills/my-codex-skill"
+      "local-review": "file:./.leogriel/skills/local-review",
+      "my-codex-skill": "file:./.leogriel/skills/my-codex-skill"
     },
     "devDependencies": {}
   }
 }</code></pre>
-<p>Le skill importate da directory agente vengono copiate in <code>.skillctl/skills/&lt;name&gt;</code> e usano lo specifier portabile <code>file:./.skillctl/skills/&lt;name&gt;</code>.</p>
+<p>Le skill importate da directory agente vengono copiate in <code>.leogriel/skills/&lt;name&gt;</code> e usano lo specifier portabile <code>file:./.leogriel/skills/&lt;name&gt;</code>.</p>
 
 <h3>Provenienza nel lock</h3>
 <p>Ogni entry in <code>agent-skills.lock</code> include provenienza sufficiente a ripristinare e verificare la sorgente:</p>
 <ul>
   <li><code>commit</code> e <code>requestedRef</code> — SHA GitHub immutabile e branch/tag richiesto</li>
   <li><code>version</code>, <code>tarballUrl</code>, <code>tarballHash</code> — versione npm esatta e integrità SRI</li>
-  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code> o <code>python-skillctl</code></li>
+  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code> o <code>python-leogriel</code></li>
   <li><code>originalPath</code> — percorso sorgente al momento dell'import (es. <code>.codex/skills/demo</code>)</li>
   <li><code>adapter</code> — id adapter che ha fornito la skill (es. <code>codex</code>)</li>
 </ul>
@@ -239,19 +239,19 @@ node packages/cli/bin/skillctl.js init</code></pre>
 <h3>Riproducibilità manifest e lock (0.7)</h3>
 <p>Lo specifier conserva la richiesta dell'utente; <code>resolved</code> blocca GitHub/skills.sh a un commit completo e npm a una versione esatta. I path committabili restano portabili:</p>
 <ul>
-  <li><code>file:./.skillctl/skills/&lt;name&gt;</code> per contenuto locale/importato e specifier remoti per i registry</li>
-  <li><code>canonicalPath: .skillctl/skills/&lt;name&gt;</code> nel lock del progetto</li>
+  <li><code>file:./.leogriel/skills/&lt;name&gt;</code> per contenuto locale/importato e specifier remoti per i registry</li>
+  <li><code>canonicalPath: .leogriel/skills/&lt;name&gt;</code> nel lock del progetto</li>
   <li>Evita <code>file:/Users/...</code> o path assoluti nel lock — <code>doctor</code> avvisa; <code>install</code> riscrive</li>
-  <li>Committa le skill vendorizzate sotto <code>.skillctl/skills/</code>: non hanno una sorgente remota da ripristinare</li>
+  <li>Committa le skill vendorizzate sotto <code>.leogriel/skills/</code>: non hanno una sorgente remota da ripristinare</li>
 </ul>
 
-<h3>Meta-skill skillctl</h3>
-<pre><code>skillctl add github:xFurti/skillctl#skills/skillctl
+<h3>Meta-skill leogriel</h3>
+<pre><code>leogriel add github:xFurti/leogriel#skills/leogriel
 # in-repo:
-"skillctl": "file:./skills/skillctl"</code></pre>
+"leogriel": "file:./skills/leogriel"</code></pre>
 
 <h2>Struttura cartelle</h2>
-<pre><code>~/.skillctl/
+<pre><code>~/.leogriel/
 ├── config.json          # config globale
 ├── skills/              # store personale/globale
 │   └── &lt;skill-name&gt;/
@@ -267,12 +267,12 @@ node packages/cli/bin/skillctl.js init</code></pre>
 progetto/
 ├── agent-skills.json
 ├── agent-skills.lock
-├── .skillctl/skills/    # skill vendorizzate del progetto
+├── .leogriel/skills/    # skill vendorizzate del progetto
 ├── .claude/skills/      # symlink relativi → store (Claude)
 ├── .agents/skills/      # symlink relativi → store (Cursor)
 ├── .codex/skills/       # symlink relativi → store (Codex)
 ├── .grok/skills/        # symlink relativi → store (Grok)
-├── skills/skillctl/     # meta-skill first-party (opzionale)
+├── skills/leogriel/     # meta-skill first-party (opzionale)
 └── ...</code></pre>
 <p>I link nelle directory agente <strong>del progetto</strong> sono symlink relativi (portabili tra macchine). I path globali (<code>~/.cursor/skills</code>, ecc.) restano assoluti.</p>
 
@@ -282,10 +282,10 @@ progetto/
     <tr><th>Variabile</th><th>Effetto</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>SKILLCTL_PARALLEL</code></td><td>Numero massimo di fetch paralleli verso i registry (default 6, max 16). Esempio: <code>SKILLCTL_PARALLEL=4 skillctl install</code></td></tr>
-    <tr><td><code>SKILLCTL_STORE</code></td><td>Sovrascrive lo store globale/fallback; lo store di progetto resta <code>.skillctl/skills</code>.</td></tr>
+    <tr><td><code>LEOGRIEL_PARALLEL</code></td><td>Numero massimo di fetch paralleli verso i registry (default 6, max 16). Esempio: <code>LEOGRIEL_PARALLEL=4 leogriel install</code></td></tr>
+    <tr><td><code>LEOGRIEL_STORE</code></td><td>Sovrascrive lo store globale/fallback; lo store di progetto resta <code>.leogriel/skills</code>.</td></tr>
     <tr><td><code>GITHUB_TOKEN</code> / <code>GH_TOKEN</code></td><td>Token GitHub per tarball API; consigliato con molte dipendenze <code>github:</code> per evitare rate limit 403.</td></tr>
-    <tr><td><code>SKILLCTL_SKILLS_API_URL</code></td><td>Sovrascrive l'endpoint pubblico skills.sh per test o cataloghi compatibili.</td></tr>
+    <tr><td><code>LEOGRIEL_SKILLS_API_URL</code></td><td>Sovrascrive l'endpoint pubblico skills.sh per test o cataloghi compatibili.</td></tr>
     <tr><td><code>NO_COLOR</code></td><td>Disabilita colori e controlli ANSI nell'output umano.</td></tr>
   </tbody>
 </table>
@@ -301,7 +301,7 @@ progetto/
     <tr><td>npm</td><td><code>npm:package-name</code></td><td>Pacchetto npm che espone una skill.</td></tr>
     <tr><td>skills.sh</td><td><code>skills.sh/owner/repo/skill</code></td><td>Seleziona una skill e blocca nel lock commit SHA e selettore.</td></tr>
     <tr><td>Locale</td><td><code>file:./path/to/skill</code> o <code>./path</code></td><td>Directory con <code>SKILL.md</code>.</td></tr>
-    <tr><td>Importata</td><td><code>file:./.skillctl/skills/my-skill</code></td><td>Skill copiata nello store del progetto da <code>skillctl import</code>.</td></tr>
+    <tr><td>Importata</td><td><code>file:./.leogriel/skills/my-skill</code></td><td>Skill copiata nello store del progetto da <code>leogriel import</code>.</td></tr>
   </tbody>
 </table>
 
@@ -311,34 +311,34 @@ progetto/
   I plugin eseguono codice arbitrario all'avvio. Abilita solo sorgenti attendibili. Vedi threat model nel design doc del progetto.
 </div>
 <pre><code># npm consigliato; locale solo con consenso esplicito
-skillctl plugin add npm:@example/skillctl-plugin@^1
-skillctl plugin add npm:@example/skillctl-plugin@^1 --dry-run
-skillctl plugin add ./my-skillctl-plugin --allow-local
-skillctl plugin list
-skillctl plugin doctor
-skillctl plugin disable @example/skillctl-plugin
-skillctl plugin remove my-plugin</code></pre>
-<p>Lo stato vive in <code>~/.skillctl/plugins.json</code> e <code>plugins.lock</code>. I plugin possono registrare comandi, adapter, registry, cataloghi e regole audit; eseguono codice Node con i permessi utente e non sono sandboxati.</p>
+leogriel plugin add npm:@example/leogriel-plugin@^1
+leogriel plugin add npm:@example/leogriel-plugin@^1 --dry-run
+leogriel plugin add ./my-leogriel-plugin --allow-local
+leogriel plugin list
+leogriel plugin doctor
+leogriel plugin disable @example/leogriel-plugin
+leogriel plugin remove my-plugin</code></pre>
+<p>Lo stato vive in <code>~/.leogriel/plugins.json</code> e <code>plugins.lock</code>. I plugin possono registrare comandi, adapter, registry, cataloghi e regole audit; eseguono codice Node con i permessi utente e non sono sandboxati.</p>
 <p>Il dry-run verifica versione, publisher, tarball/SRI, entrypoint, API, capability, dipendenze, script e attendibilitÃ  senza installare. Le capability sono dichiarazioni, non permessi.</p>
 
 <h2>Fondamenta 0.8</h2>
-<p>Parser condiviso con hash canonico compatibile con i lock precedenti; ricerca con <code>--provider</code>; backup gestiti tramite <code>backup list/info/restore/remove</code>; audit offline categorizzato; artifact persistenti solo su richiesta sotto <code>.skillctl/artifacts/</code>, escluso da Git, con redazione field-aware dei segreti.</p>
+<p>Parser condiviso con hash canonico compatibile con i lock precedenti; ricerca con <code>--provider</code>; backup gestiti tramite <code>backup list/info/restore/remove</code>; audit offline categorizzato; artifact persistenti solo su richiesta sotto <code>.leogriel/artifacts/</code>, escluso da Git, con redazione field-aware dei segreti.</p>
 
 <h2>Test comportamentali 0.9 (sperimentali)</h2>
-<pre><code>skillctl test init my-skill
-skillctl test validate
-skillctl test my-skill --runs 3 --model MODEL --json</code></pre>
+<pre><code>leogriel test init my-skill
+leogriel test validate
+leogriel test my-skill --runs 3 --model MODEL --json</code></pre>
 <p>Baseline e skill eseguono lo stesso task in workspace, HOME, USERPROFILE, XDG e CODEX_HOME distinti. Rete e web search sono negati di default. I test sono sequenziali; i verdetti usano test case completi e run abbinate, non il conteggio delle assertion. Le assertion <code>command</code> richiedono conferma o <code>--trust-tests</code> in CI.</p>
 <div class="alert alert-warn"><strong>Isolamento</strong> Riduce il caricamento di configurazioni personali ma non Ã¨ una sandbox assoluta. I workspace conservati possono contenere output sensibili.</div>
 
 <h2>Primi passi</h2>
 <ol>
-  <li>Installa <code>@skillctl/cli</code> globalmente o usa <code>npx</code>.</li>
-  <li>Esegui <code>skillctl doctor</code> per verificare ambiente e agenti rilevati.</li>
-  <li>Nel progetto: <code>skillctl init</code> (wizard di import se ci sono skill in <code>.codex/skills</code>, <code>.claude/skills</code>, …).</li>
-  <li>Se hai skill legacy: <code>skillctl import --dry-run</code>, poi import senza <code>--dry-run</code>.</li>
-  <li>Altrimenti: <code>skillctl add &lt;spec&gt;</code> e <code>skillctl install</code>.</li>
-  <li>Opzionale: <code>skillctl audit</code> in CI con <code>--strict</code>.</li>
+  <li>Installa <code>@leogriel/cli</code> globalmente o usa <code>npx</code>.</li>
+  <li>Esegui <code>leogriel doctor</code> per verificare ambiente e agenti rilevati.</li>
+  <li>Nel progetto: <code>leogriel init</code> (wizard di import se ci sono skill in <code>.codex/skills</code>, <code>.claude/skills</code>, …).</li>
+  <li>Se hai skill legacy: <code>leogriel import --dry-run</code>, poi import senza <code>--dry-run</code>.</li>
+  <li>Altrimenti: <code>leogriel add &lt;spec&gt;</code> e <code>leogriel install</code>.</li>
+  <li>Opzionale: <code>leogriel audit</code> in CI con <code>--strict</code>.</li>
 </ol>
 
 <footer>
@@ -347,10 +347,10 @@ skillctl test my-skill --runs 3 --model MODEL --json</code></pre>
 `,
       },
       commands: {
-        title: 'Comandi — skillctl',
+        title: 'Comandi — leogriel',
         html: `
 <h1>Comandi CLI</h1>
-<p class="lead">Riferimento completo ai comandi skillctl v0.9.0. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
+<p class="lead">Riferimento completo ai comandi leogriel v0.9.0. I blocchi comando restano in inglese come nell'interfaccia CLI.</p>
 <p>Con <code>--json</code>, ogni comando first-party emette un solo envelope con <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code> ed <code>errors</code>. Exit code: 0 successo, 1 warning/risultato parziale, 2 errore fatale o validazione.</p>
 
 <h2>Workflow principali</h2>
@@ -376,173 +376,173 @@ skillctl test my-skill --runs 3 --model MODEL --json</code></pre>
 <h2>Comandi base</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl init</div>
-  <p class="cmd-desc">Crea <code>agent-skills.json</code> di partenza nella directory corrente. Se rileva skill in directory agente (es. <code>.codex/skills</code>), propone un wizard di import. Con <code>--with-skill</code> aggiunge la meta-skill skillctl da GitHub (o <code>file:./skills/skillctl</code> se presente). Non sovrascrive un file esistente.</p>
-  <pre><code>skillctl init
-skillctl init --with-skill
-skillctl init --with-skill --no-prompt
-skillctl init --no-prompt</code></pre>
+  <div class="cmd-name">leogriel init</div>
+  <p class="cmd-desc">Crea <code>agent-skills.json</code> di partenza nella directory corrente. Se rileva skill in directory agente (es. <code>.codex/skills</code>), propone un wizard di import. Con <code>--with-skill</code> aggiunge la meta-skill leogriel da GitHub (o <code>file:./skills/leogriel</code> se presente). Non sovrascrive un file esistente.</p>
+  <pre><code>leogriel init
+leogriel init --with-skill
+leogriel init --with-skill --no-prompt
+leogriel init --no-prompt</code></pre>
   <p>Flag: <code>--with-skill</code> — aggiunge meta-skill e sync; <code>--no-prompt</code> — salta conferme e wizard import.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl add &lt;spec&gt;</div>
+  <div class="cmd-name">leogriel add &lt;spec&gt;</div>
   <p class="cmd-desc">Risolve lo specifier, scarica nella cache, vendoriza nello store del progetto e aggiorna manifest e lock.</p>
-  <pre><code>skillctl add vercel-labs/agent-skills#web-design-guidelines
-skillctl add npm:some-skill-pkg
-skillctl add skills.sh/vercel-labs/agent-skills
-skillctl add ./local-skills/my-review
-skillctl add owner/repo --no-manifest</code></pre>
+  <pre><code>leogriel add vercel-labs/agent-skills#web-design-guidelines
+leogriel add npm:some-skill-pkg
+leogriel add skills.sh/vercel-labs/agent-skills
+leogriel add ./local-skills/my-review
+leogriel add owner/repo --no-manifest</code></pre>
   <p>Flag: <code>--no-manifest</code> — non aggiorna <code>agent-skills.json</code> (solo lock/store).</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl install | i</div>
+  <div class="cmd-name">leogriel install | i</div>
   <p class="cmd-desc">Garantisce che tutte le dipendenze del manifest siano nello store; sincronizza gli agenti per default.</p>
-  <pre><code>skillctl install
-skillctl install --frozen
-skillctl install --no-sync
-skillctl install --prod
-SKILLCTL_PARALLEL=4 skillctl install</code></pre>
+  <pre><code>leogriel install
+leogriel install --frozen
+leogriel install --no-sync
+leogriel install --prod
+LEOGRIEL_PARALLEL=4 leogriel install</code></pre>
   <p>Flag: <code>--frozen</code> — usa esclusivamente il lock e può ripopolare uno store vuoto senza modificarlo; <code>--prod</code> — esclude devDependencies; <code>--no-sync</code> — salta il linking agli agenti.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl search [query] | info &lt;name-or-specifier&gt;</div>
+  <div class="cmd-name">leogriel search [query] | info &lt;name-or-specifier&gt;</div>
   <p class="cmd-desc">Cerca nel catalogo skills.sh o ispeziona una skill installata/remota senza modificare lo stato. La cache locale dura 15 minuti e supporta fallback stale.</p>
-  <pre><code>skillctl search typescript --owner vercel-labs
-skillctl search typescript --add vercel-labs/skills/find-skills --yes
-skillctl info skills.sh/vercel-labs/skills/find-skills</code></pre>
+  <pre><code>leogriel search typescript --owner vercel-labs
+leogriel search typescript --add vercel-labs/skills/find-skills --yes
+leogriel info skills.sh/vercel-labs/skills/find-skills</code></pre>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl outdated [names...]</div>
+  <div class="cmd-name">leogriel outdated [names...]</div>
   <p class="cmd-desc">Mostra un piano deterministico con stato e tipo di aggiornamento, senza scrivere.</p>
-  <pre><code>skillctl outdated
-skillctl outdated --latest --json</code></pre>
+  <pre><code>leogriel outdated
+leogriel outdated --latest --json</code></pre>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl update [names...]</div>
+  <div class="cmd-name">leogriel update [names...]</div>
   <p class="cmd-desc">Calcola prima un piano deterministico e applica il batch con rollback di store, manifest e lock in caso di errore.</p>
-  <pre><code>skillctl update
-skillctl update web-design-guidelines playwright
-skillctl update --dry-run
-skillctl update npm-skill --latest --save --yes
-skillctl update --no-sync</code></pre>
+  <pre><code>leogriel update
+leogriel update web-design-guidelines playwright
+leogriel update --dry-run
+leogriel update npm-skill --latest --save --yes
+leogriel update --no-sync</code></pre>
   <p><code>--latest</code> può superare un vincolo npm; <code>--save</code> salva una versione exact e in non-TTY richiede <code>--yes</code>.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl sync</div>
+  <div class="cmd-name">leogriel sync</div>
   <p class="cmd-desc">Collega le skill del lockfile agli agenti abilitati senza nuovi download. I link nelle directory agente del progetto sono <strong>relativi</strong> (portabili in git).</p>
-  <pre><code>skillctl sync
-skillctl sync --project --agent codex
-skillctl sync --global --agent codex,claude-code
-skillctl sync --project --prune --dry-run
-skillctl sync --project --agent codex --skill demo --replace-unmanaged --yes</code></pre>
+  <pre><code>leogriel sync
+leogriel sync --project --agent codex
+leogriel sync --global --agent codex,claude-code
+leogriel sync --project --prune --dry-run
+leogriel sync --project --agent codex --skill demo --replace-unmanaged --yes</code></pre>
   <p><code>--replace-unmanaged</code> richiede skill, agent, uno scope e conferma; crea sempre un backup ripristinabile. È incompatibile con <code>--prune</code>.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl list</div>
+  <div class="cmd-name">leogriel list</div>
   <p class="cmd-desc">Elenca skill da lockfile con riepilogo manifest.</p>
-  <pre><code>skillctl list
-skillctl list --json</code></pre>
+  <pre><code>leogriel list
+leogriel list --json</code></pre>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl remove &lt;name&gt; | rm</div>
+  <div class="cmd-name">leogriel remove &lt;name&gt; | rm</div>
   <p class="cmd-desc">Rimuove dal manifest/lock e scollega dagli agenti.</p>
-  <pre><code>skillctl remove web-design-guidelines
-skillctl rm my-skill --purge</code></pre>
+  <pre><code>leogriel remove web-design-guidelines
+leogriel rm my-skill --purge</code></pre>
   <p>Flag: <code>--purge</code> — elimina anche la copia nello store selezionato.</p>
 </div>
 
 <h2>Diagnostica e sicurezza</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl doctor</div>
+  <div class="cmd-name">leogriel doctor</div>
   <p class="cmd-desc">Verifica config, manifest, lock, adattatori, coesistenza e audit. Segnala path non portabili, <code>mutable-resolution</code>, import locali non riproducibili, journal interrotti e lock stale.</p>
-  <pre><code>skillctl doctor
-skillctl doctor --fix
-skillctl doctor --json</code></pre>
+  <pre><code>leogriel doctor
+leogriel doctor --fix
+leogriel doctor --json</code></pre>
   <p>Flag: <code>--fix</code> — re-sincronizza i link dagli entry del lock; <code>--json</code> — report strutturato con <code>warnings</code> (exit 2 se problemi, 1 se solo warning).</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl audit</div>
+  <div class="cmd-name">leogriel audit</div>
   <p class="cmd-desc">Scansione statica: integrità, nome SKILL.md, script sospetti, path traversal, limiti dimensione. Nessuna esecuzione di script.</p>
-  <pre><code>skillctl audit
-skillctl audit --json
-skillctl audit --strict
-skillctl audit --format sarif --output results.sarif</code></pre>
+  <pre><code>leogriel audit
+leogriel audit --json
+leogriel audit --strict
+leogriel audit --format sarif --output results.sarif</code></pre>
   <p>Exit code: 0 ok, 1 warning o risultato parziale, 2 errore audit/validazione o warning con <code>--strict</code>.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl skill validate [path]</div>
-  <p class="cmd-desc">Valida una directory skill (<code>SKILL.md</code>, frontmatter, script, dimensioni) senza lockfile di progetto. Default: <code>skills/skillctl</code>.</p>
-  <pre><code>skillctl skill validate
-skillctl skill validate ./my-skill
-skillctl skill validate --json --strict</code></pre>
+  <div class="cmd-name">leogriel skill validate [path]</div>
+  <p class="cmd-desc">Valida una directory skill (<code>SKILL.md</code>, frontmatter, script, dimensioni) senza lockfile di progetto. Default: <code>skills/leogriel</code>.</p>
+  <pre><code>leogriel skill validate
+leogriel skill validate ./my-skill
+leogriel skill validate --json --strict</code></pre>
 </div>
 
 <h2>Import e migrazione</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl import</div>
-  <p class="cmd-desc">Scopre le skill nelle directory agente del progetto, deduplica i contenuti identici e copia le skill selezionate in <code>.skillctl/skills</code>. I conflitti omonimi richiedono <code>--interactive</code> oppure interrompono l'operazione senza modifiche.</p>
-  <pre><code>skillctl import --dry-run
-skillctl import
-skillctl import --select
-skillctl import --interactive
-skillctl import --sources codex,claude-code
-skillctl import --sync</code></pre>
+  <div class="cmd-name">leogriel import</div>
+  <p class="cmd-desc">Scopre le skill nelle directory agente del progetto, deduplica i contenuti identici e copia le skill selezionate in <code>.leogriel/skills</code>. I conflitti omonimi richiedono <code>--interactive</code> oppure interrompono l'operazione senza modifiche.</p>
+  <pre><code>leogriel import --dry-run
+leogriel import
+leogriel import --select
+leogriel import --interactive
+leogriel import --sources codex,claude-code
+leogriel import --sync</code></pre>
   <p>Flag: <code>--dry-run</code> — mostra il piano; <code>--select</code> — selezione interattiva; <code>--interactive</code> — risoluzione conflitti; <code>--sync</code> — ricollega gli agenti; <code>--sources</code> — limita gli adapter.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl import from-npx</div>
+  <div class="cmd-name">leogriel import from-npx</div>
   <p class="cmd-desc">Migra da <code>npx skills</code> (<code>skills-lock.json</code>, <code>.agents/skills/</code>). L'installazione npx originale resta invariata.</p>
-  <pre><code>skillctl import from-npx --dry-run
-skillctl import from-npx --write-manifest
-skillctl import from-npx --sync --write-manifest
-skillctl import from-npx --yes</code></pre>
+  <pre><code>leogriel import from-npx --dry-run
+leogriel import from-npx --write-manifest
+leogriel import from-npx --sync --write-manifest
+leogriel import from-npx --yes</code></pre>
   <p>Flag: <code>--dry-run</code> — piano migrazione; <code>--write-manifest</code> — aggiorna <code>agent-skills.json</code>; <code>--sync</code> — sync agenti dopo import (<code>--adopt</code> alias deprecato); <code>--yes</code> — salta conferme.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl import from-skillctl</div>
-  <p class="cmd-desc">Migra dal skillctl Python (<code>~/.skillctl/repos/</code>, <code>manifest.json</code>).</p>
-  <pre><code>skillctl import from-skillctl --dry-run
-skillctl import from-skillctl --sync
-skillctl import from-skillctl --write-manifest</code></pre>
+  <div class="cmd-name">leogriel import from-skillctl</div>
+  <p class="cmd-desc">Migra dal precedente skillctl Python (<code>~/.skillctl/repos/</code>, <code>manifest.json</code>).</p>
+  <pre><code>leogriel import from-skillctl --dry-run
+leogriel import from-skillctl --sync
+leogriel import from-skillctl --write-manifest</code></pre>
 </div>
 
 <h2>Plugin (sperimentale)</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl plugin add | install | update | enable | disable | info | doctor | remove | list</div>
+  <div class="cmd-name">leogriel plugin add | install | update | enable | disable | info | doctor | remove | list</div>
   <p class="cmd-desc">Gestione sperimentale di plugin npm e locali con manifest, lock e verifica integrità separati.</p>
-  <pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
-skillctl plugin add ./my-skillctl-plugin --allow-local
-skillctl plugin list
-skillctl plugin doctor
-skillctl plugin disable @example/skillctl-plugin
-skillctl plugin remove my-plugin</code></pre>
+  <pre><code>leogriel plugin add npm:@example/leogriel-plugin@^1
+leogriel plugin add ./my-leogriel-plugin --allow-local
+leogriel plugin list
+leogriel plugin doctor
+leogriel plugin disable @example/leogriel-plugin
+leogriel plugin remove my-plugin</code></pre>
 </div>
 
 <p><strong>0.7:</strong> i plugin npm/locali usano manifest, lock e verifica integrità separati. Le sorgenti locali richiedono <code>--allow-local</code>. I plugin eseguono codice Node con i permessi utente e non sono sandboxati.</p>
-<pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
-skillctl plugin doctor
-skillctl completion powershell</code></pre>
+<pre><code>leogriel plugin add npm:@example/leogriel-plugin@^1
+leogriel plugin doctor
+leogriel completion powershell</code></pre>
 
 <h2>Opzioni globali</h2>
-<pre><code>skillctl --version
-skillctl -v
-skillctl --help
-skillctl &lt;comando&gt; --help</code></pre>
+<pre><code>leogriel --version
+leogriel -v
+leogriel --help
+leogriel &lt;comando&gt; --help</code></pre>
 
 <footer>
   <a href="#index">Panoramica</a> · <a href="#config">Configurazione</a> · <a href="#problems">Problemi</a>
@@ -550,23 +550,23 @@ skillctl &lt;comando&gt; --help</code></pre>
 `,
       },
       problems: {
-        title: 'Problemi — skillctl',
+        title: 'Problemi — leogriel',
         html: `
 <h1>Problemi &amp; soluzioni</h1>
 <p class="lead">Troubleshooting per installazione, registry, Windows, coesistenza con altri tool e CI.</p>
 
 <div class="alert alert-info">
   <strong>Primo passo consigliato</strong>
-  Esegui sempre <code>skillctl doctor</code> (o <code>skillctl doctor --json</code>) per un quadro strutturato di config, manifest, lock e adattatori.
+  Esegui sempre <code>leogriel doctor</code> (o <code>leogriel doctor --json</code>) per un quadro strutturato di config, manifest, lock e adattatori.
 </div>
 
 <h2>Comando non trovato</h2>
-<p><strong>Sintomo:</strong> <code>skillctl: command not found</code> dopo installazione npm.</p>
+<p><strong>Sintomo:</strong> <code>leogriel: command not found</code> dopo installazione npm.</p>
 <ul>
-  <li>Verifica installazione: <code>npm list -g @skillctl/cli</code></li>
+  <li>Verifica installazione: <code>npm list -g @leogriel/cli</code></li>
   <li>Controlla che la directory bin globale npm sia nel <code>PATH</code></li>
-  <li>Alternativa immediata: <code>npx @skillctl/cli doctor</code></li>
-  <li>In sviluppo: <code>node packages/cli/bin/skillctl.js doctor</code></li>
+  <li>Alternativa immediata: <code>npx @leogriel/cli doctor</code></li>
+  <li>In sviluppo: <code>node packages/cli/bin/leogriel.js doctor</code></li>
 </ul>
 
 <h2>Build fallisce (sviluppo)</h2>
@@ -582,16 +582,16 @@ skillctl &lt;comando&gt; --help</code></pre>
 <p><strong>Sintomo:</strong> su un altro computer i link in <code>.codex/skills</code> o <code>.claude/skills</code> puntano a path assoluti della macchina precedente.</p>
 <ul>
   <li>Da v0.3, <code>sync</code> crea symlink <strong>relativi</strong> nelle directory agente del progetto</li>
-  <li>Esegui <code>skillctl sync</code> o <code>skillctl doctor --fix</code> dopo l'upgrade</li>
-  <li>Non committare link assoluti verso <code>~/.skillctl</code> — rigenerali con sync</li>
+  <li>Esegui <code>leogriel sync</code> o <code>leogriel doctor --fix</code> dopo l'upgrade</li>
+  <li>Non committare link assoluti verso <code>~/.leogriel</code> — rigenerali con sync</li>
 </ul>
 
 <h2>Path assoluti in manifest/lock</h2>
 <p><strong>Sintomo:</strong> <code>doctor</code> avvisa su specifier o <code>resolved</code> non portabili (es. <code>file:/Users/...</code>) in <code>agent-skills.json</code> o <code>agent-skills.lock</code>.</p>
 <ul>
-  <li>Da v0.6, <code>add</code> e <code>import</code> copiano le skill locali in <code>.skillctl/skills/&lt;name&gt;</code></li>
-  <li><code>skillctl install</code> riscrive il lock dal manifest</li>
-  <li>Il manifest usa lo specifier portabile <code>file:./.skillctl/skills/&lt;name&gt;</code></li>
+  <li>Da v0.6, <code>add</code> e <code>import</code> copiano le skill locali in <code>.leogriel/skills/&lt;name&gt;</code></li>
+  <li><code>leogriel install</code> riscrive il lock dal manifest</li>
+  <li>Il manifest usa lo specifier portabile <code>file:./.leogriel/skills/&lt;name&gt;</code></li>
   <li>Committa il lock aggiornato dopo la riscrittura</li>
 </ul>
 
@@ -599,12 +599,12 @@ skillctl &lt;comando&gt; --help</code></pre>
 <p><strong>Sintomo:</strong> fetch tarball GitHub fallisce con 403 o rate limit.</p>
 <ul>
   <li>Imposta <code>GITHUB_TOKEN</code> con un PAT con scope lettura repo pubblici</li>
-  <li>Riduci parallelismo: <code>SKILLCTL_PARALLEL=2 skillctl install</code></li>
+  <li>Riduci parallelismo: <code>LEOGRIEL_PARALLEL=2 leogriel install</code></li>
   <li>Riprova dopo il reset del rate limit; verifica URL repo e nome skill</li>
 </ul>
 
 <h2>Lock legacy mobile / contesa</h2>
-<p><code>doctor</code> segnala <code>mutable-resolution</code> per branch/tag/HEAD legacy: esegui <code>skillctl update &lt;name&gt;</code> e committa il lock. <code>E_LOCK_TIMEOUT</code> indica un'altra operazione mutante; attendi o usa <code>doctor</code> per journal/lock stale.</p>
+<p><code>doctor</code> segnala <code>mutable-resolution</code> per branch/tag/HEAD legacy: esegui <code>leogriel update &lt;name&gt;</code> e committa il lock. <code>E_LOCK_TIMEOUT</code> indica un'altra operazione mutante; attendi o usa <code>doctor</code> per journal/lock stale.</p>
 
 <h2>Spec non riconosciuto</h2>
 <p><strong>Sintomo:</strong> <code>Could not resolve</code> o registry non trovato.</p>
@@ -612,7 +612,7 @@ skillctl &lt;comando&gt; --help</code></pre>
   <li>Usa prefissi espliciti: <code>github:</code>, <code>npm:</code>, <code>file:</code></li>
   <li>GitHub: <code>owner/repo#skill-folder</code> se la skill è in sottodirectory</li>
   <li>Path locale: directory deve contenere <code>SKILL.md</code></li>
-  <li><code>skillctl add &lt;spec&gt;</code> mostra l'errore di risoluzione dettagliato</li>
+  <li><code>leogriel add &lt;spec&gt;</code> mostra l'errore di risoluzione dettagliato</li>
 </ul>
 
 <h2>skills.sh — errore name-only</h2>
@@ -627,9 +627,9 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Sintomo:</strong> <code>install --frozen</code> fallisce; audit segnala sha256 mismatch.</p>
 <ul>
   <li>Non modificare contenuti installati senza aggiornare l'integrità nel lock</li>
-  <li><code>skillctl update &lt;name&gt;</code> per riallineare lock e store</li>
+  <li><code>leogriel update &lt;name&gt;</code> per riallineare lock e store</li>
   <li>In CI: committa <code>agent-skills.lock</code> aggiornato dopo ogni <code>add</code></li>
-  <li><code>skillctl audit</code> elenca le skill con integrità compromessa</li>
+  <li><code>leogriel audit</code> elenca le skill con integrità compromessa</li>
 </ul>
 
 <h2>Windows — symlink / junction</h2>
@@ -638,24 +638,24 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li>Il config predefinito è <code>symlink</code>; su Windows i target globali vengono creati come junction</li>
   <li>Symlink richiede spesso privilegi Developer Mode o amministratore</li>
   <li>Fallback automatico a <code>copy</code> con warning in log</li>
-  <li><code>skillctl doctor --fix</code> per ricreare i link dopo cambio modalità</li>
+  <li><code>leogriel doctor --fix</code> per ricreare i link dopo cambio modalità</li>
 </ul>
 
 <h2>Agente non rilevato</h2>
 <p><strong>Sintomo:</strong> <code>sync</code> riporta zero adapter o agente specifico assente.</p>
 <ul>
-  <li>Verifica <code>agents.&lt;id&gt;: true</code> in <code>~/.skillctl/config.json</code></li>
+  <li>Verifica <code>agents.&lt;id&gt;: true</code> in <code>~/.leogriel/config.json</code></li>
   <li>ID validi: <code>claude-code</code>, <code>cursor</code>, <code>opencode</code>, <code>codex</code>, <code>gemini-cli</code>, <code>grok</code>, <code>pi</code></li>
-  <li><code>skillctl doctor</code> mostra adapter registrati vs abilitati</li>
+  <li><code>leogriel doctor</code> mostra adapter registrati vs abilitati</li>
   <li>Per agenti custom: plugin sperimentale con adattatore dedicato</li>
 </ul>
 
 <h2>Link rotti</h2>
 <p><strong>Sintomo:</strong> directory agente punta a path inesistente o skill mancante nell'IDE.</p>
 <ul>
-  <li><code>skillctl doctor --fix</code></li>
-  <li><code>skillctl sync</code> dopo <code>install</code></li>
-  <li>Verifica <code>.skillctl/skills/&lt;name&gt;/</code> per il progetto o <code>~/.skillctl/skills/&lt;name&gt;/</code> per lo scope globale</li>
+  <li><code>leogriel doctor --fix</code></li>
+  <li><code>leogriel sync</code> dopo <code>install</code></li>
+  <li>Verifica <code>.leogriel/skills/&lt;name&gt;/</code> per il progetto o <code>~/.leogriel/skills/&lt;name&gt;/</code> per lo scope globale</li>
 </ul>
 
 <h2>Validazione skill fallita</h2>
@@ -663,8 +663,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <ul>
   <li>Verifica <code>SKILL.md</code> con frontmatter <code>name</code> e <code>description</code></li>
   <li>Controlla script in <code>scripts/</code> e riferimenti path traversal</li>
-  <li><code>skillctl skill validate ./my-skill --json</code> per dettaglio errori</li>
-  <li>In CI: <code>skillctl skill validate skills/skillctl --strict</code> per la meta-skill first-party</li>
+  <li><code>leogriel skill validate ./my-skill --json</code> per dettaglio errori</li>
+  <li>In CI: <code>leogriel skill validate skills/leogriel --strict</code> per la meta-skill first-party</li>
 </ul>
 
 <h2>Install frozen in CI</h2>
@@ -672,28 +672,28 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <ul>
   <li>Lockfile non committato o non aggiornato → committa <code>agent-skills.lock</code></li>
   <li>Store/cache CI vuoto → è supportato: <code>install --frozen</code> ripristina direttamente dalle risoluzioni immutabili del lock</li>
-  <li>Entry GitHub/npm legacy mobile → esegui una volta <code>skillctl update &lt;name&gt;</code> e committa il lock</li>
-  <li>Drift tra runner → usa stesso lock e stessa versione <code>@skillctl/cli</code></li>
+  <li>Entry GitHub/npm legacy mobile → esegui una volta <code>leogriel update &lt;name&gt;</code> e committa il lock</li>
+  <li>Drift tra runner → usa stesso lock e stessa versione <code>@leogriel/cli</code></li>
 </ul>
 
 <h2>Lock mancante</h2>
 <p><strong>Sintomo:</strong> <code>doctor</code> segnala assenza di <code>agent-skills.lock</code>.</p>
-<p>Normale subito dopo <code>init</code>. Esegui <code>skillctl add</code> o <code>skillctl install</code> per generarlo. Versiona il lock nel repository.</p>
+<p>Normale subito dopo <code>init</code>. Esegui <code>leogriel add</code> o <code>leogriel install</code> per generarlo. Versiona il lock nel repository.</p>
 
 <h2>Coesistenza npx / Python skillctl</h2>
 <p><strong>Sintomo:</strong> skill duplicate, path condivisi, confusione su quale tool gestisce le skill.</p>
 <ul>
-  <li><code>skillctl doctor</code> rileva <code>skills-lock.json</code> (npx) e <code>~/.skillctl/repos/</code> (Python)</li>
-  <li>Skill già in directory agente? Prova <code>skillctl import --dry-run</code></li>
+  <li><code>leogriel doctor</code> rileva <code>skills-lock.json</code> (npx) e <code>~/.skillctl/repos/</code> (Python)</li>
+  <li>Skill già in directory agente? Prova <code>leogriel import --dry-run</code></li>
   <li>Migra da npx con <code>import from-npx --dry-run</code> prima di sincronizzare</li>
-  <li>Lo store del progetto è <code>.skillctl/skills/</code>; quello personale è <code>~/.skillctl/skills/</code>; <code>.agents/skills</code> è un target agente</li>
-  <li>Installa via <code>@skillctl/cli</code> per distinguere dal CLI Python</li>
+  <li>Lo store del progetto è <code>.leogriel/skills/</code>; quello personale è <code>~/.leogriel/skills/</code>; <code>.agents/skills</code> è un target agente</li>
+  <li>Installa via <code>@leogriel/cli</code> per distinguere dal CLI Python</li>
 </ul>
 
 <h2>Problemi import</h2>
 <ul>
   <li><strong>Piano vuoto:</strong> nessuna directory agente con skill — verifica <code>.codex/skills</code>, <code>.claude/skills</code>, ecc.</li>
-  <li><strong>Piano vuoto (from-npx/skillctl):</strong> nessun marker npx/Python — verifica <code>skills-lock.json</code> o repos Python</li>
+  <li><strong>Piano vuoto (from-npx/leogriel):</strong> nessun marker npx/Python — verifica <code>skills-lock.json</code> o repos Python</li>
   <li><strong>Skill già nel lock:</strong> vengono saltate (<code>skip-existing</code> nel piano dry-run)</li>
   <li><strong>Errori parziali:</strong> controlla l'envelope JSON; exit 1 per warning/parziali, exit 2 per errori fatali</li>
   <li>Usa sempre <code>--dry-run</code> prima di import definitivi</li>
@@ -705,9 +705,9 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 
 <h2>Plugin non caricato</h2>
 <ul>
-  <li>Esegui <code>skillctl plugin doctor</code> per controllare lock, versione API e integrità installata</li>
-  <li>Usa <code>skillctl plugin enable &lt;name&gt;</code> o <code>disable &lt;name&gt;</code>, poi riavvia la CLI</li>
-  <li>Le sorgenti locali richiedono <code>--allow-local</code> e un package con entry <code>skillctl.plugin</code></li>
+  <li>Esegui <code>leogriel plugin doctor</code> per controllare lock, versione API e integrità installata</li>
+  <li>Usa <code>leogriel plugin enable &lt;name&gt;</code> o <code>disable &lt;name&gt;</code>, poi riavvia la CLI</li>
+  <li>Le sorgenti locali richiedono <code>--allow-local</code> e un package con entry <code>leogriel.plugin</code></li>
   <li>Reinstalla un plugin attendibile se l'integrità non corrisponde più al lock</li>
 </ul>
 
@@ -717,18 +717,18 @@ skills.sh/vercel-labs/agent-skills</code></pre>
     <tr><th>Sintomo</th><th>Comando / azione</th><th>Exit atteso</th></tr>
   </thead>
   <tbody>
-    <tr><td>Setup generale</td><td><code>skillctl doctor</code></td><td>0 se ok</td></tr>
-    <tr><td>Bootstrap con meta-skill</td><td><code>skillctl init --with-skill</code></td><td>0</td></tr>
-    <tr><td>Link agenti rotti</td><td><code>skillctl doctor --fix</code></td><td>0</td></tr>
-    <tr><td>Path non portabili in lock</td><td><code>skillctl install</code></td><td>0</td></tr>
-    <tr><td>CI riproducibile</td><td><code>skillctl install --frozen</code></td><td>0 o 2 se drift</td></tr>
-    <tr><td>Sicurezza pipeline</td><td><code>skillctl audit --json --strict</code></td><td>0 / 1 / 2</td></tr>
-    <tr><td>Lint directory skill</td><td><code>skillctl skill validate [path]</code></td><td>0 / 1 / 2</td></tr>
-    <tr><td>Skill in directory agente</td><td><code>skillctl import --dry-run</code></td><td>0</td></tr>
-    <tr><td>Piano migrazione npx</td><td><code>skillctl import from-npx --dry-run</code></td><td>0</td></tr>
-    <tr><td>Lista skill installate</td><td><code>skillctl list --json</code></td><td>0</td></tr>
-    <tr><td>Versione CLI</td><td><code>skillctl --version</code></td><td>0</td></tr>
-    <tr><td>Plugin attivi</td><td><code>skillctl plugin list --json</code></td><td>0</td></tr>
+    <tr><td>Setup generale</td><td><code>leogriel doctor</code></td><td>0 se ok</td></tr>
+    <tr><td>Bootstrap con meta-skill</td><td><code>leogriel init --with-skill</code></td><td>0</td></tr>
+    <tr><td>Link agenti rotti</td><td><code>leogriel doctor --fix</code></td><td>0</td></tr>
+    <tr><td>Path non portabili in lock</td><td><code>leogriel install</code></td><td>0</td></tr>
+    <tr><td>CI riproducibile</td><td><code>leogriel install --frozen</code></td><td>0 o 2 se drift</td></tr>
+    <tr><td>Sicurezza pipeline</td><td><code>leogriel audit --json --strict</code></td><td>0 / 1 / 2</td></tr>
+    <tr><td>Lint directory skill</td><td><code>leogriel skill validate [path]</code></td><td>0 / 1 / 2</td></tr>
+    <tr><td>Skill in directory agente</td><td><code>leogriel import --dry-run</code></td><td>0</td></tr>
+    <tr><td>Piano migrazione npx</td><td><code>leogriel import from-npx --dry-run</code></td><td>0</td></tr>
+    <tr><td>Lista skill installate</td><td><code>leogriel list --json</code></td><td>0</td></tr>
+    <tr><td>Versione CLI</td><td><code>leogriel --version</code></td><td>0</td></tr>
+    <tr><td>Plugin attivi</td><td><code>leogriel plugin list --json</code></td><td>0</td></tr>
   </tbody>
 </table>
 
@@ -754,53 +754,53 @@ skills.sh/vercel-labs/agent-skills</code></pre>
     },
     pages: {
       index: {
-        title: 'skillctl — Documentation',
+        title: 'leogriel — Documentation',
         html: `
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-content">
     <p class="hero-badge">v0.9.0 · Agent Skills</p>
-    <h1 class="hero-title">skillctl</h1>
-    <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use skillctl.</p>
+    <h1 class="hero-title">Leogriel</h1>
+    <p class="hero-lead">Universal package-manager-style CLI for managing <strong>Agent Skills</strong> across AI coding agents — with a first-party meta-skill that teaches agents how to use leogriel.</p>
     <div class="hero-terminal">
       <div class="terminal-bar">
         <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
         <span class="terminal-label">~/my-project</span>
       </div>
-      <pre class="terminal-body"><code id="hero-cmd">skillctl init</code><span class="terminal-cursor"></span></pre>
+      <pre class="terminal-body"><code id="hero-cmd">leogriel init</code><span class="terminal-cursor"></span></pre>
     </div>
   </div>
 </section>
 
 <div class="alert alert-info">
-  <strong>Version 0.9.0</strong> — npm <code>@skillctl/cli@0.9.0</code>
+  <strong>Version 0.9.0</strong> — npm <code>@leogriel/cli@0.9.0</code>
   skills.sh discovery, outdated/update plans, reconcilable sync, integrity-locked experimental plugins, SARIF audit, and shell completion. Lock schema 1.0 and config version 1 remain compatible.
 </div>
 
-<h2>What is skillctl</h2>
-<p>skillctl separates project dependencies from personal skills and materializes them into agents via symlink, junction (Windows), or copy. Projects keep <code>agent-skills.json</code> (like <code>package.json</code>) and <code>agent-skills.lock</code> (reproducible YAML lockfile, pnpm-style).</p>
+<h2>What is Leogriel</h2>
+<p>leogriel separates project dependencies from personal skills and materializes them into agents via symlink, junction (Windows), or copy. Projects keep <code>agent-skills.json</code> (like <code>package.json</code>) and <code>agent-skills.lock</code> (reproducible YAML lockfile, pnpm-style).</p>
 <ul>
-  <li><strong>Explicit scopes</strong> — project content in <code>.skillctl/skills/</code>, personal content in <code>~/.skillctl/skills/</code> with <code>-g</code></li>
+  <li><strong>Explicit scopes</strong> — project content in <code>.leogriel/skills/</code>, personal content in <code>~/.leogriel/skills/</code> with <code>-g</code></li>
   <li><strong>Provenance &amp; audit</strong> — integrity checks, static security scan, import from other tools</li>
   <li><strong>Built-in adapters</strong> — automatic links to each agent's skill directories</li>
-  <li><strong>Meta-skill</strong> — <code>skills/skillctl/</code> teaches agents workflows, manifest, and lock semantics</li>
+  <li><strong>Meta-skill</strong> — <code>skills/leogriel/</code> teaches agents workflows, manifest, and lock semantics</li>
 </ul>
 
-<h2>skillctl as a skill</h2>
+<h2>leogriel as a skill</h2>
 <p>The repository ships a first-party skill agents can load automatically. For new projects:</p>
-<pre><code>skillctl init --with-skill
+<pre><code>leogriel init --with-skill
 # or
-skillctl add github:xFurti/skillctl#skills/skillctl
-skillctl install</code></pre>
-<p>In the skillctl monorepo: <code>file:./skills/skillctl</code>. Validate with <code>skillctl skill validate skills/skillctl</code>.</p>
+leogriel add github:xFurti/leogriel#skills/leogriel
+leogriel install</code></pre>
+<p>In the leogriel monorepo: <code>file:./skills/leogriel</code>. Validate with <code>leogriel skill validate skills/leogriel</code>.</p>
 
 <h2>Quick install</h2>
-<pre><code>npm install -g @skillctl/cli
+<pre><code>npm install -g @leogriel/cli
 # or
-pnpm add -g @skillctl/cli
+pnpm add -g @leogriel/cli
 # or without global install
-npx @skillctl/cli --help</code></pre>
-<p>The published package is <code>@skillctl/cli</code> (scoped). The command on PATH remains <code>skillctl</code>. The unscoped npm name is left unclaimed to avoid collision with the legacy Python skillctl.</p>
+npx @leogriel/cli --help</code></pre>
+<p>The published package is <code>@leogriel/cli</code> (scoped). The command on PATH remains <code>leogriel</code>. Leogriel replaces the former @skillctl/cli package; portable manifest and lock filenames remain unchanged.</p>
 
 <h2>Typical flow</h2>
 <div class="card-grid">
@@ -817,7 +817,7 @@ npx @skillctl/cli --help</code></pre>
   <div class="card workflow-card">
     <span class="workflow-step">3</span>
     <h3>install</h3>
-    <p>Fetches and verifies project dependencies in <code>.skillctl/skills</code>, then syncs agents.</p>
+    <p>Fetches and verifies project dependencies in <code>.leogriel/skills</code>, then syncs agents.</p>
   </div>
   <div class="card workflow-card">
     <span class="workflow-step">4</span>
@@ -826,14 +826,14 @@ npx @skillctl/cli --help</code></pre>
   </div>
 </div>
 
-<pre><code>skillctl init
-skillctl import --dry-run                # if you already have skills in .codex/.claude/...
-skillctl add github:vercel-labs/agent-skills@main#web-design-guidelines
-skillctl add npm:some-skill-pkg@^2
-skillctl install
+<pre><code>leogriel init
+leogriel import --dry-run                # if you already have skills in .codex/.claude/...
+leogriel add github:vercel-labs/agent-skills@main#web-design-guidelines
+leogriel add npm:some-skill-pkg@^2
+leogriel install
 # or step-wise:
-skillctl add owner/repo
-skillctl sync</code></pre>
+leogriel add owner/repo
+leogriel sync</code></pre>
 
 <h2>Supported agents</h2>
 <table>
@@ -850,7 +850,7 @@ skillctl sync</code></pre>
     <tr><td>Pi</td><td><code>.pi/skills</code></td><td><code>~/.pi/agent/skills</code></td></tr>
   </tbody>
 </table>
-<p>Additional agents via plugins (experimental) or future adapters. Enable or disable each agent in <code>~/.skillctl/config.json</code>.</p>
+<p>Additional agents via plugins (experimental) or future adapters. Enable or disable each agent in <code>~/.leogriel/config.json</code>.</p>
 
 <h2>Develop from source</h2>
 <pre><code>pnpm install
@@ -859,8 +859,8 @@ pnpm test
 pnpm -r lint
 
 # Local CLI
-node packages/cli/bin/skillctl.js --help
-node packages/cli/bin/skillctl.js doctor</code></pre>
+node packages/cli/bin/leogriel.js --help
+node packages/cli/bin/leogriel.js doctor</code></pre>
 <p>Monorepo packages: <code>cli</code>, <code>core</code>, <code>manifest</code>, <code>lockfile</code>, <code>registry</code>, <code>link-manager</code>, <code>adapters</code>, <code>import</code>, <code>security</code>, <code>plugin-system</code>, <code>project-state</code>.</p>
 
 <h2>Navigation</h2>
@@ -883,39 +883,39 @@ node packages/cli/bin/skillctl.js doctor</code></pre>
 </div>
 
 <footer class="page-footer">
-  skillctl v0.9.0 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
+  leogriel v0.9.0 — created by <a href="https://github.com/xFurti" target="_blank" rel="noopener">xFurti</a> and <a href="https://github.com/gabry848" target="_blank" rel="noopener">Gabry848</a><br>
   <a href="#config">Configuration</a> · <a href="#commands">Commands</a> · <a href="#problems">Problems</a>
 </footer>
 `,
       },
       config: {
-        title: 'Configuration — skillctl',
+        title: 'Configuration — leogriel',
         html: `
 <h1>Configuration</h1>
 <p class="lead">Package installation, global configuration, project manifest, and conventions for specifiers and plugins.</p>
 
 <h2>npm install</h2>
-<pre><code>npm install -g @skillctl/cli
+<pre><code>npm install -g @leogriel/cli
 # verify
-skillctl --version
-skillctl doctor</code></pre>
+leogriel --version
+leogriel doctor</code></pre>
 <div class="alert alert-warn">
   <strong>Name collision note</strong>
-  Always use <code>@skillctl/cli</code>. A separate Python project shares the <code>~/.skillctl/</code> path; review <code>doctor</code> output after install.
+  Always use <code>@leogriel/cli</code>. A separate Python project shares the <code>~/.leogriel/</code> path; review <code>doctor</code> output after install.
 </div>
 
 <h2>Development setup (pnpm)</h2>
-<pre><code>git clone https://github.com/xFurti/skillctl.git
-cd skillctl
+<pre><code>git clone https://github.com/xFurti/leogriel.git
+cd leogriel
 pnpm install
 pnpm build
-node packages/cli/bin/skillctl.js init</code></pre>
+node packages/cli/bin/leogriel.js init</code></pre>
 
-<h2>~/.skillctl/config.json</h2>
+<h2>~/.leogriel/config.json</h2>
 <p>Global configuration read by all commands. Created automatically on first use if missing.</p>
 <pre><code>{
   "version": 1,
-  "store": "~/.skillctl/skills",
+  "store": "~/.leogriel/skills",
   "defaultMode": "symlink",
   "agents": {
     "claude-code": true,
@@ -926,7 +926,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "grok": true,
     "pi": true
   },
-  "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/skillctl/*"],
+  "trustedSources": ["github:vercel-labs/*", "skills.sh/*", "github:xFurti/leogriel/*"],
   "security": { "trustedSourcesMode": "warn" }
 }</code></pre>
 
@@ -936,7 +936,7 @@ node packages/cli/bin/skillctl.js init</code></pre>
   </thead>
   <tbody>
     <tr><td><code>version</code></td><td>Config schema version (currently <code>1</code>).</td></tr>
-    <tr><td><code>store</code></td><td>Path to the personal/global store (default <code>~/.skillctl/skills</code>). Projects always use <code>.skillctl/skills</code>.</td></tr>
+    <tr><td><code>store</code></td><td>Path to the personal/global store (default <code>~/.leogriel/skills</code>). Projects always use <code>.leogriel/skills</code>.</td></tr>
     <tr><td><code>defaultMode</code></td><td>Link mode: <code>symlink</code> (default), <code>junction</code>, or <code>copy</code>. Windows global targets use junctions and link failures can fall back to copy.</td></tr>
     <tr><td><code>agents</code></td><td>Agent ID → boolean map; only enabled agents receive sync.</td></tr>
     <tr><td><code>trustedSources</code></td><td>Optional patterns for sources considered trusted (audit/info).</td></tr>
@@ -958,20 +958,20 @@ node packages/cli/bin/skillctl.js init</code></pre>
     "dependencies": {
       "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
       "playwright": "skills.sh/owner/repo/playwright",
-      "local-review": "file:./.skillctl/skills/local-review",
-      "my-codex-skill": "file:./.skillctl/skills/my-codex-skill"
+      "local-review": "file:./.leogriel/skills/local-review",
+      "my-codex-skill": "file:./.leogriel/skills/my-codex-skill"
     },
     "devDependencies": {}
   }
 }</code></pre>
-<p>Skills imported from agent directories are copied to <code>.skillctl/skills/&lt;name&gt;</code> and use the portable <code>file:./.skillctl/skills/&lt;name&gt;</code> specifier.</p>
+<p>Skills imported from agent directories are copied to <code>.leogriel/skills/&lt;name&gt;</code> and use the portable <code>file:./.leogriel/skills/&lt;name&gt;</code> specifier.</p>
 
 <h3>Lock provenance</h3>
 <p>Each <code>agent-skills.lock</code> entry includes enough provenance to restore and verify the source:</p>
 <ul>
   <li><code>commit</code> and <code>requestedRef</code> — immutable GitHub SHA and requested branch/tag</li>
   <li><code>version</code>, <code>tarballUrl</code>, <code>tarballHash</code> — exact npm version and SRI integrity</li>
-  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code>, or <code>python-skillctl</code></li>
+  <li><code>migratedFrom</code> — <code>project-scan</code>, <code>npx</code>, or <code>python-leogriel</code></li>
   <li><code>originalPath</code> — source path at import time (e.g. <code>.codex/skills/demo</code>)</li>
   <li><code>adapter</code> — adapter id that supplied the skill (e.g. <code>codex</code>)</li>
 </ul>
@@ -979,19 +979,19 @@ node packages/cli/bin/skillctl.js init</code></pre>
 <h3>Manifest and lock reproducibility (0.7)</h3>
 <p>The specifier preserves the user's request; <code>resolved</code> pins GitHub/skills.sh to a full commit and npm to an exact version. Committed paths remain portable:</p>
 <ul>
-  <li><code>file:./.skillctl/skills/&lt;name&gt;</code> for local/imported content and remote registry specifiers</li>
-  <li><code>canonicalPath: .skillctl/skills/&lt;name&gt;</code> in the project lock</li>
+  <li><code>file:./.leogriel/skills/&lt;name&gt;</code> for local/imported content and remote registry specifiers</li>
+  <li><code>canonicalPath: .leogriel/skills/&lt;name&gt;</code> in the project lock</li>
   <li>Avoid <code>file:/Users/...</code> or absolute paths in the lock — <code>doctor</code> warns; <code>install</code> rewrites</li>
-  <li>Commit vendored skills under <code>.skillctl/skills/</code>: they have no remote source to restore from</li>
+  <li>Commit vendored skills under <code>.leogriel/skills/</code>: they have no remote source to restore from</li>
 </ul>
 
-<h3>skillctl meta-skill</h3>
-<pre><code>skillctl add github:xFurti/skillctl#skills/skillctl
+<h3>leogriel meta-skill</h3>
+<pre><code>leogriel add github:xFurti/leogriel#skills/leogriel
 # in-repo:
-"skillctl": "file:./skills/skillctl"</code></pre>
+"leogriel": "file:./skills/leogriel"</code></pre>
 
 <h2>Folder structure</h2>
-<pre><code>~/.skillctl/
+<pre><code>~/.leogriel/
 ├── config.json          # global config
 ├── skills/              # personal/global store
 │   └── &lt;skill-name&gt;/
@@ -1007,12 +1007,12 @@ node packages/cli/bin/skillctl.js init</code></pre>
 project/
 ├── agent-skills.json
 ├── agent-skills.lock
-├── .skillctl/skills/    # committed project-vendored skills
+├── .leogriel/skills/    # committed project-vendored skills
 ├── .claude/skills/      # relative symlinks → store (Claude)
 ├── .agents/skills/      # relative symlinks → store (Cursor)
 ├── .codex/skills/       # relative symlinks → store (Codex)
 ├── .grok/skills/        # relative symlinks → store (Grok)
-├── skills/skillctl/     # first-party meta-skill (optional)
+├── skills/leogriel/     # first-party meta-skill (optional)
 └── ...</code></pre>
 <p>Links under <strong>project</strong> agent directories are relative symlinks (portable across machines). Global paths (<code>~/.cursor/skills</code>, etc.) remain absolute.</p>
 
@@ -1022,10 +1022,10 @@ project/
     <tr><th>Variable</th><th>Effect</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>SKILLCTL_PARALLEL</code></td><td>Max parallel registry fetches (default 6, max 16). Example: <code>SKILLCTL_PARALLEL=4 skillctl install</code></td></tr>
-    <tr><td><code>SKILLCTL_STORE</code></td><td>Overrides the global/fallback store; the project store remains <code>.skillctl/skills</code>.</td></tr>
+    <tr><td><code>LEOGRIEL_PARALLEL</code></td><td>Max parallel registry fetches (default 6, max 16). Example: <code>LEOGRIEL_PARALLEL=4 leogriel install</code></td></tr>
+    <tr><td><code>LEOGRIEL_STORE</code></td><td>Overrides the global/fallback store; the project store remains <code>.leogriel/skills</code>.</td></tr>
     <tr><td><code>GITHUB_TOKEN</code> / <code>GH_TOKEN</code></td><td>GitHub token for tarball API; recommended with many <code>github:</code> deps to avoid 403 rate limits.</td></tr>
-    <tr><td><code>SKILLCTL_SKILLS_API_URL</code></td><td>Overrides the public skills.sh endpoint for tests or compatible catalogs.</td></tr>
+    <tr><td><code>LEOGRIEL_SKILLS_API_URL</code></td><td>Overrides the public skills.sh endpoint for tests or compatible catalogs.</td></tr>
     <tr><td><code>NO_COLOR</code></td><td>Disables colors and ANSI controls in human output.</td></tr>
   </tbody>
 </table>
@@ -1041,7 +1041,7 @@ project/
     <tr><td>npm</td><td><code>npm:package-name</code></td><td>npm package exposing a skill.</td></tr>
     <tr><td>skills.sh</td><td><code>skills.sh/owner/repo/skill</code></td><td>Selects one skill and locks its commit SHA and selector.</td></tr>
     <tr><td>Local</td><td><code>file:./path/to/skill</code> or <code>./path</code></td><td>Directory containing <code>SKILL.md</code>.</td></tr>
-    <tr><td>Imported</td><td><code>file:./.skillctl/skills/my-skill</code></td><td>Skill copied into the project store by <code>skillctl import</code>.</td></tr>
+    <tr><td>Imported</td><td><code>file:./.leogriel/skills/my-skill</code></td><td>Skill copied into the project store by <code>leogriel import</code>.</td></tr>
   </tbody>
 </table>
 
@@ -1051,34 +1051,34 @@ project/
   Plugins execute arbitrary code at startup. Enable only trusted sources. See the project design doc threat model.
 </div>
 <pre><code># npm recommended; local only with explicit consent
-skillctl plugin add npm:@example/skillctl-plugin@^1
-skillctl plugin add npm:@example/skillctl-plugin@^1 --dry-run
-skillctl plugin add ./my-skillctl-plugin --allow-local
-skillctl plugin list
-skillctl plugin doctor
-skillctl plugin disable @example/skillctl-plugin
-skillctl plugin remove my-plugin</code></pre>
-<p>State lives in <code>~/.skillctl/plugins.json</code> and <code>plugins.lock</code>. Plugins can register commands, adapters, registries, catalogs, and audit rules; they execute Node.js with user permissions and are not sandboxed.</p>
+leogriel plugin add npm:@example/leogriel-plugin@^1
+leogriel plugin add npm:@example/leogriel-plugin@^1 --dry-run
+leogriel plugin add ./my-leogriel-plugin --allow-local
+leogriel plugin list
+leogriel plugin doctor
+leogriel plugin disable @example/leogriel-plugin
+leogriel plugin remove my-plugin</code></pre>
+<p>State lives in <code>~/.leogriel/plugins.json</code> and <code>plugins.lock</code>. Plugins can register commands, adapters, registries, catalogs, and audit rules; they execute Node.js with user permissions and are not sandboxed.</p>
 <p>Dry-run verifies version, publisher, tarball/SRI, entrypoint, API, capabilities, dependencies, scripts, and trust without installing. Capabilities are declarations, not permissions.</p>
 
 <h2>0.8 foundations</h2>
-<p>A shared parser preserves the canonical hash used by previous locks; search accepts <code>--provider</code>; managed backups use <code>backup list/info/restore/remove</code>; offline audit is categorized; persistent artifacts are opt-in under Git-ignored <code>.skillctl/artifacts/</code> with field-aware secret redaction.</p>
+<p>A shared parser preserves the canonical hash used by previous locks; search accepts <code>--provider</code>; managed backups use <code>backup list/info/restore/remove</code>; offline audit is categorized; persistent artifacts are opt-in under Git-ignored <code>.leogriel/artifacts/</code> with field-aware secret redaction.</p>
 
 <h2>0.9 behavioral testing (experimental)</h2>
-<pre><code>skillctl test init my-skill
-skillctl test validate
-skillctl test my-skill --runs 3 --model MODEL --json</code></pre>
+<pre><code>leogriel test init my-skill
+leogriel test validate
+leogriel test my-skill --runs 3 --model MODEL --json</code></pre>
 <p>Baseline and skill execute the same task with separate workspaces, HOME, USERPROFILE, XDG, and CODEX_HOME trees. Network and web search are denied by default. Tests are sequential; verdicts use whole test cases and paired runs rather than assertion counts. <code>command</code> assertions require confirmation or <code>--trust-tests</code> in CI.</p>
 <div class="alert alert-warn"><strong>Isolation</strong> This reduces personal configuration leakage but is not an absolute sandbox. Retained workspaces may contain sensitive generated output.</div>
 
 <h2>First-time setup</h2>
 <ol>
-  <li>Install <code>@skillctl/cli</code> globally or use <code>npx</code>.</li>
-  <li>Run <code>skillctl doctor</code> to verify environment and detected agents.</li>
-  <li>In your project: <code>skillctl init</code> (import wizard if skills exist under <code>.codex/skills</code>, <code>.claude/skills</code>, …).</li>
-  <li>If you have legacy skills: <code>skillctl import --dry-run</code>, then import without <code>--dry-run</code>.</li>
-  <li>Otherwise: <code>skillctl add &lt;spec&gt;</code> and <code>skillctl install</code>.</li>
-  <li>Optional: <code>skillctl audit</code> in CI with <code>--strict</code>.</li>
+  <li>Install <code>@leogriel/cli</code> globally or use <code>npx</code>.</li>
+  <li>Run <code>leogriel doctor</code> to verify environment and detected agents.</li>
+  <li>In your project: <code>leogriel init</code> (import wizard if skills exist under <code>.codex/skills</code>, <code>.claude/skills</code>, …).</li>
+  <li>If you have legacy skills: <code>leogriel import --dry-run</code>, then import without <code>--dry-run</code>.</li>
+  <li>Otherwise: <code>leogriel add &lt;spec&gt;</code> and <code>leogriel install</code>.</li>
+  <li>Optional: <code>leogriel audit</code> in CI with <code>--strict</code>.</li>
 </ol>
 
 <footer>
@@ -1087,10 +1087,10 @@ skillctl test my-skill --runs 3 --model MODEL --json</code></pre>
 `,
       },
       commands: {
-        title: 'Commands — skillctl',
+        title: 'Commands — leogriel',
         html: `
 <h1>CLI commands</h1>
-<p class="lead">Complete reference for skillctl v0.9.0 commands. Command blocks remain in English as in the CLI interface.</p>
+<p class="lead">Complete reference for leogriel v0.9.0 commands. Command blocks remain in English as in the CLI interface.</p>
 <p>With <code>--json</code>, every first-party command emits one envelope containing <code>schemaVersion</code>, <code>ok</code>, <code>command</code>, <code>data</code>, <code>warnings</code>, and <code>errors</code>. Exit codes: 0 success, 1 warning/partial result, 2 fatal or validation failure.</p>
 
 <h2>Main workflows</h2>
@@ -1116,173 +1116,173 @@ skillctl test my-skill --runs 3 --model MODEL --json</code></pre>
 <h2>Core commands</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl init</div>
-  <p class="cmd-desc">Creates a starter <code>agent-skills.json</code> in the current directory. If agent skill directories are detected (e.g. <code>.codex/skills</code>), offers an import wizard. With <code>--with-skill</code>, adds the skillctl meta-skill from GitHub (or <code>file:./skills/skillctl</code> when present). Does not overwrite an existing file.</p>
-  <pre><code>skillctl init
-skillctl init --with-skill
-skillctl init --with-skill --no-prompt
-skillctl init --no-prompt</code></pre>
+  <div class="cmd-name">leogriel init</div>
+  <p class="cmd-desc">Creates a starter <code>agent-skills.json</code> in the current directory. If agent skill directories are detected (e.g. <code>.codex/skills</code>), offers an import wizard. With <code>--with-skill</code>, adds the leogriel meta-skill from GitHub (or <code>file:./skills/leogriel</code> when present). Does not overwrite an existing file.</p>
+  <pre><code>leogriel init
+leogriel init --with-skill
+leogriel init --with-skill --no-prompt
+leogriel init --no-prompt</code></pre>
   <p>Flags: <code>--with-skill</code> — add meta-skill and sync; <code>--no-prompt</code> — skip prompts and import wizard.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl add &lt;spec&gt;</div>
+  <div class="cmd-name">leogriel add &lt;spec&gt;</div>
   <p class="cmd-desc">Resolves the specifier, downloads to cache, vendors it into the project store, and updates manifest and lock.</p>
-  <pre><code>skillctl add vercel-labs/agent-skills#web-design-guidelines
-skillctl add npm:some-skill-pkg
-skillctl add skills.sh/vercel-labs/agent-skills
-skillctl add ./local-skills/my-review
-skillctl add owner/repo --no-manifest</code></pre>
+  <pre><code>leogriel add vercel-labs/agent-skills#web-design-guidelines
+leogriel add npm:some-skill-pkg
+leogriel add skills.sh/vercel-labs/agent-skills
+leogriel add ./local-skills/my-review
+leogriel add owner/repo --no-manifest</code></pre>
   <p>Flag: <code>--no-manifest</code> — do not update <code>agent-skills.json</code> (lock/store only).</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl install | i</div>
+  <div class="cmd-name">leogriel install | i</div>
   <p class="cmd-desc">Ensures all manifest dependencies are in the store; syncs agents by default.</p>
-  <pre><code>skillctl install
-skillctl install --frozen
-skillctl install --no-sync
-skillctl install --prod
-SKILLCTL_PARALLEL=4 skillctl install</code></pre>
+  <pre><code>leogriel install
+leogriel install --frozen
+leogriel install --no-sync
+leogriel install --prod
+LEOGRIEL_PARALLEL=4 leogriel install</code></pre>
   <p>Flags: <code>--frozen</code> — use only the lock and repopulate an empty store without changing it; <code>--prod</code> — exclude devDependencies; <code>--no-sync</code> — skip agent linking.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl search [query] | info &lt;name-or-specifier&gt;</div>
+  <div class="cmd-name">leogriel search [query] | info &lt;name-or-specifier&gt;</div>
   <p class="cmd-desc">Searches skills.sh or inspects an installed/remote skill without changing state. The local cache lasts 15 minutes and supports stale fallback.</p>
-  <pre><code>skillctl search typescript --owner vercel-labs
-skillctl search typescript --add vercel-labs/skills/find-skills --yes
-skillctl info skills.sh/vercel-labs/skills/find-skills</code></pre>
+  <pre><code>leogriel search typescript --owner vercel-labs
+leogriel search typescript --add vercel-labs/skills/find-skills --yes
+leogriel info skills.sh/vercel-labs/skills/find-skills</code></pre>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl outdated [names...]</div>
+  <div class="cmd-name">leogriel outdated [names...]</div>
   <p class="cmd-desc">Prints a deterministic status/update-kind plan without writing.</p>
-  <pre><code>skillctl outdated
-skillctl outdated --latest --json</code></pre>
+  <pre><code>leogriel outdated
+leogriel outdated --latest --json</code></pre>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl update [names...]</div>
+  <div class="cmd-name">leogriel update [names...]</div>
   <p class="cmd-desc">Builds a deterministic plan first and applies the batch with store, manifest, and lock rollback on failure.</p>
-  <pre><code>skillctl update
-skillctl update web-design-guidelines playwright
-skillctl update --dry-run
-skillctl update npm-skill --latest --save --yes
-skillctl update --no-sync</code></pre>
+  <pre><code>leogriel update
+leogriel update web-design-guidelines playwright
+leogriel update --dry-run
+leogriel update npm-skill --latest --save --yes
+leogriel update --no-sync</code></pre>
   <p><code>--latest</code> may cross an npm constraint; <code>--save</code> records an exact version and non-TTY use requires <code>--yes</code>.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl sync</div>
+  <div class="cmd-name">leogriel sync</div>
   <p class="cmd-desc">Links lockfile skills to enabled agents without new downloads. Project agent directory links are <strong>relative</strong> (git-portable).</p>
-  <pre><code>skillctl sync
-skillctl sync --project --agent codex
-skillctl sync --global --agent codex,claude-code
-skillctl sync --project --prune --dry-run
-skillctl sync --project --agent codex --skill demo --replace-unmanaged --yes</code></pre>
+  <pre><code>leogriel sync
+leogriel sync --project --agent codex
+leogriel sync --global --agent codex,claude-code
+leogriel sync --project --prune --dry-run
+leogriel sync --project --agent codex --skill demo --replace-unmanaged --yes</code></pre>
   <p><code>--replace-unmanaged</code> requires a skill, agent, one scope, and confirmation; it always creates a restorable backup and cannot be combined with <code>--prune</code>.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl list</div>
+  <div class="cmd-name">leogriel list</div>
   <p class="cmd-desc">Lists skills from the lockfile with manifest summary.</p>
-  <pre><code>skillctl list
-skillctl list --json</code></pre>
+  <pre><code>leogriel list
+leogriel list --json</code></pre>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl remove &lt;name&gt; | rm</div>
+  <div class="cmd-name">leogriel remove &lt;name&gt; | rm</div>
   <p class="cmd-desc">Removes from manifest/lock and unlinks from agents.</p>
-  <pre><code>skillctl remove web-design-guidelines
-skillctl rm my-skill --purge</code></pre>
+  <pre><code>leogriel remove web-design-guidelines
+leogriel rm my-skill --purge</code></pre>
   <p>Flag: <code>--purge</code> — also deletes the copy in the selected store.</p>
 </div>
 
 <h2>Diagnostics &amp; security</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl doctor</div>
+  <div class="cmd-name">leogriel doctor</div>
   <p class="cmd-desc">Checks config, manifest, lock, adapters, coexistence, and audit. Reports non-portable paths, <code>mutable-resolution</code>, non-reproducible local imports, interrupted journals, and stale locks.</p>
-  <pre><code>skillctl doctor
-skillctl doctor --fix
-skillctl doctor --json</code></pre>
+  <pre><code>leogriel doctor
+leogriel doctor --fix
+leogriel doctor --json</code></pre>
   <p>Flags: <code>--fix</code> — re-sync links from lock entries; <code>--json</code> — structured report with <code>warnings</code> (exit 2 on issues, 1 on warnings only).</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl audit</div>
+  <div class="cmd-name">leogriel audit</div>
   <p class="cmd-desc">Static scan: integrity, SKILL.md name, suspicious scripts, path traversal, size limits. No script execution.</p>
-  <pre><code>skillctl audit
-skillctl audit --json
-skillctl audit --strict
-skillctl audit --format sarif --output results.sarif</code></pre>
+  <pre><code>leogriel audit
+leogriel audit --json
+leogriel audit --strict
+leogriel audit --format sarif --output results.sarif</code></pre>
   <p>Exit codes: 0 ok, 1 warning or partial result, 2 audit/validation error or warning under <code>--strict</code>.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl skill validate [path]</div>
-  <p class="cmd-desc">Validates a skill directory (<code>SKILL.md</code>, frontmatter, scripts, size) without a project lockfile. Default: <code>skills/skillctl</code>.</p>
-  <pre><code>skillctl skill validate
-skillctl skill validate ./my-skill
-skillctl skill validate --json --strict</code></pre>
+  <div class="cmd-name">leogriel skill validate [path]</div>
+  <p class="cmd-desc">Validates a skill directory (<code>SKILL.md</code>, frontmatter, scripts, size) without a project lockfile. Default: <code>skills/leogriel</code>.</p>
+  <pre><code>leogriel skill validate
+leogriel skill validate ./my-skill
+leogriel skill validate --json --strict</code></pre>
 </div>
 
 <h2>Import &amp; migration</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl import</div>
-  <p class="cmd-desc">Discovers project agent directories, deduplicates identical content, and copies selected skills into <code>.skillctl/skills</code>. Same-name conflicts require <code>--interactive</code> or abort without changing project state.</p>
-  <pre><code>skillctl import --dry-run
-skillctl import
-skillctl import --select
-skillctl import --interactive
-skillctl import --sources codex,claude-code
-skillctl import --sync</code></pre>
+  <div class="cmd-name">leogriel import</div>
+  <p class="cmd-desc">Discovers project agent directories, deduplicates identical content, and copies selected skills into <code>.leogriel/skills</code>. Same-name conflicts require <code>--interactive</code> or abort without changing project state.</p>
+  <pre><code>leogriel import --dry-run
+leogriel import
+leogriel import --select
+leogriel import --interactive
+leogriel import --sources codex,claude-code
+leogriel import --sync</code></pre>
   <p>Flags: <code>--dry-run</code> — show the plan; <code>--select</code> — interactive selection; <code>--interactive</code> — conflict resolution; <code>--sync</code> — refresh agents; <code>--sources</code> — limit adapters.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl import from-npx</div>
+  <div class="cmd-name">leogriel import from-npx</div>
   <p class="cmd-desc">Migrates from <code>npx skills</code> (<code>skills-lock.json</code>, <code>.agents/skills/</code>). Original npx install is left in place.</p>
-  <pre><code>skillctl import from-npx --dry-run
-skillctl import from-npx --write-manifest
-skillctl import from-npx --sync --write-manifest
-skillctl import from-npx --yes</code></pre>
+  <pre><code>leogriel import from-npx --dry-run
+leogriel import from-npx --write-manifest
+leogriel import from-npx --sync --write-manifest
+leogriel import from-npx --yes</code></pre>
   <p>Flags: <code>--dry-run</code> — migration plan; <code>--write-manifest</code> — update <code>agent-skills.json</code>; <code>--sync</code> — sync agents after import (<code>--adopt</code> deprecated alias); <code>--yes</code> — skip prompts.</p>
 </div>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl import from-skillctl</div>
+  <div class="cmd-name">leogriel import from-skillctl</div>
   <p class="cmd-desc">Migrates from Python skillctl (<code>~/.skillctl/repos/</code>, <code>manifest.json</code>).</p>
-  <pre><code>skillctl import from-skillctl --dry-run
-skillctl import from-skillctl --sync
-skillctl import from-skillctl --write-manifest</code></pre>
+  <pre><code>leogriel import from-skillctl --dry-run
+leogriel import from-skillctl --sync
+leogriel import from-skillctl --write-manifest</code></pre>
 </div>
 
 <h2>Plugin (experimental)</h2>
 
 <div class="cmd-block">
-  <div class="cmd-name">skillctl plugin add | install | update | enable | disable | info | doctor | remove | list</div>
+  <div class="cmd-name">leogriel plugin add | install | update | enable | disable | info | doctor | remove | list</div>
   <p class="cmd-desc">Experimental npm/local plugin management with separate manifest, lock, and integrity verification.</p>
-  <pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
-skillctl plugin add ./my-skillctl-plugin --allow-local
-skillctl plugin list
-skillctl plugin doctor
-skillctl plugin disable @example/skillctl-plugin
-skillctl plugin remove my-plugin</code></pre>
+  <pre><code>leogriel plugin add npm:@example/leogriel-plugin@^1
+leogriel plugin add ./my-leogriel-plugin --allow-local
+leogriel plugin list
+leogriel plugin doctor
+leogriel plugin disable @example/leogriel-plugin
+leogriel plugin remove my-plugin</code></pre>
 </div>
 
 <p><strong>0.7:</strong> npm/local plugins use separate manifest, lock, and integrity verification. Local sources require <code>--allow-local</code>. Plugins execute Node.js with user permissions and are not sandboxed.</p>
-<pre><code>skillctl plugin add npm:@example/skillctl-plugin@^1
-skillctl plugin doctor
-skillctl completion powershell</code></pre>
+<pre><code>leogriel plugin add npm:@example/leogriel-plugin@^1
+leogriel plugin doctor
+leogriel completion powershell</code></pre>
 
 <h2>Global options</h2>
-<pre><code>skillctl --version
-skillctl -v
-skillctl --help
-skillctl &lt;command&gt; --help</code></pre>
+<pre><code>leogriel --version
+leogriel -v
+leogriel --help
+leogriel &lt;command&gt; --help</code></pre>
 
 <footer>
   <a href="#index">Overview</a> · <a href="#config">Configuration</a> · <a href="#problems">Problems</a>
@@ -1290,23 +1290,23 @@ skillctl &lt;command&gt; --help</code></pre>
 `,
       },
       problems: {
-        title: 'Problems — skillctl',
+        title: 'Problems — leogriel',
         html: `
 <h1>Problems &amp; solutions</h1>
 <p class="lead">Troubleshooting for installation, registries, Windows, coexistence with other tools, and CI.</p>
 
 <div class="alert alert-info">
   <strong>Recommended first step</strong>
-  Always run <code>skillctl doctor</code> (or <code>skillctl doctor --json</code>) for a structured view of config, manifest, lock, and adapters.
+  Always run <code>leogriel doctor</code> (or <code>leogriel doctor --json</code>) for a structured view of config, manifest, lock, and adapters.
 </div>
 
 <h2>Command not found</h2>
-<p><strong>Symptom:</strong> <code>skillctl: command not found</code> after npm install.</p>
+<p><strong>Symptom:</strong> <code>leogriel: command not found</code> after npm install.</p>
 <ul>
-  <li>Verify install: <code>npm list -g @skillctl/cli</code></li>
+  <li>Verify install: <code>npm list -g @leogriel/cli</code></li>
   <li>Ensure the global npm bin directory is on <code>PATH</code></li>
-  <li>Immediate alternative: <code>npx @skillctl/cli doctor</code></li>
-  <li>From source: <code>node packages/cli/bin/skillctl.js doctor</code></li>
+  <li>Immediate alternative: <code>npx @leogriel/cli doctor</code></li>
+  <li>From source: <code>node packages/cli/bin/leogriel.js doctor</code></li>
 </ul>
 
 <h2>Build fails (development)</h2>
@@ -1322,16 +1322,16 @@ skillctl &lt;command&gt; --help</code></pre>
 <p><strong>Symptom:</strong> on another machine, links under <code>.codex/skills</code> or <code>.claude/skills</code> point at absolute paths from the previous machine.</p>
 <ul>
   <li>Since v0.3, <code>sync</code> creates <strong>relative</strong> symlinks in project agent directories</li>
-  <li>Run <code>skillctl sync</code> or <code>skillctl doctor --fix</code> after upgrading</li>
-  <li>Do not commit absolute links to <code>~/.skillctl</code> — regenerate them with sync</li>
+  <li>Run <code>leogriel sync</code> or <code>leogriel doctor --fix</code> after upgrading</li>
+  <li>Do not commit absolute links to <code>~/.leogriel</code> — regenerate them with sync</li>
 </ul>
 
 <h2>Absolute paths in manifest/lock</h2>
 <p><strong>Symptom:</strong> <code>doctor</code> warns about non-portable specifiers or <code>resolved</code> values (e.g. <code>file:/Users/...</code>) in <code>agent-skills.json</code> or <code>agent-skills.lock</code>.</p>
 <ul>
-  <li>Since v0.6, <code>add</code> and <code>import</code> copy local skills into <code>.skillctl/skills/&lt;name&gt;</code></li>
-  <li><code>skillctl install</code> rewrites the lock from the manifest</li>
-  <li>The manifest uses the portable <code>file:./.skillctl/skills/&lt;name&gt;</code> specifier</li>
+  <li>Since v0.6, <code>add</code> and <code>import</code> copy local skills into <code>.leogriel/skills/&lt;name&gt;</code></li>
+  <li><code>leogriel install</code> rewrites the lock from the manifest</li>
+  <li>The manifest uses the portable <code>file:./.leogriel/skills/&lt;name&gt;</code> specifier</li>
   <li>Commit the updated lock after rewriting</li>
 </ul>
 
@@ -1339,12 +1339,12 @@ skillctl &lt;command&gt; --help</code></pre>
 <p><strong>Symptom:</strong> GitHub tarball fetch fails with 403 or rate limit.</p>
 <ul>
   <li>Set <code>GITHUB_TOKEN</code> with a PAT scoped for public repo read</li>
-  <li>Reduce parallelism: <code>SKILLCTL_PARALLEL=2 skillctl install</code></li>
+  <li>Reduce parallelism: <code>LEOGRIEL_PARALLEL=2 leogriel install</code></li>
   <li>Retry after rate limit reset; verify repo URL and skill name</li>
 </ul>
 
 <h2>Mutable legacy lock / contention</h2>
-<p><code>doctor</code> reports <code>mutable-resolution</code> for legacy branch/tag/HEAD entries: run <code>skillctl update &lt;name&gt;</code> and commit the lock. <code>E_LOCK_TIMEOUT</code> means another mutation is running; wait or use <code>doctor</code> to inspect journals/stale locks.</p>
+<p><code>doctor</code> reports <code>mutable-resolution</code> for legacy branch/tag/HEAD entries: run <code>leogriel update &lt;name&gt;</code> and commit the lock. <code>E_LOCK_TIMEOUT</code> means another mutation is running; wait or use <code>doctor</code> to inspect journals/stale locks.</p>
 
 <h2>Spec not matched</h2>
 <p><strong>Symptom:</strong> <code>Could not resolve</code> or registry not found.</p>
@@ -1352,7 +1352,7 @@ skillctl &lt;command&gt; --help</code></pre>
   <li>Use explicit prefixes: <code>github:</code>, <code>npm:</code>, <code>file:</code></li>
   <li>GitHub: <code>owner/repo#skill-folder</code> when the skill lives in a subfolder</li>
   <li>Local path: directory must contain <code>SKILL.md</code></li>
-  <li><code>skillctl add &lt;spec&gt;</code> prints detailed resolution errors</li>
+  <li><code>leogriel add &lt;spec&gt;</code> prints detailed resolution errors</li>
 </ul>
 
 <h2>skills.sh name-only error</h2>
@@ -1367,9 +1367,9 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <p><strong>Symptom:</strong> <code>install --frozen</code> fails; audit reports sha256 mismatch.</p>
 <ul>
   <li>Do not manually edit installed content without refreshing its lock integrity</li>
-  <li><code>skillctl update &lt;name&gt;</code> to realign lock and store</li>
+  <li><code>leogriel update &lt;name&gt;</code> to realign lock and store</li>
   <li>In CI: commit updated <code>agent-skills.lock</code> after every <code>add</code></li>
-  <li><code>skillctl audit</code> lists skills with compromised integrity</li>
+  <li><code>leogriel audit</code> lists skills with compromised integrity</li>
 </ul>
 
 <h2>Windows — symlink / junction</h2>
@@ -1378,24 +1378,24 @@ skills.sh/vercel-labs/agent-skills</code></pre>
   <li>The config default is <code>symlink</code>; Windows global targets are created as junctions</li>
   <li>Symlinks often require Developer Mode or administrator privileges</li>
   <li>Automatic fallback to <code>copy</code> with a log warning</li>
-  <li><code>skillctl doctor --fix</code> to recreate links after mode changes</li>
+  <li><code>leogriel doctor --fix</code> to recreate links after mode changes</li>
 </ul>
 
 <h2>Agent not detected</h2>
 <p><strong>Symptom:</strong> <code>sync</code> reports zero adapters or a specific agent is missing.</p>
 <ul>
-  <li>Check <code>agents.&lt;id&gt;: true</code> in <code>~/.skillctl/config.json</code></li>
+  <li>Check <code>agents.&lt;id&gt;: true</code> in <code>~/.leogriel/config.json</code></li>
   <li>Valid IDs: <code>claude-code</code>, <code>cursor</code>, <code>opencode</code>, <code>codex</code>, <code>gemini-cli</code>, <code>grok</code>, <code>pi</code></li>
-  <li><code>skillctl doctor</code> shows registered vs enabled adapters</li>
+  <li><code>leogriel doctor</code> shows registered vs enabled adapters</li>
   <li>For custom agents: experimental plugin with a dedicated adapter</li>
 </ul>
 
 <h2>Broken links</h2>
 <p><strong>Symptom:</strong> agent directory points to a missing path or skill absent in the IDE.</p>
 <ul>
-  <li><code>skillctl doctor --fix</code></li>
-  <li><code>skillctl sync</code> after <code>install</code></li>
-  <li>Check <code>.skillctl/skills/&lt;name&gt;/</code> for project scope or <code>~/.skillctl/skills/&lt;name&gt;/</code> for global scope</li>
+  <li><code>leogriel doctor --fix</code></li>
+  <li><code>leogriel sync</code> after <code>install</code></li>
+  <li>Check <code>.leogriel/skills/&lt;name&gt;/</code> for project scope or <code>~/.leogriel/skills/&lt;name&gt;/</code> for global scope</li>
 </ul>
 
 <h2>Skill validation failed</h2>
@@ -1403,8 +1403,8 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <ul>
   <li>Ensure <code>SKILL.md</code> has <code>name</code> and <code>description</code> frontmatter</li>
   <li>Review scripts under <code>scripts/</code> and path traversal references</li>
-  <li><code>skillctl skill validate ./my-skill --json</code> for detailed errors</li>
-  <li>In CI: <code>skillctl skill validate skills/skillctl --strict</code> for the first-party meta-skill</li>
+  <li><code>leogriel skill validate ./my-skill --json</code> for detailed errors</li>
+  <li>In CI: <code>leogriel skill validate skills/leogriel --strict</code> for the first-party meta-skill</li>
 </ul>
 
 <h2>Frozen install in CI</h2>
@@ -1412,28 +1412,28 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 <ul>
   <li>Lockfile not committed or outdated → commit <code>agent-skills.lock</code></li>
   <li>Empty CI store/cache → supported: <code>install --frozen</code> restores directly from immutable lock resolutions</li>
-  <li>Legacy mobile GitHub/npm entry → run <code>skillctl update &lt;name&gt;</code> once and commit the lock</li>
-  <li>Runner drift → use the same lock and same <code>@skillctl/cli</code> version</li>
+  <li>Legacy mobile GitHub/npm entry → run <code>leogriel update &lt;name&gt;</code> once and commit the lock</li>
+  <li>Runner drift → use the same lock and same <code>@leogriel/cli</code> version</li>
 </ul>
 
 <h2>Missing lock</h2>
 <p><strong>Symptom:</strong> <code>doctor</code> reports missing <code>agent-skills.lock</code>.</p>
-<p>Expected right after <code>init</code>. Run <code>skillctl add</code> or <code>skillctl install</code> to generate it. Commit the lock to your repository.</p>
+<p>Expected right after <code>init</code>. Run <code>leogriel add</code> or <code>leogriel install</code> to generate it. Commit the lock to your repository.</p>
 
 <h2>Coexistence with npx / Python skillctl</h2>
 <p><strong>Symptom:</strong> duplicate skills, shared paths, unclear which tool manages skills.</p>
 <ul>
-  <li><code>skillctl doctor</code> detects <code>skills-lock.json</code> (npx) and <code>~/.skillctl/repos/</code> (Python)</li>
-  <li>Skills already in agent dirs? Try <code>skillctl import --dry-run</code></li>
+  <li><code>leogriel doctor</code> detects <code>skills-lock.json</code> (npx) and <code>~/.skillctl/repos/</code> (Python)</li>
+  <li>Skills already in agent dirs? Try <code>leogriel import --dry-run</code></li>
   <li>Migrate from npx with <code>import from-npx --dry-run</code> before syncing</li>
-  <li>The project store is <code>.skillctl/skills/</code>; the personal store is <code>~/.skillctl/skills/</code>; <code>.agents/skills</code> is an agent target</li>
-  <li>Install via <code>@skillctl/cli</code> to distinguish from the Python CLI</li>
+  <li>The project store is <code>.leogriel/skills/</code>; the personal store is <code>~/.leogriel/skills/</code>; <code>.agents/skills</code> is an agent target</li>
+  <li>Install via <code>@leogriel/cli</code> to distinguish from the Python CLI</li>
 </ul>
 
 <h2>Import issues</h2>
 <ul>
   <li><strong>Empty plan:</strong> no agent directories with skills — check <code>.codex/skills</code>, <code>.claude/skills</code>, etc.</li>
-  <li><strong>Empty plan (from-npx/skillctl):</strong> no npx/Python markers — check <code>skills-lock.json</code> or Python repos</li>
+  <li><strong>Empty plan (from-npx/leogriel):</strong> no npx/Python markers — check <code>skills-lock.json</code> or Python repos</li>
   <li><strong>Skill already in lock:</strong> skipped (<code>skip-existing</code> in dry-run plan)</li>
   <li><strong>Partial errors:</strong> inspect the JSON envelope; exit 1 is warning/partial, exit 2 is fatal</li>
   <li>Always use <code>--dry-run</code> before final imports</li>
@@ -1445,9 +1445,9 @@ skills.sh/vercel-labs/agent-skills</code></pre>
 
 <h2>Plugin not loaded</h2>
 <ul>
-  <li>Run <code>skillctl plugin doctor</code> to check lock, API version, and installed integrity</li>
-  <li>Use <code>skillctl plugin enable &lt;name&gt;</code> or <code>disable &lt;name&gt;</code>, then restart the CLI</li>
-  <li>Local sources require <code>--allow-local</code> and a package with a <code>skillctl.plugin</code> entry</li>
+  <li>Run <code>leogriel plugin doctor</code> to check lock, API version, and installed integrity</li>
+  <li>Use <code>leogriel plugin enable &lt;name&gt;</code> or <code>disable &lt;name&gt;</code>, then restart the CLI</li>
+  <li>Local sources require <code>--allow-local</code> and a package with a <code>leogriel.plugin</code> entry</li>
   <li>Reinstall a trusted plugin if its integrity no longer matches the lock</li>
 </ul>
 
@@ -1457,18 +1457,18 @@ skills.sh/vercel-labs/agent-skills</code></pre>
     <tr><th>Symptom</th><th>Command / action</th><th>Expected exit</th></tr>
   </thead>
   <tbody>
-    <tr><td>General setup</td><td><code>skillctl doctor</code></td><td>0 if ok</td></tr>
-    <tr><td>Bootstrap with meta-skill</td><td><code>skillctl init --with-skill</code></td><td>0</td></tr>
-    <tr><td>Broken agent links</td><td><code>skillctl doctor --fix</code></td><td>0</td></tr>
-    <tr><td>Non-portable lock paths</td><td><code>skillctl install</code></td><td>0</td></tr>
-    <tr><td>Reproducible CI</td><td><code>skillctl install --frozen</code></td><td>0 or 2 on drift</td></tr>
-    <tr><td>Pipeline security</td><td><code>skillctl audit --json --strict</code></td><td>0 / 1 / 2</td></tr>
-    <tr><td>Lint skill directory</td><td><code>skillctl skill validate [path]</code></td><td>0 / 1 / 2</td></tr>
-    <tr><td>Skills in agent directories</td><td><code>skillctl import --dry-run</code></td><td>0</td></tr>
-    <tr><td>npx migration plan</td><td><code>skillctl import from-npx --dry-run</code></td><td>0</td></tr>
-    <tr><td>List installed skills</td><td><code>skillctl list --json</code></td><td>0</td></tr>
-    <tr><td>CLI version</td><td><code>skillctl --version</code></td><td>0</td></tr>
-    <tr><td>Active plugins</td><td><code>skillctl plugin list --json</code></td><td>0</td></tr>
+    <tr><td>General setup</td><td><code>leogriel doctor</code></td><td>0 if ok</td></tr>
+    <tr><td>Bootstrap with meta-skill</td><td><code>leogriel init --with-skill</code></td><td>0</td></tr>
+    <tr><td>Broken agent links</td><td><code>leogriel doctor --fix</code></td><td>0</td></tr>
+    <tr><td>Non-portable lock paths</td><td><code>leogriel install</code></td><td>0</td></tr>
+    <tr><td>Reproducible CI</td><td><code>leogriel install --frozen</code></td><td>0 or 2 on drift</td></tr>
+    <tr><td>Pipeline security</td><td><code>leogriel audit --json --strict</code></td><td>0 / 1 / 2</td></tr>
+    <tr><td>Lint skill directory</td><td><code>leogriel skill validate [path]</code></td><td>0 / 1 / 2</td></tr>
+    <tr><td>Skills in agent directories</td><td><code>leogriel import --dry-run</code></td><td>0</td></tr>
+    <tr><td>npx migration plan</td><td><code>leogriel import from-npx --dry-run</code></td><td>0</td></tr>
+    <tr><td>List installed skills</td><td><code>leogriel list --json</code></td><td>0</td></tr>
+    <tr><td>CLI version</td><td><code>leogriel --version</code></td><td>0</td></tr>
+    <tr><td>Active plugins</td><td><code>leogriel plugin list --json</code></td><td>0</td></tr>
   </tbody>
 </table>
 

@@ -1,0 +1,76 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="background" x1="126" y1="35" x2="1490" y2="862" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D2136"/>
+      <stop offset="0.55" stop-color="#071522"/>
+      <stop offset="1" stop-color="#080D19"/>
+    </linearGradient>
+    <radialGradient id="mintAura" cx="0" cy="0" r="1" gradientTransform="translate(350 450) rotate(25) scale(520 470)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#20C7B5" stop-opacity=".19"/>
+      <stop offset="1" stop-color="#20C7B5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="violetAura" cx="0" cy="0" r="1" gradientTransform="translate(1300 80) rotate(125) scale(570 460)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7A68FF" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#7A68FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mint" x1="228" y1="290" x2="558" y2="610" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79F2C0"/>
+      <stop offset="1" stop-color="#20C7B5"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="230" y1="610" x2="560" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D7CFF"/>
+      <stop offset="1" stop-color="#B794F6"/>
+    </linearGradient>
+    <linearGradient id="word" x1="671" y1="334" x2="1370" y2="594" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5FCFF"/>
+      <stop offset=".58" stop-color="#D9FFF3"/>
+      <stop offset="1" stop-color="#C9CFFF"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" stroke="#75DCC5" stroke-opacity=".075"/>
+    </pattern>
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000814" flood-opacity=".5"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#background)"/>
+  <rect width="1600" height="900" fill="url(#mintAura)"/>
+  <rect width="1600" height="900" fill="url(#violetAura)"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#grid)"/>
+  <path d="M0 720C284 652 458 778 734 718C1016 657 1242 540 1600 629V900H0V720Z" fill="#102338" fill-opacity=".5"/>
+  <g filter="url(#shadow)">
+    <rect x="150" y="214" width="480" height="480" rx="112" fill="#091827" stroke="#1B3C50" stroke-width="4"/>
+    <path d="M390 252L552 345V555L390 648L228 555V345L390 252Z" stroke="#1C3C50" stroke-width="6"/>
+    <g stroke-linecap="round" stroke-linejoin="round">
+      <path d="M247 345L326 390L390 505L454 390L533 345" stroke="url(#mint)" stroke-width="36"/>
+      <path d="M247 555L326 510L390 395L454 510L533 555" stroke="url(#violet)" stroke-width="36"/>
+    </g>
+    <g stroke="#091827" stroke-width="46" stroke-linecap="round">
+      <path d="M300 376L333 395"/>
+      <path d="M369 437L390 395"/>
+      <path d="M423 452L454 510"/>
+      <path d="M486 530L525 552"/>
+    </g>
+    <g stroke-linecap="round">
+      <path d="M300 376L326 390L341 417" stroke="url(#mint)" stroke-width="36"/>
+      <path d="M369 437L390 395L405 422" stroke="url(#violet)" stroke-width="36"/>
+      <path d="M423 452L454 510L474 521" stroke="url(#mint)" stroke-width="36"/>
+      <path d="M486 530L533 555" stroke="url(#violet)" stroke-width="36"/>
+    </g>
+  </g>
+  <text x="700" y="414" fill="url(#word)" font-family="Plus Jakarta Sans, Segoe UI, Arial, sans-serif" font-size="138" font-weight="750" letter-spacing="-7">Leogriel</text>
+  <text x="710" y="505" fill="#A9C3CF" font-family="IBM Plex Mono, Consolas, monospace" font-size="33" font-weight="500" letter-spacing="1.5">WEAVE AGENT SKILLS INTO EVERY WORKFLOW</text>
+  <rect x="710" y="555" width="680" height="3" rx="2" fill="#1D3B50"/>
+  <rect x="710" y="555" width="390" height="3" rx="2" fill="url(#mint)"/>
+  <g font-family="IBM Plex Mono, Consolas, monospace" font-size="23" fill="#7393A2">
+    <text x="710" y="618">discover</text>
+    <circle cx="836" cy="610" r="4" fill="#20C7B5"/>
+    <text x="862" y="618">lock</text>
+    <circle cx="943" cy="610" r="4" fill="#6D7CFF"/>
+    <text x="969" y="618">sync</text>
+    <circle cx="1050" cy="610" r="4" fill="#20C7B5"/>
+    <text x="1076" y="618">audit</text>
+    <circle cx="1172" cy="610" r="4" fill="#6D7CFF"/>
+    <text x="1198" y="618">test</text>
+  </g>
+</svg>
