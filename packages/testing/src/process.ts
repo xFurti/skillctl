@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { StringDecoder } from 'node:string_decoder';
 import { StreamingSecretRedactor } from '@leogriel/core';
 
@@ -85,8 +85,10 @@ export async function runProcess(
 export function terminateProcessTree(pid: number | undefined): void {
   if (!pid) return;
   if (process.platform === 'win32') {
-    const killer = spawn('taskkill', ['/pid', String(pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
-    killer.unref();
+    spawnSync('taskkill', ['/pid', String(pid), '/T', '/F'], {
+      windowsHide: true,
+      stdio: 'ignore',
+    });
     return;
   }
   try { process.kill(-pid, 'SIGKILL'); }
