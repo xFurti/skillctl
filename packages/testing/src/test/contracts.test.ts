@@ -68,6 +68,8 @@ test('workspace snapshots count modifications to existing files deterministicall
     await writeFile(join(root, 'existing.txt'), 'before');
     const before = await snapshotWorkspace(root);
     await writeFile(join(root, 'existing.txt'), 'after');
+    await mkdir(join(root, '.git'));
+    await mkdir(join(root, '.agents'));
     const after = await snapshotWorkspace(root);
     assert.equal(countSnapshotChanges(before, after), 1);
     assert.deepEqual([...after.keys()], [...after.keys()].sort());

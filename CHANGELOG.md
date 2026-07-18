@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report npm versions without mislabeling them as Git commit provenance in remote `info` output.
 - Limit GitHub subpath extraction to the requested skill tree so unrelated repository symlinks do not break Windows installs.
 - Treat native Windows Codex sandbox launch failures as incomplete behavioral runs instead of successful completions.
+- Discover a complete standalone Codex installation on Windows so the elevated sandbox can locate both setup and command-runner helpers.
+- Exclude directory-only scaffolding from `max-changed-files` while continuing to count created, removed, and modified files and symlinks.
 - Update current Vercel skill examples to the repository's `skills/web-design-guidelines` path.
 
 ## [1.0.0-beta.3] - 2026-07-18

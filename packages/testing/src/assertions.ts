@@ -52,7 +52,12 @@ export const listWorkspaceFiles = snapshotWorkspace;
 
 export function countSnapshotChanges(before: WorkspaceSnapshot, after: WorkspaceSnapshot): number {
   const paths = new Set([...before.keys(), ...after.keys()]);
-  return [...paths].filter((path) => JSON.stringify(before.get(path)) !== JSON.stringify(after.get(path))).length;
+  return [...paths].filter((path) => {
+    const previous = before.get(path);
+    const current = after.get(path);
+    if ((!previous || previous.type === 'directory') && (!current || current.type === 'directory')) return false;
+    return JSON.stringify(previous) !== JSON.stringify(current);
+  }).length;
 }
 
 async function evaluate(assertion: TestAssertion, workspace: string, initialFiles: WorkspaceSnapshot, options: { timeoutMs: number; environment: NodeJS.ProcessEnv }): Promise<AssertionResult> {

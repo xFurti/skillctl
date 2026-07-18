@@ -4,11 +4,34 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  CodexRunner, createIsolation, destroyIsolation, runProcess, runSkillTests, validateTestFile,
+  CodexRunner, createIsolation, destroyIsolation, findWindowsStandaloneCodex, runProcess, runSkillTests, validateTestFile,
   type AgentRunRequest,
 } from '../index.js';
 
 const REQUIRED_HELP = '--json --ephemeral --ignore-user-config --ignore-rules --sandbox --strict-config --skip-git-repo-check';
+
+test('Windows runner selects the newest complete standalone Codex installation', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'leogriel-codex-install-'));
+  const createRelease = async (version: string, complete = true) => {
+    const release = join(root, '.codex', 'packages', 'standalone', 'releases', `${version}-x86_64-pc-windows-msvc`);
+    await mkdir(join(release, 'bin'), { recursive: true });
+    await mkdir(join(release, 'codex-resources'), { recursive: true });
+    await writeFile(join(release, 'bin', 'codex.exe'), 'codex');
+    await writeFile(join(release, 'codex-resources', 'codex-windows-sandbox-setup.exe'), 'setup');
+    if (complete) await writeFile(join(release, 'codex-resources', 'codex-command-runner.exe'), 'runner');
+    return join(release, 'bin', 'codex.exe');
+  };
+  try {
+    const older = await createRelease('0.144.9');
+    const newer = await createRelease('0.144.10');
+    await createRelease('0.145.0', false);
+    assert.equal(findWindowsStandaloneCodex({ platform: 'win32', userProfile: root }), newer);
+    assert.notEqual(findWindowsStandaloneCodex({ platform: 'win32', userProfile: root }), older);
+    assert.equal(findWindowsStandaloneCodex({ platform: 'linux', userProfile: root }), undefined);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test('Codex detection checks only version and advertised flags', async () => {
   const fixture = await fakeCodex('valid');

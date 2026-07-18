@@ -1,4 +1,6 @@
 import { isAbsolute, join, relative } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { homedir } from 'node:os';
 import type { AgentRunRequest, AgentRunResult, AgentRunner, RunnerDetection } from './types.js';
 import { isolatedEnvironment, type IsolationLayout } from './isolation.js';
 import { runProcess } from './process.js';
@@ -19,8 +21,11 @@ export interface CodexRunnerOptions {
 export class CodexRunner implements AgentRunner {
   readonly id = 'codex';
   private detection?: RunnerDetection;
+  private readonly command: string;
 
-  constructor(private readonly options: CodexRunnerOptions = {}) {}
+  constructor(private readonly options: CodexRunnerOptions = {}) {
+    this.command = options.command || findWindowsStandaloneCodex() || 'codex';
+  }
 
   resolveAuth() { return resolveCodexRunnerAuth(); }
 
@@ -131,7 +136,7 @@ export class CodexRunner implements AgentRunner {
     } = {},
   ) {
     const environment = options.env || process.env;
-    return runProcess(this.options.command || 'codex', [...(this.options.commandArgs || []), ...args], {
+    return runProcess(this.command, [...(this.options.commandArgs || []), ...args], {
       timeoutMs,
       env: environment,
       input: options.input,
@@ -142,6 +147,37 @@ export class CodexRunner implements AgentRunner {
       },
     });
   }
+}
+
+export function findWindowsStandaloneCodex(options: {
+  platform?: NodeJS.Platform;
+  userProfile?: string;
+} = {}): string | undefined {
+  if ((options.platform || process.platform) !== 'win32') return undefined;
+  const userProfile = options.userProfile || process.env.USERPROFILE || homedir();
+  const releasesRoot = join(userProfile, '.codex', 'packages', 'standalone', 'releases');
+  let releases: string[];
+  try {
+    releases = readdirSync(releasesRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort((left, right) => right.localeCompare(left, undefined, { numeric: true, sensitivity: 'base' }));
+  } catch {
+    return undefined;
+  }
+  for (const release of releases) {
+    const root = join(releasesRoot, release);
+    const executable = join(root, 'bin', 'codex.exe');
+    const resources = join(root, 'codex-resources');
+    if (
+      existsSync(executable) &&
+      existsSync(join(resources, 'codex-windows-sandbox-setup.exe')) &&
+      existsSync(join(resources, 'codex-command-runner.exe'))
+    ) {
+      return executable;
+    }
+  }
+  return undefined;
 }
 
 function codexSandboxError(stderr: string): string | undefined {

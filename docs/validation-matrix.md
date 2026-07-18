@@ -12,7 +12,7 @@ This is the evidence checklist for `1.0.0-rc.1` and stable. A checked implementa
 | Release idempotency | SRI comparison, partial-publication continuation, conflict refusal | Automated |
 | Git comparison | Safe immutable materialization plus paired reference/candidate tests | Automated locally; external repository pending |
 | Optional GitHub Action | Report renderer, Job Summary, artifacts, badge data, comment upsert, fail-after-report ordering | Automated locally; not an RC requirement |
-| Codex runner | Fake-process contracts; the dedicated ChatGPT profile preflight and an exact-model no-tool run succeeded on Windows, while the terminal live smoke failed closed at elevated Windows sandbox launch | Windows terminal evidence blocked by the local sandbox prerequisite; one Unix-like host pending |
+| Codex runner | Fake-process contracts plus a successful Windows terminal live smoke using the dedicated ChatGPT profile, exact model `gpt-5.4`, denied network, and a sandboxed Node file proof | Windows live-smoke evidence available; the first real paired skill run was correctly inconclusive after one skill-side timeout; one Unix-like host remains pending |
 | Claude runner | Fake-process contracts for version/platform, sandbox settings, credential filtering, JSONL, stdin, redaction, failure semantics | Real macOS/Linux/WSL2 run pending |
 | External repositories | None documented after the new runner changes | Pending |
 
@@ -29,7 +29,9 @@ On 2026-07-18, the published `@leogriel/cli@1.0.0-beta.3` package was installed 
 - unmanaged-target replacement, backup listing/info, and restore dry-run;
 - offline audit and behavioral test YAML init/list/validation.
 
-The validation found regressions in coexistence detection, non-interactive meta-skill initialization, strict-audit exit severity, npm info provenance rendering, and GitHub subpath extraction on Windows. Regression fixes are kept in the next corrective beta candidate; this section does not claim that those fixes are present in beta.3. The real paired Codex terminal smoke remains unsatisfied because the required elevated Windows sandbox could not launch in the validation environment.
+The validation found regressions in coexistence detection, non-interactive meta-skill initialization, strict-audit exit severity, npm info provenance rendering, and GitHub subpath extraction on Windows. Regression fixes are kept in the next corrective beta candidate; this section does not claim that those fixes are present in beta.3. The Windows elevated sandbox was subsequently initialized, the opt-in terminal smoke passed, and a real paired run was then attempted as recorded below.
+
+A subsequent two-run paired test used the immutable `skills.sh/github/awesome-copilot/documentation-writer` skill, Codex CLI `0.144.6`, model `gpt-5.4`, denied network, and deterministic README assertions. Both baseline variants passed; one skill variant passed and one timed out at 120 seconds. Leogriel therefore returned `inconclusive`, as required for incomplete mixed samples. This is valid runner evidence but does not establish that the selected skill improves or regresses the task.
 
 ## Evidence record
 
