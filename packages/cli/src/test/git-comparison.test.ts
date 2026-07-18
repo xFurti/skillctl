@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -51,6 +51,31 @@ test('rejects missing refs and skills outside the repository', async () => {
     await assert.rejects(materializeGitSkill(repository, outside, 'HEAD'), /inside the current Git repository/);
     await assert.rejects(materializeGitSkill(repository, skill, 'missing-ref'), /unknown revision|Needed a single revision|bad revision/i);
   } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('accepts a repository reached through a filesystem alias', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'leogriel-git-comparison-alias-'));
+  const repository = join(root, 'repository');
+  const alias = join(root, 'repository-alias');
+  const skill = join(repository, 'skill');
+  let materialized: Awaited<ReturnType<typeof materializeGitSkill>> | undefined;
+  try {
+    await mkdir(skill, { recursive: true });
+    await git(repository, ['init', '-q']);
+    await git(repository, ['config', 'user.name', 'Leogriel Test']);
+    await git(repository, ['config', 'user.email', 'test@leogriel.invalid']);
+    await writeFile(join(skill, 'SKILL.md'), '---\nname: demo\ndescription: alias\n---\nalias\n');
+    await git(repository, ['add', '.']);
+    await git(repository, ['commit', '-q', '-m', 'reference']);
+    await symlink(repository, alias, process.platform === 'win32' ? 'junction' : 'dir');
+
+    materialized = await materializeGitSkill(alias, join(alias, 'skill'), 'HEAD');
+    assert.equal(materialized.relativeSkillPath, 'skill');
+    assert.match(await readFile(join(materialized.skillPath, 'SKILL.md'), 'utf8'), /alias/);
+  } finally {
+    await removeMaterializedGitSkill(materialized);
     await rm(root, { recursive: true, force: true });
   }
 });

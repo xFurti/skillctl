@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
@@ -21,8 +21,9 @@ export async function materializeGitSkill(
   requestedRef: string,
 ): Promise<MaterializedGitSkill> {
   if (!requestedRef.trim() || requestedRef.includes('\0')) throw new Error('--compare requires a valid Git ref');
-  const repositoryRoot = resolve((await gitText(cwd, ['rev-parse', '--show-toplevel'])).trim());
-  const relativeSkillPath = portable(relative(repositoryRoot, resolve(currentSkillPath)));
+  const repositoryRoot = await realpath(resolve((await gitText(cwd, ['rev-parse', '--show-toplevel'])).trim()));
+  const canonicalSkillPath = await realpath(resolve(currentSkillPath));
+  const relativeSkillPath = portable(relative(repositoryRoot, canonicalSkillPath));
   if (!relativeSkillPath || relativeSkillPath.startsWith('../') || isAbsolute(relativeSkillPath)) {
     throw new Error('The compared skill must be inside the current Git repository');
   }
