@@ -93,7 +93,11 @@ export class CodexRunner implements AgentRunner {
     });
     const parsed = parseCodexJsonl(processResult.stdout, processResult.truncated);
     const exitError = processResult.code === 0 ? undefined : processResult.stderr.trim() || `Codex exited with code ${processResult.code}`;
-    const error = processResult.timedOut ? 'Codex execution timed out' : exitError || parsed.error;
+    const error = processResult.timedOut
+      ? 'Codex execution timed out'
+      : processResult.truncated
+        ? parsed.error
+        : exitError || parsed.error;
     return {
       ok: !error && parsed.completed,
       exitCode: processResult.code,
