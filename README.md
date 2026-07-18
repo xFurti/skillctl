@@ -45,7 +45,7 @@ Existing `@skillctl/*` releases remain separate historical npm packages. Do not 
 ```bash
 leogriel init
 leogriel import          # copy existing agent skills into .leogriel/skills
-leogriel add github:vercel-labs/agent-skills@main#web-design-guidelines
+leogriel add github:vercel-labs/agent-skills@main#skills/web-design-guidelines
 leogriel add npm:some-skill-pkg@^2
 leogriel add file:./my-skill
 leogriel install          # fetch + sync all agents

@@ -1,6 +1,6 @@
 # Roadmap to Leogriel 1.0
 
-Leogriel does not skip directly from beta to stable. The current target sequence is `1.0.0-beta.3`, at least `1.0.0-rc.1`, and then `1.0.0` after real external use.
+Leogriel does not skip directly from beta to stable. The current published prerelease is `1.0.0-beta.3`; corrective beta releases may precede at least `1.0.0-rc.1`, followed by `1.0.0` only after real external use.
 
 ## Beta.3 consolidation
 
@@ -14,7 +14,7 @@ Leogriel does not skip directly from beta to stable. The current target sequence
 
 ## Required before RC
 
-- [ ] Publish beta.3 through the normal pre-publish and registry smoke gates.
+- [x] Publish beta.3 through the normal pre-publish and registry smoke gates.
 - [ ] Validate Codex locally on Windows and at least one Unix-like host with an exact model.
 - [ ] Validate Claude locally on a supported macOS, Linux, or WSL2 host, or remove it from the stable promise.
 - [ ] Exercise Git comparison in two external repositories with redacted evidence.

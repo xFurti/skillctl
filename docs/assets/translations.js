@@ -88,7 +88,7 @@ npx @leogriel/cli@next --help</code></pre>
 
 <pre><code>leogriel init
 leogriel import --dry-run                # se hai già skill in .codex/.claude/...
-leogriel add github:vercel-labs/agent-skills@main#web-design-guidelines
+leogriel add github:vercel-labs/agent-skills@main#skills/web-design-guidelines
 leogriel add npm:some-skill-pkg@^2
 leogriel install
 # oppure, passo per passo:
@@ -215,7 +215,7 @@ node packages/cli/bin/leogriel.js init</code></pre>
   "version": "1.2.0",
   "agentSkills": {
     "dependencies": {
-      "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
+      "web-design-guidelines": "github:vercel-labs/agent-skills@main#skills/web-design-guidelines",
       "playwright": "skills.sh/owner/repo/playwright",
       "local-review": "file:./.leogriel/skills/local-review",
       "my-codex-skill": "file:./.leogriel/skills/my-codex-skill"
@@ -391,9 +391,9 @@ leogriel init --no-prompt</code></pre>
 <div class="cmd-block">
   <div class="cmd-name">leogriel add &lt;spec&gt;</div>
   <p class="cmd-desc">Risolve lo specifier, scarica nella cache, vendoriza nello store del progetto e aggiorna manifest e lock.</p>
-  <pre><code>leogriel add vercel-labs/agent-skills#web-design-guidelines
+  <pre><code>leogriel add vercel-labs/agent-skills#skills/web-design-guidelines
 leogriel add npm:some-skill-pkg
-leogriel add skills.sh/vercel-labs/agent-skills
+leogriel add skills.sh/vercel-labs/agent-skills/web-design-guidelines
 leogriel add ./local-skills/my-review
 leogriel add owner/repo --no-manifest</code></pre>
   <p>Flag: <code>--no-manifest</code> — non aggiorna <code>agent-skills.json</code> (solo lock/store).</p>
@@ -625,7 +625,7 @@ leogriel &lt;comando&gt; --help</code></pre>
 skills.sh/web-design-guidelines
 
 # ✓ valido
-skills.sh/vercel-labs/agent-skills</code></pre>
+skills.sh/vercel-labs/agent-skills/web-design-guidelines</code></pre>
 
 <h2>Integrità npm / lock drift</h2>
 <p><strong>Sintomo:</strong> <code>install --frozen</code> fallisce; audit segnala sha256 mismatch.</p>
@@ -832,7 +832,7 @@ npx @leogriel/cli@next --help</code></pre>
 
 <pre><code>leogriel init
 leogriel import --dry-run                # if you already have skills in .codex/.claude/...
-leogriel add github:vercel-labs/agent-skills@main#web-design-guidelines
+leogriel add github:vercel-labs/agent-skills@main#skills/web-design-guidelines
 leogriel add npm:some-skill-pkg@^2
 leogriel install
 # or step-wise:
@@ -959,7 +959,7 @@ node packages/cli/bin/leogriel.js init</code></pre>
   "version": "1.2.0",
   "agentSkills": {
     "dependencies": {
-      "web-design-guidelines": "github:vercel-labs/agent-skills@main#web-design-guidelines",
+      "web-design-guidelines": "github:vercel-labs/agent-skills@main#skills/web-design-guidelines",
       "playwright": "skills.sh/owner/repo/playwright",
       "local-review": "file:./.leogriel/skills/local-review",
       "my-codex-skill": "file:./.leogriel/skills/my-codex-skill"
@@ -1135,9 +1135,9 @@ leogriel init --no-prompt</code></pre>
 <div class="cmd-block">
   <div class="cmd-name">leogriel add &lt;spec&gt;</div>
   <p class="cmd-desc">Resolves the specifier, downloads to cache, vendors it into the project store, and updates manifest and lock.</p>
-  <pre><code>leogriel add vercel-labs/agent-skills#web-design-guidelines
+  <pre><code>leogriel add vercel-labs/agent-skills#skills/web-design-guidelines
 leogriel add npm:some-skill-pkg
-leogriel add skills.sh/vercel-labs/agent-skills
+leogriel add skills.sh/vercel-labs/agent-skills/web-design-guidelines
 leogriel add ./local-skills/my-review
 leogriel add owner/repo --no-manifest</code></pre>
   <p>Flag: <code>--no-manifest</code> — do not update <code>agent-skills.json</code> (lock/store only).</p>
@@ -1369,7 +1369,7 @@ leogriel &lt;command&gt; --help</code></pre>
 skills.sh/web-design-guidelines
 
 # ✓ valid
-skills.sh/vercel-labs/agent-skills</code></pre>
+skills.sh/vercel-labs/agent-skills/web-design-guidelines</code></pre>
 
 <h2>npm integrity / lock drift</h2>
 <p><strong>Symptom:</strong> <code>install --frozen</code> fails; audit reports sha256 mismatch.</p>

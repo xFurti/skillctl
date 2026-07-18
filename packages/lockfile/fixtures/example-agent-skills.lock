@@ -4,7 +4,7 @@ agents:
   - cursor
 skills:
   web-design-guidelines:
-    specifier: vercel-labs/agent-skills#web-design-guidelines
+    specifier: vercel-labs/agent-skills#skills/web-design-guidelines
     resolved: github:vercel-labs/agent-skills@abc123def/skills/web-design-guidelines
     integrity: sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
     name: web-design-guidelines

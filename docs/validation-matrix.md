@@ -7,14 +7,29 @@ This is the evidence checklist for `1.0.0-rc.1` and stable. A checked implementa
 | Area | Evidence in the current repository | Status |
 |---|---|---|
 | Standard build/type/test | Windows local gates and cross-platform CI on Node 22.13/24 | Automated |
-| Packed/npm smoke | Pre-publish tarball smoke and post-publish registry smoke on Windows, macOS, Linux | Automated; beta.2 registry run completed |
+| Packed/npm smoke | Pre-publish tarball smoke and post-publish registry smoke on Windows, macOS, Linux | Automated; beta.3 registry run completed |
 | JSON contracts | First-party commands, subcommands, errors, invalid options, completion payload | Automated |
 | Release idempotency | SRI comparison, partial-publication continuation, conflict refusal | Automated |
 | Git comparison | Safe immutable materialization plus paired reference/candidate tests | Automated locally; external repository pending |
 | Optional GitHub Action | Report renderer, Job Summary, artifacts, badge data, comment upsert, fail-after-report ordering | Automated locally; not an RC requirement |
-| Codex runner | Fake-process contracts plus a successful local Windows live smoke with a dedicated ChatGPT profile | Windows evidence available; one Unix-like host pending |
+| Codex runner | Fake-process contracts; the dedicated ChatGPT profile preflight and an exact-model no-tool run succeeded on Windows, while the terminal live smoke failed closed at elevated Windows sandbox launch | Windows terminal evidence blocked by the local sandbox prerequisite; one Unix-like host pending |
 | Claude runner | Fake-process contracts for version/platform, sandbox settings, credential filtering, JSONL, stdin, redaction, failure semantics | Real macOS/Linux/WSL2 run pending |
 | External repositories | None documented after the new runner changes | Pending |
+
+## Local beta.3 CLI validation
+
+On 2026-07-18, the published `@leogriel/cli@1.0.0-beta.3` package was installed into an isolated Windows test directory and exercised without using the repository workspace as its project state. The run covered:
+
+- namespaced catalog search and selected `skills.sh` resolution;
+- GitHub resolution pinned to a commit, including a repository with an unrelated root symlink;
+- npm skill resolution with exact version and SRI provenance;
+- add, list, read-only info, frozen restore, outdated, and update dry-run;
+- project sync to multiple adapters;
+- import dry-run and import of an existing agent skill;
+- unmanaged-target replacement, backup listing/info, and restore dry-run;
+- offline audit and behavioral test YAML init/list/validation.
+
+The validation found regressions in coexistence detection, non-interactive meta-skill initialization, strict-audit exit severity, npm info provenance rendering, and GitHub subpath extraction on Windows. Regression fixes are kept in the next corrective beta candidate; this section does not claim that those fixes are present in beta.3. The real paired Codex terminal smoke remains unsatisfied because the required elevated Windows sandbox could not launch in the validation environment.
 
 ## Evidence record
 

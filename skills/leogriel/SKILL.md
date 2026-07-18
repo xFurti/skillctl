@@ -47,7 +47,7 @@ Operational playbook for managing Agent Skills with the **leogriel** CLI. Run re
 ```bash
 # Bootstrap a project
 leogriel init --with-skill
-leogriel add github:vercel-labs/agent-skills@main#web-design-guidelines
+leogriel add github:vercel-labs/agent-skills@main#skills/web-design-guidelines
 leogriel install
 
 # Vendor a project-local skill
