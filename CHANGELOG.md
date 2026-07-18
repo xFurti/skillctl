@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Introduced the first Leogriel-branded prerelease for migration testing before the required `1.0.0-rc.1` validation phase and the stable `1.0.0` release.
 - Coordinated all twelve workspace packages at the same version for publication with the npm `next` dist-tag.
+- Kept local first-publish bootstrapping independent from provenance flags; npm Trusted Publishing adds provenance automatically once each package is connected to the GitHub release workflow.
 
 ### Rebranded
 

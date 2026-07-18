@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { extractReleaseNotes } from '../extract-release-notes.mjs';
 import { npmInvocation, publicationDecision, resolveDistTag, tarballIntegrity } from '../publish-release.mjs';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 test('extracts one changelog release section', () => {
   const changelog = '# Changelog\n\n## [0.7.0] - 2026-07-14\n\n### Added\n\n- Search.\n\n## [0.6.1] - 2026-07-13\n\n- Fix.';
@@ -32,4 +37,10 @@ test('release publishing invokes the npm CLI through Node on Windows', () => {
     npmInvocation(['publish', 'archive.tgz'], { platform: 'linux', execPath: '/usr/bin/node' }),
     { command: 'npm', args: ['publish', 'archive.tgz'] },
   );
+});
+
+test('workspace packages do not force provenance outside trusted publishing', async () => {
+  const testingPackage = JSON.parse(await readFile(join(root, 'packages', 'testing', 'package.json'), 'utf8'));
+  assert.equal(testingPackage.publishConfig.access, 'public');
+  assert.equal(testingPackage.publishConfig.provenance, undefined);
 });
