@@ -53,3 +53,15 @@ test('workspace packages do not force provenance outside trusted publishing', as
   assert.equal(testingPackage.publishConfig.access, 'public');
   assert.equal(testingPackage.publishConfig.provenance, undefined);
 });
+
+test('release packing removes stale build output before rebuilding', async () => {
+  const script = await readFile(join(root, 'scripts', 'pack-all.mjs'), 'utf8');
+  const clean = script.indexOf("runPnpm(['-r', 'run', 'clean']);");
+  const buildInfo = script.indexOf("'tsconfig.tsbuildinfo'");
+  const build = script.indexOf("runPnpm(['-r', 'build']);");
+  assert.notEqual(clean, -1);
+  assert.notEqual(buildInfo, -1);
+  assert.notEqual(build, -1);
+  assert.ok(clean < buildInfo);
+  assert.ok(buildInfo < build);
+});

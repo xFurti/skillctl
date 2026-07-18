@@ -64,6 +64,10 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 
 const archives = [];
+runPnpm(['-r', 'run', 'clean']);
+await Promise.all(releasePackages.map((directoryName) => (
+  rm(join(root, 'packages', directoryName, 'tsconfig.tsbuildinfo'), { force: true })
+)));
 runPnpm(['-r', 'build']);
 for (const directoryName of releasePackages) {
   const directory = join(root, 'packages', directoryName);
