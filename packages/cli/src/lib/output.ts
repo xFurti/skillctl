@@ -144,6 +144,7 @@ function knownSecrets(): Record<string, string | undefined> {
   return {
     CODEX_API_KEY: process.env.CODEX_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     NPM_TOKEN: process.env.NPM_TOKEN,
     GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   };

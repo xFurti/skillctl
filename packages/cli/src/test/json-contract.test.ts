@@ -97,6 +97,21 @@ test('human Commander diagnostics redact configured secrets', async () => {
   }
 });
 
+test('human and JSON diagnostics redact Claude credentials', async () => {
+  const secret = 'anthropic-secret-abcdefghijklmnop';
+  for (const args of [[secret], [secret, '--json']]) {
+    try {
+      await execFileAsync(process.execPath, [cli, ...args], { env: { ...process.env, ANTHROPIC_API_KEY: secret } });
+      assert.fail('unknown command should fail');
+    } catch (error) {
+      const failure = error as { stdout?: string; stderr?: string };
+      const output = `${failure.stdout || ''}\n${failure.stderr || ''}`;
+      assert.doesNotMatch(output, new RegExp(secret));
+      assert.match(output, /REDACTED/);
+    }
+  }
+});
+
 test('command-handler errors are redacted in human and JSON output', async () => {
   const secret = 'handler-secret-abcdefghijklmnop';
   const env = { ...process.env, GITHUB_TOKEN: secret };

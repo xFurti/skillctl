@@ -93,6 +93,7 @@ runs:
         CODEX_API_KEY: ''
         OPENAI_API_KEY: ''
         ANTHROPIC_API_KEY: ''
+        ANTHROPIC_AUTH_TOKEN: ''
       run: |
         set -euo pipefail
         case "$LEOGRIEL_AGENT" in
